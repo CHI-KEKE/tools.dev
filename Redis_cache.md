@@ -251,7 +251,6 @@ public async Task<T?> GetAsync<T>(string group,
 <br>
 
 **步驟 2**：RD 確認 Grafana 有出現新的 server
-
 監控儀表板連結：
 ```
 https://monitoring-dashboard.91app.io/d/G0HDCHQ4k/elasticache-monitoring?orgId=2&refresh=30s&var-ENV=TW-Prod&var-AWS=TW-Prod-CloudWatch&var-RedisCluster=repl-web-redis-1-001&var-RedisCluster=repl-web-redis-1-003&from=now-7d&to=now

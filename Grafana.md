@@ -1,4 +1,4 @@
-# 📊 Grafana
+# 📊 Grafana 查詢語法指南
 
 <br>
 
@@ -399,6 +399,17 @@ SendTemplateMailShopMemberPresent
 **操作步驟**：Query inspector > Data > CSV
 
 <br>
+
+小技巧
+
+```
+{service="prod-promotion-service"}
+|json
+| _props_TaskId = `2a5661bb-6e78-4d4a-850e-b05b4c6c4435`
+```
+
+直接包 csv 出來
+![alt text](./image-20.png)
 
 ---
 
