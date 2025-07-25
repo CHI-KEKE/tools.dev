@@ -390,7 +390,7 @@ secret 存取路徑需與實際 secretManager 路徑對齊，暫時無須設為 
 #### 3.4 repository 為 image 名稱
 
 charts : repository: docker-dev.build.91app.io/91app/ny-payment-middleware
-![alt text](./image-7.png)
+![alt text](./Img/image-7.png)
 
 ### 4. build-config.sh
 
@@ -545,7 +545,7 @@ Readiness probe failed: Get "http://10.50.231.179:50350/_hc": dial tcp 10.50.231
 
 ### 10. releasename 及為 deployment 看到的 name
 
-![alt text](./image-8.png)
+![alt text](./Img/image-8.png)
 
 <br>
 
@@ -785,7 +785,7 @@ Ingress 是一個資源物件，允許你定義如何將外部的 HTTP 和 HTTPS
 <br>
 
 Ingress 提供了一個入口點，將外部的網路請求導向到你的應用程式中的不同服務。
-![alt text](./image-5.png)
+![alt text](./Img/image-5.png)
 <br>
 
 ### 比喻說明
@@ -805,7 +805,7 @@ Ingress 提供了一個入口點，將外部的網路請求導向到你的應用
 <br>
 
 1. 確認 protected branch 是否已設定，這樣才會去抓 auth config
-![alt text](./image-6.png)
+![alt text](./Img/image-6.png)
 <br>
 
 2. 確認 variables 是否有正確設定相關權限參數

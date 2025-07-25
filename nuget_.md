@@ -23,7 +23,7 @@
 
 來源要移除一些不該出現的項目
 
-![alt text](./image-1.png)
+![alt text](./Img/image-1.png)
 
 <br>
 
@@ -46,7 +46,7 @@
 
 直接用檔案覆蓋的方式來還原版本
 
-![alt text](./image-2.png)
+![alt text](./Img/image-2.png)
 
 <br>
 
@@ -69,7 +69,7 @@ D:\Jenkins\workspace\NineYi.OSMPlus-HKBuild
 ```
 D:\Tools\Nuget_4.8.1\nuget.exe restore
 ```
-![alt text](./image-3.png)
+![alt text](./Img/image-3.png)
 
 <br>
 

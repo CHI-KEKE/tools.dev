@@ -306,7 +306,7 @@ RecycleLoyaltyPointsV2
 <br>
 
 **正常 log 範例示意圖**：
-![alt text](./image-9.png)
+![alt text](./Img/image-9.png)
 <br>
 
 ### 2. NMQ 卡住 Ready
@@ -323,13 +323,13 @@ RecycleLoyaltyPointsV2
 
 **URL**：https://monitoring-dashboard.91app.io/d/kJHAWhwVk/promotion-service-monitor?orgId=2
 
-![alt text](./image-10.png)
+![alt text](./Img/image-10.png)
 
 <br>
 
 **LOKI LOG**:https://monitoring-dashboard.91app.io/d/3dSbCsL4k/shoppingcart-loki-log?orgId=2&var-Level=All&var-Message=&var-RequestPath=%2Fapi%2Fpromotion-rules%2Fcreate&var-RequestId=&var-Class=&var-Loki=RjRcuuN4k&var-MarketENV=HK-Prod&var-Cluster=dfHnWT74z&var-tid=&from=now-12h&to=now&var-ExceptionType=&var-Source=&var-ErrorCode=&var-Service=prod-promotion-service&refresh=30s
 
-![alt text](./image-11.png)
+![alt text](./Img/image-11.png)
 
 <br>
 
@@ -337,7 +337,7 @@ RecycleLoyaltyPointsV2
 
 **ShoppingCart Loki Log**：https://monitoring-dashboard.91app.io/d/3dSbCsL4k/shoppingcart-loki-log?orgId=2&refresh=30s&var-MarketENV=TW-Prod&var-Service=prod-promotion-service&var-Message=&var-Class=&var-RequestPath=%2Fapi%2Fpromotion-rules%2Fsalepage-update&var-RequestId=&var-Level=Error&var-Loki=ZIOlfD44k&var-Cluster=hxdP8t7Vz&var-tid=&var-ExceptionType=System.ArgumentNullException&var-Source=&var-ErrorCode=&from=now-3h&to=now
 
-![alt text](./image-12.png)
+![alt text](./Img/image-12.png)
 
 <br>
 
@@ -346,7 +346,7 @@ RecycleLoyaltyPointsV2
 - Level：`Error`
 - ExceptionType：`System.ArgumentException`
 
-![alt text](./image-14.png)
+![alt text](./Img/image-14.png)
 
 
 
@@ -361,7 +361,7 @@ RecycleLoyaltyPointsV2
 **URL**：https://monitoring-dashboard.91app.io/d/kJHAWhwVk/promotion-service-monitor?orgId=2&refresh=10s&from=now-24h&to=now&viewPanel=182
 
 
-![alt text](./image-15.png)
+![alt text](./Img/image-15.png)
 
 <br>
 
@@ -374,9 +374,9 @@ sum by(_props_RequestPath) ( count_over_time(
 |  line_format "{{._props_RequestPath}}" [1m])
 )
 ```
-![alt text](./image-16.png)
+![alt text](./Img/image-16.png)
 
-![alt text](./image-17.png)
+![alt text](./Img/image-17.png)
 
 <br>
 
@@ -388,7 +388,7 @@ group9005
 SendTemplateMailShopMemberPresent
 ```
 
-![alt text](./image-18.png)
+![alt text](./Img/image-18.png)
 
 <br>
 
@@ -406,7 +406,7 @@ SendTemplateMailShopMemberPresent
 
 可以選擇 **Builder Mode** 或 **Code Mode**
 
-![alt text](./image-19.png)
+![alt text](./Img/image-19.png)
 
 <br>
 

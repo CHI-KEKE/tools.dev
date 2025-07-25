@@ -175,7 +175,7 @@ https://ci.my.91app.io/view/AutoReleaseUnit/job/MY%20Ops%20API/
 ### 如果自動 SyncCode 沒有正常運行做法
 
 **步驟 1**：到 Jenkins 頁面確認是否 enable
-![alt text](./image-4.png)
+![alt text](./Img/image-4.png)
 
 <br>
 

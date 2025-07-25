@@ -127,7 +127,7 @@ r=t
 ```
 Cache:QA:WebAPI:MY:TmpData:CheckCheckoutAvailible-2020101318000:1529
 ```
-![alt text](./image.png)
+![alt text](./Img/image.png)
 
 ---
 
