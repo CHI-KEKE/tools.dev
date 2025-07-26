@@ -26,6 +26,14 @@
   - [真實情境案例](#真實情境案例)
   - [建立 VPC 的步驟](#建立-vpc-的步驟)
   - [Elastic IP 與 Internet Gateway 的關係](#elastic-ip-與-internet-gateway-的關係)
+- [Security Group](#security-group)
+  - [Security Group 是什麼](#security-group-是什麼)
+  - [主要特性](#主要特性)
+  - [範例規則](#範例規則)
+  - [入站 vs 出站](#入站-vs-出站)
+  - [常見使用情境](#常見使用情境)
+  - [安全群組與 NACL 比較](#安全群組與-nacl-比較)
+  - [Security Group 的歸屬關係](#security-group-的歸屬關係)
 
 <br><br>
 
@@ -553,3 +561,183 @@ VPC 中有設好 Internet Gateway（並已附加在 VPC 上）
 <br>
 
 VPC 是你在 AWS 上蓋的虛擬城市（私有網路），而 IGW（Internet Gateway）是這個城市通往外部世界（Internet）的出入口。
+
+<br><br>
+
+---
+
+## Security Group
+
+### Security Group 是什麼
+
+Security Group 是：
+
+- 作用在 EC2 實例層級的防火牆
+- 控制「哪些 IP 可以連進來（入站）」、「你的實例可以連去哪裡（出站）」
+- 只適用於 VPC 內的資源（如 EC2、RDS、Lambda、Load Balancer）
+
+<br>
+
+### 主要特性
+
+| 特性 | 說明 |
+|------|------|
+| 狀態式（Stateful） | 入站連線允許後，對應的出站自動允許，反之亦然 |
+| 預設拒絕所有 | 所有入站預設封鎖，所有出站預設允許（可修改） |
+| 可重複使用 | 一個 Security Group 可套用多個 EC2 |
+| 規則為允許制 | 無法寫拒絕規則（不像 Network ACL），只能允許哪些流量通過 |
+
+<br>
+
+### 範例規則
+
+| 類型 | 協定 | Port 範圍 | 來源 |
+|------|------|----------|------|
+| 入站 | TCP | 22 | 0.0.0.0/0（允許所有人 SSH） |
+| 入站 | TCP | 80 | 0.0.0.0/0（允許 HTTP） |
+| 入站 | TCP | 443 | 0.0.0.0/0（允許 HTTPS） |
+| 出站 | ALL | ALL | 0.0.0.0/0（預設全開） |
+
+<br>
+
+### 入站 vs 出站
+
+**入站（Inbound）規則**：
+
+控制「誰可以連進來」
+
+<br>
+
+例：允許特定 IP 用 SSH 連你的 EC2（port 22）
+
+<br>
+
+**出站（Outbound）規則**：
+
+控制「實例可以連去哪裡」
+
+<br>
+
+例：讓 EC2 可以連外部網站下載更新
+
+<br>
+
+### 常見使用情境
+
+**Web Server**
+
+開放 HTTP (80)、HTTPS (443)、SSH (22)
+
+<br>
+
+**Database Server**
+
+只允許來自 Web Server 的私網連線（例如 port 3306 for MySQL）
+
+<br>
+
+**內部服務**
+
+使用 Security Group Reference 讓特定群組之間互通
+
+<br>
+
+### 安全群組與 NACL 比較
+
+| 項目 | Security Group | Network ACL |
+|------|---------------|-------------|
+| 層級 | 實例層級 | 子網層級 |
+| 狀態性 | ✅ 狀態式 | ❌ 無狀態 |
+| 控制類型 | 只能允許 | 可允許/拒絕 |
+| 使用難度 | 較簡單 | 較複雜 |
+
+<br>
+
+### Security Group 的歸屬關係
+
+**Security Group 的歸屬關係**
+
+每一個 Security Group 必須隸屬於一個 VPC
+
+<br>
+
+你建立 SG 時，一定要選擇 VPC。
+
+<br>
+
+不同 VPC 的 SG 無法混用。
+
+<br>
+
+**Security Group 是「套用到資源」的**
+
+例如：EC2、RDS、Lambda (ENI)、ALB 等。
+
+<br>
+
+當你把 SG 綁到 EC2，那台 EC2 才會受到 SG 規則保護。
+
+<br>
+
+**比喻**：
+
+VPC = 一座城市
+
+<br>
+
+Security Group = 特定建築物的大門守衛規定
+
+<br>
+
+EC2 / RDS / ALB = 建築物
+
+<br>
+
+這些守衛規定不是城市共用的，而是「綁在某一棟建築」上。
+
+<br>
+
+**能不能一個 SG 給多台 EC2 用？**
+
+可以！同一個 VPC 裡的多個 EC2 可以共用同一個 Security Group（相當於幾棟大樓用同一組守衛規則）。
+
+<br>
+
+但是：不同 VPC 的資源不能共用同一組 SG。
+
+<br>
+
+**實際範例**
+
+**範例 1：前台伺服器**
+
+- SG 名稱：sg-web
+- 綁定：EC2-A (Web)、EC2-B (Web)
+- Inbound 規則：開 80/443 給所有人、開 22 給公司固定 IP
+
+<br>
+
+**範例 2：資料庫伺服器**
+
+- SG 名稱：sg-db
+- 綁定：RDS-DB
+- 規則：只允許 sg-web（前台的 SG）存取 3306（MySQL）
+
+這樣外面的人就無法直接連到資料庫。
+
+<br>
+
+**關係圖**：
+
+```
+[VPC]
+   │
+   ├── Security Group sg-web
+   │       │
+   │       ├── EC2-A (Web)
+   │       └── EC2-B (Web)
+   │
+   └── Security Group sg-db
+           │
+           └── RDS-DB
+```
