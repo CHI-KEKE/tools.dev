@@ -13,6 +13,12 @@
   - [說明](#說明)
   - [建立 Docker image](#建立-docker-image)
 - [直接用 Docker 來當作開發環境](#直接用-docker-來當作開發環境)
+- [包 .NET 給 PO 使用](#包-net-給-po-使用)
+  - [撰寫 Dockerfile](#撰寫-dockerfile-1)
+  - [建立 Image](#建立-image)
+  - [執行容器](#執行容器)
+  - [推到 Docker Hub](#推到-docker-hub)
+  - [PO 執行](#po-執行)
 
 <br><br>
 
@@ -507,4 +513,73 @@ docker container run \
   -v $(PWD)/simple-react:/app \
   node:18 \
   npm start
+```
+
+<br><br>
+
+---
+
+## 包 .NET 給 PO 使用
+
+假設你的專案結構
+
+```
+MyMvcApp/
+  Controllers/
+  Views/
+  Models/
+  MyMvcApp.csproj
+```
+
+<br>
+
+### 撰寫 Dockerfile
+
+```dockerfile
+# 1. 建立 build 環境 (用 SDK)
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app/publish
+
+# 2. 建立執行環境 (用 runtime)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "MyMvcApp.dll"]
+```
+
+<br>
+
+### 建立 Image
+
+```bash
+docker build -t mymvcapp .
+```
+
+<br>
+
+### 執行容器
+
+```bash
+docker run -it -p 5000:8080 mymvcapp
+```
+
+<br>
+
+### 推到 Docker Hub
+
+```bash
+docker login
+docker tag mymvcapp yourdockerhubid/mymvcapp:v1
+docker push yourdockerhubid/mymvcapp:v1
+```
+
+<br>
+
+### PO 執行
+
+```bash
+docker run -it -p 5000:8080 yourdockerhubid/mymvcapp:v1
 ```
