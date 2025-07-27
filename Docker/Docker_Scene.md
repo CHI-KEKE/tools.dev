@@ -12,6 +12,7 @@
   - [撰寫 Dockerfile](#撰寫-dockerfile)
   - [說明](#說明)
   - [建立 Docker image](#建立-docker-image)
+- [直接用 Docker 來當作開發環境](#直接用-docker-來當作開發環境)
 
 <br><br>
 
@@ -414,4 +415,96 @@ docker container run -it -p 8081:80 --rm yoyo88147/ashleylaidemoweb
 
 ```bash
 docker image push yoyo88147/ashleylaidemoweb
+```
+
+<br><br>
+
+---
+
+## 直接用 Docker 來當作開發環境
+
+![alt text](./image-2.png)
+
+<br>
+
+原本開發專案的工作流程會是：
+
+- 開啟終端機後，將路徑切換至 react 專案
+- 在終端機執行 npm start 以啟動開發模式（這邊可以換成你需要的指令）
+
+<br>
+
+用 Docker 來進行上述動作
+
+<br>
+
+### 至容器內部 npm i 產生依賴 /app/node_modules, react-scripts 才能被找到
+
+```bash
+docker container run -it -p 3000:3000 -w=/app -v "${PWD}:/app" node:18 bash
+```
+
+<br>
+
+### 掛載目錄並啟動
+
+```bash
+docker container run -it -p 3000:3000 -w=/app -v "${PWD}:/app" node:18 npm start
+```
+
+<br>
+
+至於指令中的 node:18 跟 npm start ，你都可以置換成你需要的 nodejs 版本跟啟動指令，這樣就可以用 Docker container 裡 nodejs 的環境，而不需要在自己的電腦安裝 nodejs 了。
+
+<br>
+
+除了不需要在自己的電腦安裝環境之外，你應該也注意到，要換版本也是很容易的事，只需要換個 image 來用即可。
+
+<br>
+
+**-w=/app**
+
+這個選項設置了容器中的工作目錄。容器啟動後，所有後續命令都會在這個目錄中執行。在這個例子中，我們將工作目錄設定為 /app，這是 React 專案的目錄。
+
+<br>
+
+**-v $(pwd):/app**
+
+這是 Docker 的卷掛載選項，它將當前主機目錄（$(pwd)）掛載到容器的 /app 目錄。$(pwd) 會取得當前工作目錄的絕對路徑，確保容器內部的 /app 目錄與主機上的專案目錄是同步的。
+
+<br>
+
+這樣做的好處是：
+
+使得 React 專案的源代碼可以在容器和主機之間實時同步變更。你不需要將專案代碼複製到容器內部，直接在本機開發並且保持容器內的環境一致性。
+
+<br>
+
+專案在外部, 容器只是給予你這個環境
+
+<br>
+
+### 從頭建立一個 react 專案並且進行開發
+
+```bash
+# 切換到你想要放置專案的路徑
+
+# 用 Docker container 來建立 react 的新專案
+docker container run \
+  -it \
+  --rm \
+  -w=/app \
+  -v $(pwd):/app \
+  node:18 \
+  npx create-react-app simple-react
+
+# 用 Docker container 來啟動 react 專案的開發模式
+docker container run \
+  -it \
+  --rm \
+  -p 3000:3000 \
+  -w=/app \
+  -v $(PWD)/simple-react:/app \
+  node:18 \
+  npm start
 ```
