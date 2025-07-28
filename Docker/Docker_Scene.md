@@ -19,6 +19,12 @@
   - [執行容器](#執行容器)
   - [推到 Docker Hub](#推到-docker-hub)
   - [PO 執行](#po-執行)
+- [簡單起一個 Node Container 並觀察 Process](#簡單起一個-node-container-並觀察-process)
+- [依據既有的 Image 跑 Container 後再產生新的 Image](#依據既有的-image-跑-container-後再產生新的-image)
+  - [先啟動 Container](#先啟動-container)
+  - [產一個檔案](#產一個檔案)
+  - [開另外一個 CLI 後 Commit](#開另外一個-cli-後-commit)
+  - [接著在本機環境就可以看到新的 Image](#接著在本機環境就可以看到新的-image)
 
 <br><br>
 
@@ -582,4 +588,87 @@ docker push yourdockerhubid/mymvcapp:v1
 
 ```bash
 docker run -it -p 5000:8080 yourdockerhubid/mymvcapp:v1
+```
+
+<br><br>
+
+---
+
+## 簡單起一個 Node Container 並觀察 Process
+
+```bash
+docker container run -it node:20 /bin/bash
+```
+
+<br>
+
+**docker container run** ：啟動一個新的 container，相關的選項還不少，這次會就幾個常用或重要的來練習。
+
+<br>
+
+**-i** :--interactive 啟動互動模式，保持標準輸入的開放。
+
+<br>
+
+**-t** : --tty讓 Docker 分配一個虛擬終端機(pseudo-TTY)，並且綁定到容器的標準輸出上。
+
+<br>
+
+**node:20** : 啟動這個 container 所依據的 image。
+
+<br>
+
+**/bin/bash** ：容器啟動後要執行的命令。
+
+<br>
+
+bash 啟動就是一個 shell 程式 Bash 是一個「命令解譯器」。它會等待你的輸入，解析指令，執行指令，顯示結果。類似 powershell
+
+<br>
+
+這時候我們已經不在我們原本的環境中了，而是「進入」了 container 中，可以在這裡執行 `node -v` 指令，會發現這個環境中已經安裝了 node，且版本是 20.5.1。
+
+<br>
+
+執行 `ps aux` 會看到它 PID 為 1 的 process 就是我們剛剛指定的 `/bin/bash`
+
+<br>
+
+`ps aux` 是 Linux/Unix 系統裡非常常用的一個指令，專門用來查看系統中正在執行的 行程（process）。
+
+<br><br>
+
+---
+
+## 依據既有的 Image 跑 Container 後再產生新的 Image
+
+### 先啟動 Container
+
+```bash
+docker container run -it node:20 /bin/bash
+```
+
+<br>
+
+### 產一個檔案
+
+```bash
+touch AAA.text
+```
+
+<br>
+
+### 開另外一個 CLI 後 Commit
+
+```bash
+docker ps
+docker commit c7fe390323ae newnode20withfile
+```
+
+<br>
+
+### 接著在本機環境就可以看到新的 Image
+
+```bash
+docker image ls
 ```
