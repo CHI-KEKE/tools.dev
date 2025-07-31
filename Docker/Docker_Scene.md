@@ -25,6 +25,7 @@
   - [產一個檔案](#產一個檔案)
   - [開另外一個 CLI 後 Commit](#開另外一個-cli-後-commit)
   - [接著在本機環境就可以看到新的 Image](#接著在本機環境就可以看到新的-image)
+- [使用 History 查看 Image 堆疊歷史](#使用-history-查看-image-堆疊歷史)
 
 <br><br>
 
@@ -672,3 +673,21 @@ docker commit c7fe390323ae newnode20withfile
 ```bash
 docker image ls
 ```
+
+<br><br>
+
+---
+
+## 使用 History 查看 Image 堆疊歷史
+
+```bash
+docker image history node:20
+```
+
+<br>
+
+![alt text](./image-6.png)
+
+<br>
+
+可以看到 先做出來的 image 會比原本的 image 多疊一層
