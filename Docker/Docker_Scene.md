@@ -26,6 +26,13 @@
   - [開另外一個 CLI 後 Commit](#開另外一個-cli-後-commit)
   - [接著在本機環境就可以看到新的 Image](#接著在本機環境就可以看到新的-image)
 - [使用 History 查看 Image 堆疊歷史](#使用-history-查看-image-堆疊歷史)
+- [觀察生命週期](#觀察生命週期)
+  - [啟動 Container](#啟動-container)
+  - [進入 Container](#進入-container)
+  - [離開後觀察啟動狀態](#離開後觀察啟動狀態)
+- [移除 Image & Container](#移除-image--container)
+  - [移除 Image 指令](#移除-image-指令)
+  - [若 Container 還啟用需要先停止 Container 並移除](#若-container-還啟用需要先停止-container-並移除)
 
 <br><br>
 
@@ -691,3 +698,66 @@ docker image history node:20
 <br>
 
 可以看到 先做出來的 image 會比原本的 image 多疊一層
+
+<br><br>
+
+---
+
+## 觀察生命週期
+
+### 啟動 Container
+
+```bash
+docker container start CONTAINER_ID
+```
+
+<br>
+
+### 進入 Container
+
+```bash
+docker container exec -it CONTAINER_ID /bin/bash
+```
+
+<br>
+
+### 離開後觀察啟動狀態
+
+```bash
+exit
+docker container ls
+```
+
+<br>
+
+會發現還活著
+
+<br>
+
+這時再進入 container 後 `ps aux` 發現有兩個 bin/bash
+
+<br>
+
+而我們 exit 的是非 PID = 1 的所以不會關掉 Container
+
+<br><br>
+
+---
+
+## 移除 Image & Container
+
+### 移除 Image 指令
+
+```bash
+docker image rm d2c94e258dcb
+```
+
+<br>
+
+### 若 Container 還啟用需要先停止 Container 並移除
+
+```bash
+docker container stop 8de29200549a
+docker container rm 8de29200549a
+docker image rm 2011cbbcabb2
+```
