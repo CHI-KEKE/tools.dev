@@ -8,6 +8,7 @@
   - [執行兩個 Alpine](#執行兩個-alpine)
   - [確認 IP](#確認-ip)
   - [確認對方](#確認對方)
+- [啟動本機已經有的 Alpine1 並觀察網路](#啟動本機已經有的-alpine1-並觀察網路)
 
 <br><br>
 
@@ -164,3 +165,25 @@ docker container exec -it alpine1 ash
 ping -c 2 172.17.0.4
 ping -c 2 google.com.tw
 ```
+
+<br><br>
+
+---
+
+## 啟動本機已經有的 Alpine1 並觀察網路
+
+```bash
+docker start alpine1
+docker container ls
+docker exec -it alpine1 ash
+exit
+docker network inspect bridge
+```
+
+<br>
+
+![alt text](./image-7.png)
+
+<br>
+
+建立的兩個 alpine containers 被列在這裡了。此外，也可以看到其 subnet 為 "172.17.0.0/16"，而我們用 bridge 這個網路建立出來的 container 的 ip 也是在這個 subnet 範圍中。
