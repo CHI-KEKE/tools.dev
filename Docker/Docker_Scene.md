@@ -33,6 +33,7 @@
 - [移除 Image & Container](#移除-image--container)
   - [移除 Image 指令](#移除-image-指令)
   - [若 Container 還啟用需要先停止 Container 並移除](#若-container-還啟用需要先停止-container-並移除)
+- [停止並移除多個 containers](#停止並移除多個-containers)
 
 <br><br>
 
@@ -760,4 +761,15 @@ docker image rm d2c94e258dcb
 docker container stop 8de29200549a
 docker container rm 8de29200549a
 docker image rm 2011cbbcabb2
+```
+
+<br><br>
+
+---
+
+## 停止並移除多個 containers
+
+```bash
+docker container stop alpine1 alpine2
+docker container rm alpine1 alpine2
 ```

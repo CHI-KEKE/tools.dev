@@ -9,6 +9,7 @@
   - [確認 IP](#確認-ip)
   - [確認對方](#確認對方)
 - [啟動本機已經有的 Alpine1 並觀察網路](#啟動本機已經有的-alpine1-並觀察網路)
+- [自定義一個 bridge network](#自定義一個-bridge-network)
 
 <br><br>
 
@@ -187,3 +188,97 @@ docker network inspect bridge
 <br>
 
 建立的兩個 alpine containers 被列在這裡了。此外，也可以看到其 subnet 為 "172.17.0.0/16"，而我們用 bridge 這個網路建立出來的 container 的 ip 也是在這個 subnet 範圍中。
+
+<br><br>
+
+---
+
+## 自定義一個 bridge network
+
+### 建立網路
+
+```bash
+docker network create --driver bridge my-net
+```
+
+<br>
+
+### 查看網路們
+
+```bash
+docker network ls
+```
+
+<br>
+
+![alt text](./image-12.png)
+
+<br>
+
+### 細看 my-net
+
+```bash
+docker network inspect my-net
+```
+
+<br>
+
+![alt text](./image-13.png)
+
+<br>
+
+自定義的 my-net 網路其 subnet 是 172.18.0.0/16
+
+<br>
+
+### 啟動兩個 container，network 都指定為 my-net
+
+```bash
+docker container run -dit  --network my-net  --name alpine1 alpine
+docker container run -dit --network my-net --name alpine2 alpine
+```
+
+<br>
+
+### 查看網路 ip
+
+```bash
+docker container inspect -f '{{range.NetworkSettings.Networks}} {{.IPAddress}}{{end}}' alpine1
+```
+
+<br>
+
+結果：172.18.0.2
+
+<br>
+
+```bash
+docker container inspect -f '{{range.NetworkSettings.Networks}} {{.IPAddress}}{{end}}' alpine2
+```
+
+<br>
+
+結果：172.18.0.3
+
+<br>
+
+會發現 其 IP 會落在新的 subnet 中
+
+<br>
+
+### 進入 alpine1 中, ping google 以及 alpine2
+
+```bash
+docker container exec -it alpine1 ash
+ping -c 2 www.google.com
+ping -c 2 172.18.0.3
+ping -c 2 alpine2
+```
+
+<br>
+
+![alt text](./image-14.png)
+
+<br>
+
+定義的網路可以透過「名字」來進行溝通，這個在預設的 bridge 網路是做不到的
