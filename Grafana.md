@@ -88,7 +88,19 @@ api/promotion-rules/create
 
 <br>
 
+
+**DashBoard Source**
+source : promotion-web-api-primary-77dbcb65fc-whtwb
+
+https://monitoring-dashboard.91app.io/d/3dSbCsL4k/shoppingcart-loki-log?orgId=2&refresh=30s&var-MarketENV=HK-Prod&var-Service=prod-promotion-service&var-Message=&var-Class=&var-RequestPath=&var-RequestId=&var-Level=All&var-Loki=RjRcuuN4k&var-Cluster=dfHnWT74z&var-tid=&var-ExceptionType=&var-Source=promotion-web-api-primary&var-ErrorCode=
+
+https://monitoring-dashboard.91app.io/d/3dSbCsL4k/shoppingcart-loki-log?orgId=2&from=now-1h&to=now&var-MarketENV=TW-Prod&var-Message=&var-Class=&var-RequestPath=&var-RequestId=&var-Level=Error&var-Loki=ZIOlfD44k&var-Cluster=hxdP8t7Vz&var-tid=&var-ExceptionType=&var-Source=promotion-web-api-primary&var-Service=prod-promotion-service&refresh=30s&var-ErrorCode=
+
+
+<br>
+
 ---
+
 
 ## 🎯 Promotion Frontend API 相關
 
@@ -458,6 +470,20 @@ Root=1-67dbdc15-1fbb2f51540973ad1a5bea5a
 ```
 
 <br>
+
+**Output 所有錯誤 Task**
+
+```
+{service="prod-promotion-service", container="promotion-console-nmqv3worker-group3"} 
+|json
+|= `TaskProcess is FAILED.`
+```
+
+```
+{service="prod-promotion-service", container="promotion-console-nmqv3worker-group3"} 
+|json
+|= `查無有效的訂單資料`
+```
 
 ---
 
