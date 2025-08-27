@@ -831,6 +831,8 @@ Ingress 提供了一個入口點，將外部的網路請求導向到你的應用
 
 **問題描述**：有些 controller 會掛掉讀到 v2 config 但打不通，因為 domain 被搬走了
 
+https://91app.slack.com/archives/G04TVB3KW/p1746421134276869
+
 <br>
 
 **相關連結**：
