@@ -15,6 +15,10 @@
   - [🔨 Builder Mode](#-builder-mode)
   - [📄 格式相關語法](#-格式相關語法)
   - [❌ 錯誤提示查詢](#-錯誤提示查詢)
+  - [🌐 IP 位址查詢](#-ip-位址查詢)
+  - [⏱️ 效能監控查詢](#️-效能監控查詢)
+  - [📈 Latency 面板監控](#-latency-面板監控)
+  - [🚨 Alarm 監控中心](#-alarm-監控中心)
 
 <br>
 
@@ -505,5 +509,198 @@ unable to resolve service
 ```
 |= `稽核時發生錯誤`
 ```
+
+<br>
+
+---
+
+## 🌐 IP 位址查詢
+
+**錯誤請求來源 IP 追蹤**：
+
+<br>
+
+```
+{service=~"prod-cart-service", container=~".*api.*|.*nmqv3worker.*", container!~".*pp-.*|monitor|aws-config-loader"}
+|~ `Error`
+| json
+| line_format "{{._msg}}"
+| json
+| line_format "{{._props_RemoteAddress}}"
+```
+
+<br>
+
+**查詢說明**：
+
+| 項目 | 語法 | 說明 |
+|------|------|------|
+| 服務篩選 | `service=~"prod-cart-service"` | 指定購物車服務 |
+| 容器篩選 | `container=~".*api.*\|.*nmqv3worker.*"` | 包含 API 或 NMQ Worker 容器 |
+| 容器排除 | `container!~".*pp-.*\|monitor\|aws-config-loader"` | 排除特定容器類型 |
+| 錯誤過濾 | `\|~ \`Error\`` | 僅顯示包含錯誤的日誌 |
+| JSON 解析 | `\| json` | 解析 JSON 格式日誌 |
+| 訊息格式化 | `\| line_format "{{._msg}}"` | 格式化顯示訊息內容 |
+| IP 位址提取 | `\| line_format "{{._props_RemoteAddress}}"` | 提取遠端 IP 位址資訊 |
+
+<br>
+
+**實際應用場景**：
+
+- **異常流量分析**：識別產生大量錯誤請求的 IP 來源
+- **安全監控**：追蹤可疑的請求來源位址
+- **負載分析**：了解不同 IP 的請求分布情況
+- **問題排查**：定位特定 IP 的錯誤模式
+
+<br>
+
+---
+
+## ⏱️ 效能監控查詢
+
+**每一步的耗時分析**：
+
+<br>
+
+```
+{service="prod-shopping-service"}
+|=`Nine1HttpLog`
+|json
+| line_format "{{._msg}}"
+| json
+| line_format "{{.UriStem}} {{.TimeTaken}}"
+```
+
+<br>
+
+**查詢說明**：
+
+| 項目 | 語法 | 說明 |
+|------|------|------|
+| 服務指定 | `service="prod-shopping-service"` | 指定購物服務 |
+| 日誌類型 | `\|=\`Nine1HttpLog\`` | 篩選 HTTP 請求日誌 |
+| JSON 解析 | `\| json` | 解析 JSON 格式的日誌資料 |
+| 訊息提取 | `\| line_format "{{._msg}}"` | 提取主要訊息內容 |
+| 效能資訊 | `\| line_format "{{.UriStem}} {{.TimeTaken}}"` | 顯示 API 路徑和執行時間 |
+
+<br>
+
+**輸出格式範例**：
+```
+/api/shopping/cart/calculate 1250ms
+/api/shopping/order/create 875ms
+/api/shopping/product/search 320ms
+```
+
+<br>
+
+**實際應用場景**：
+
+- **API 效能分析**：識別執行時間較長的 API 端點
+- **瓶頸定位**：找出系統效能瓶頸所在
+- **效能基準**：建立 API 回應時間的基準值
+- **效能監控**：持續監控系統效能變化
+
+<br>
+
+---
+
+## 📈 Latency 面板監控
+
+**Shopping Service Alert Dashboard**：
+
+<br>
+
+**監控面板 URL**：
+```
+https://monitoring-dashboard.91app.io/d/aen3tgg0mmvpcd/shopping-service-alert?viewPanel=panel-256&orgId=2&from=2025-08-29T02:45:41.388Z&to=2025-08-29T03:19:24.317Z&timezone=Asia%2FTaipei&var-MarketENV=TW-Prod&var-Loki=ZIOlfD44k&var-Cluster=hxdP8t7Vz&var-Namespace=prod-shopping-service&var-Sandbox_Namespace=sandbox-api-gateway&var-CacheClusterID=backend-redis-2-001&var-CloudWatch=kYZD-B7Vk&var-LOG_CONTAIN_STRING=&var-topk_1_node=ip-10-2-218-109.ap-northeast-1.compute.internal&var-Quey_Taints=sg&var-Service_Catalog=appgen
+```
+
+<br>
+
+**面板參數說明**：
+
+| 參數 | 值 | 說明 |
+|------|-----|------|
+| `viewPanel` | `panel-256` | 指定顯示的面板 ID |
+| `MarketENV` | `TW-Prod` | 台灣生產環境 |
+| `Namespace` | `prod-shopping-service` | 購物服務命名空間 |
+| `Cluster` | `hxdP8t7Vz` | 叢集識別碼 |
+| `CloudWatch` | `kYZD-B7Vk` | CloudWatch 資料源 |
+| `timezone` | `Asia/Taipei` | 台北時區 |
+
+<br>
+
+**監控重點項目**：
+
+- **Latency 分布**：查看 API 回應時間分布情況
+- **異常峰值**：識別異常的延遲峰值
+- **趨勢分析**：觀察延遲時間的變化趨勢
+- **SLA 監控**：確保服務符合 SLA 要求
+
+<br>
+
+**使用建議**：
+
+1. **時間範圍調整**：根據需要調整 `from` 和 `to` 參數
+2. **環境切換**：修改 `MarketENV` 切換不同環境
+3. **叢集監控**：透過 `Cluster` 參數監控特定叢集
+4. **即時監控**：定期檢查面板以監控系統健康狀態
+
+<br>
+
+---
+
+## 🚨 Alarm 監控中心
+
+**Shopping Service Alert 完整監控面板**：
+
+<br>
+
+**監控中心 URL**：
+```
+https://monitoring-dashboard.91app.io/d/aen3tgg0mmvpcd/shopping-service-alert?orgId=2&from=now-6h&to=now&timezone=Asia%2FTaipei&var-MarketENV=TW-Prod&var-Loki=ZIOlfD44k&var-Cluster=hxdP8t7Vz&var-Namespace=prod-shopping-service&var-Sandbox_Namespace=sandbox-api-gateway&var-CacheClusterID=backend-redis-2-001&var-CloudWatch=kYZD-B7Vk&var-LOG_CONTAIN_STRING=&var-topk_1_node=ip-10-2-218-109.ap-northeast-1.compute.internal&var-Quey_Taints=sg&var-Service_Catalog=appgen
+```
+
+<br>
+
+**監控面板特色**：
+
+| 監控類型 | 說明 | 功能 |
+|----------|------|------|
+| **服務健康度** | 整體服務狀態監控 | 即時查看服務可用性狀態 |
+| **效能指標** | API 回應時間和吞吐量 | 監控系統效能表現 |
+| **錯誤追蹤** | 錯誤率和異常事件 | 快速識別系統問題 |
+| **資源使用** | CPU、記憶體、網路使用率 | 監控基礎設施資源 |
+| **警報管理** | 自動警報和通知機制 | 主動通知系統異常 |
+
+<br>
+
+**關鍵監控指標**：
+
+- **🔴 Critical Alerts**：需要立即處理的緊急警報
+- **🟡 Warning Alerts**：需要關注的警告事件
+- **📊 Performance Metrics**：效能相關指標趨勢
+- **📈 Traffic Analysis**：流量分析和模式識別
+- **🔧 Infrastructure Health**：基礎設施健康狀態
+
+<br>
+
+**使用場景**：
+
+1. **日常監控**：作為日常運維的主要監控面板
+2. **故障排查**：快速定位和分析系統問題
+3. **效能優化**：基於監控資料進行效能調優
+4. **容量規劃**：根據趨勢資料進行容量規劃
+5. **SLA 管理**：確保服務符合 SLA 要求
+
+<br>
+
+**操作建議**：
+
+- **定期檢查**：建議每天至少檢查 2-3 次
+- **設定書籤**：將此 URL 加入瀏覽器書籤便於快速存取
+- **客製化時間範圍**：根據需要調整 `from` 和 `to` 參數
+- **多環境監控**：透過修改 `MarketENV` 監控不同環境
 
 <br>
