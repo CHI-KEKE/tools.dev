@@ -291,6 +291,13 @@ RecycleLoyaltyPointsV2
 {service="hk-qa-promotion-service"}
 |json
 | _props_TaskId = `ec72d512-a629-4478-b8b3-5e7275da2b98`
+
+
+{service="prod-promotion-service"} 
+|json
+| _props_TaskId = `bf0f43ae-b413-4340-8585-14c6023799eb`
+|json
+| line_format "{{._msg}}"
 ```
 
 <br>
