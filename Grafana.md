@@ -533,7 +533,7 @@ unable to resolve service
 | json
 | line_format "{{._msg}}"
 | json
-| line_format "{{._props_RemoteAddress}}"
+| line_format "{{._props_RemoteAddress}} {{_props_RequestPath}}"
 ```
 
 <br>
