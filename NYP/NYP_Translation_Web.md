@@ -153,3 +153,91 @@ T2: 執行步驟2 - 舊版 API 移至備用 domain
 T3: 驗證階段 - 確認所有服務正常
 T4: 切換完成 - 新舊版本穩定運行
 ```
+
+
+
+## 測試 url
+
+https://translation.qa.91dev.tw/api/v3/projects?$select=id,project,locales,tags
+
+
+https://translationv2.pp.91dev.tw/api/v3/projects?$select=id,project,locales,tags
+
+http://translationv2.pp.91dev.tw
+
+http://translation.io.91app.com/api/translations/roles
+http://translation.pp.91dev.tw/api/translations/roles
+
+
+## 舊pp webapi YAML
+
+
+```YAML
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    field.cattle.io/publicEndpoints: >-
+      [{"addresses":["172.20.157.177"],"port":80,"protocol":"HTTP","serviceName":"pp-translation:translation","ingressName":"pp-translation:transalation-api","hostname":"translationv2.pp.91dev.tw","path":"/api(/|$)(.*)","allNodes":false},{"addresses":["172.20.157.177"],"port":80,"protocol":"HTTP","serviceName":"pp-translation:translation","ingressName":"pp-translation:transalation-api","hostname":"translation.pp.91dev.tw","path":"/api(/|$)(.*)","allNodes":false}]
+    nginx.ingress.kubernetes.io/rewrite-target: /api/$2
+  creationTimestamp: '2025-08-26T14:24:44Z'
+  generation: 2
+  managedFields:
+    - apiVersion: networking.k8s.io/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:status:
+          f:loadBalancer:
+            f:ingress: {}
+      manager: nginx-ingress-controller
+      operation: Update
+      subresource: status
+      time: '2025-08-26T14:25:03Z'
+    - apiVersion: networking.k8s.io/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:field.cattle.io/publicEndpoints: {}
+            f:nginx.ingress.kubernetes.io/rewrite-target: {}
+        f:spec:
+          f:rules: {}
+      manager: agent
+      operation: Update
+      time: '2025-08-26T14:26:15Z'
+  name: transalation-api
+  namespace: pp-translation
+  resourceVersion: '2579640187'
+  uid: 5aa21983-a749-420c-a8bc-775ed30ac12e
+spec:
+  rules:
+    - host: translationv2.pp.91dev.tw
+      http:
+        paths:
+          - backend:
+              service:
+                name: translation
+                port:
+                  number: 80
+            path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+    - host: translation.pp.91dev.tw
+      http:
+        paths:
+          - backend:
+              service:
+                name: translation
+                port:
+                  number: 80
+            path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+status:
+  loadBalancer:
+    ingress:
+      - ip: 172.20.157.177
+```
+
+
+
+測試舊的可以把pods 關掉試試

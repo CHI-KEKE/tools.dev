@@ -96,6 +96,8 @@ Go To Files...
 | 註解 | Ctrl + / |
 | 選取多個同名 | Alt + Click 滑鼠選取多個位置，手動選擇多個位置時超好用 |
 | 復原頁面 | Ctrl + Shift + T |
+| 目錄跳轉 | Ctrl + Shift + O |
+| 跳轉行數 | Ctrl + G |
 
 <br><br>
 

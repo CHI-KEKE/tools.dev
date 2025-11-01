@@ -1,190 +1,27 @@
-# 🚀## 📖 目錄
+# 🚀 NYP 維護文件
 
-  - [☸️ EKS 容器服務](#️-eks-容器服務)
-  - [🔧 Kubernetes 三個基本角色](#-kubernetes-三個基本角色)
-  - [📋 EKS 資源申請流程](#-eks-資源申請流程)
-  - [🚀 GitLab-CI 專案前置作業](#-gitlab-ci-專案前置作業)
-  - [❤️ Liveness Probe 存活檢查](#️-liveness-probe-存活檢查)
-  - [✅ Readiness Probe 就緒檢查](#-readiness-probe-就緒檢查)
-  - [📁 Deployments 內部檔案查看](#-deployments-內部檔案查看)
-  - [⚙️ 建置專案時的配置](#️-建置專案時的配置)
-  - [📈 HPA 水平自動擴展](#-hpa-水平自動擴展)
-  - [⚖️ Scale 手動擴展](#️-scale-手動擴展)
-  - [🔐 IRSA 服務帳戶角色關聯](#-irsa-服務帳戶角色關聯)
-  - [📚 NYP 文件](#-nyp-文件)
-  - [🌍 Translation 服務調整紀錄](#-translation-服務調整紀錄)
-  - [🏷️ TAG_ID 標籤管理](#️-tag_id-標籤管理)
-  - [📊 Log 查看](#-log-查看)
-  - [🌐 Ingress 網路入口](#-ingress-網路入口)
-  - [🔍 如何查看部署版本](#-如何查看部署版本)
-  - [❌ Pipeline 錯誤處理紀錄](#-pipeline-錯誤處理紀錄)
-  - [🔒 Protected GroupVariable](#-protected-groupvariable)
-  - [👤 CD_User 權限管理](#-cd_user-權限管理)
+## 📖 目錄
+
+1. [📋 EKS 資源申請流程](#3--eks-資源申請流程)
+2. [🚀 GitLab-CI 專案前置作業](#4--gitlab-ci-專案前置作業)
+3. [📁 Deployments 內部檔案查看](#7--deployments-內部檔案查看)
+4. [⚙️ 建置專案時的配置](#8-️-建置專案時的配置)
+5.  [📚 NYP 文件](#12--nyp-文件)
+6.  [🌍 Translation 服務調整紀錄](#13--translation-服務調整紀錄)
+7.  [🏷️ TAG_ID 標籤管理](#14-️-tag_id-標籤管理)
+8.  [📊 Log 查看](#15--log-查看)
+9.  [🌐 Ingress 網路入口](#16--ingress-網路入口)
+10. [🔍 如何查看部署版本](#17--如何查看部署版本)
+11. [❌ Pipeline 錯誤處理紀錄](#18--pipeline-錯誤處理紀錄)
+12. [🔒 Protected GroupVariable](#19--protected-groupvariable)
+13. [👤 CD_User 權限管理](#20--cd_user-權限管理)
+14. [🔑 Image Pull Secrets](#21--image-pull-secrets)
 
 <br>
 
 ---
 
-## ☸️ EKS 容器服務
-
-Amazon EKS (Elastic Kubernetes Service) 是 AWS 提供的一種托管 Kubernetes 服務，讓你可以更輕鬆地在 AWS 上部署、管理和擴展容器化應用程式。
-
-<br>
-
-CI/CD 是持續整合（Continuous Integration）與持續部署/交付（Continuous Deployment/Delivery）的流程。而 EKS 在這個流程中的角色是：
-
-<br>
-
-| 階段 | 說明 | EKS 的角色 |
-|------|------|-----------|
-| CI（持續整合） | 專案程式碼 push 到 GitHub/GitLab 後自動觸發建置與測試流程 | 無直接關係，但會用於之後部署 |
-| CD（持續部署） | 成功建置後自動部署到實際的執行環境 | ✅ 通常部署的目標就是 EKS！ |
-| 執行環境 | 提供穩定、高可用的容器環境 | ✅ EKS 上會跑你打包好的 Docker 映像（如 Web API、後台服務等） |
-
-<br>
-
-### 部署流程
-
-1. 開發者 Push 程式碼到 GitHub
-
-<br>
-
-2. GitHub Actions（或 GitLab CI、Jenkins）會自動：
-   - 建置專案
-   - 執行測試
-   - 將映像推送到 ECR（Elastic Container Registry）
-
-<br>
-
-3. 之後會觸發 CD 流程（例如 Argo CD 或 Helm）
-
-<br>
-
-4. 把新的映像部署到 EKS 上的某個 Kubernetes Pod
-
-<br>
-
-### 簡單比喻
-
-CI/CD 是建築流程與機具（自動化蓋房子）
-
-<br>
-
-EKS 是蓋好的基地（地皮 + 建好骨架），負責放你要蓋的房子（容器）
-
-<br>
-
----
-
-## 🔧 Kubernetes 三個基本角色
-
-### 1. Node（節點 / 工作者）🖥️
-
-可以是一台實體機器（例如你自己的伺服器）或是雲端的虛擬機器（例如 AWS EC2）。
-
-<br>
-
-每個 Node 都是 Kubernetes 的「工人」，負責執行應用程式。
-
-<br>
-
-有時也叫作 Minion（奴隸），因為它聽從主控 Master（Control Plane）的指令。
-
-<br>
-
-**🔧 功能**：
-- 幫忙執行 Pod（容器群）
-- 管理 CPU、記憶體等資源
-- 提供網路、磁碟空間
-
-<br>
-
-### 2. Pod（膠囊 / 容器群）📦
-
-是 Kubernetes 中「最小的可部署單位」。
-
-<br>
-
-一個 Pod 裡面可以裝一個或多個 Container（但大部分情況是一個）。
-
-<br>
-
-**🧠 為什麼需要 Pod？**
-
-因為直接用 Container（容器）太難管理網路，K8S 幫你用 Pod 把容器「包裝起來」變成一個整體。
-
-<br>
-
-Docker 會幫這個 container 分配一個獨立 IP，每個 container 都在自己的網路空間中運作（network namespace）。
-
-<br>
-
-你要讓 container A 去找 container B，必須：
-- 知道對方的 IP 或名稱
-- 自己處理 port mapping、防火牆等
-
-<br>
-
-**🌐 Pod 的特性**：
-
-裡面的容器會共用：
-- 同一個 IP 地址
-- 同一個網路空間
-- 同一個儲存空間（Volume）
-
-<br>
-
-容器彼此就像住在同一個房間，可以用 localhost 互相講話，速度又快又安全。
-
-<br>
-
-### 3. Container（容器）🚢
-
-裡面跑的就是你真正寫好的應用程式，例如：
-- Node.js 後端
-- MySQL 資料庫
-- Python 機器學習模型
-
-<br>
-
-通常用 Docker 建立容器映像（image），再部署到 Pod 中。
-
-<br>
-
-**📦 一個容器 = 一個微服務**
-
-每個 Container 就像一台微型電腦，跑著某個功能，例如會員服務、購物車服務、資料庫等。
-
-<br>
-
-### 架構示意圖
-
-```
-Kubernetes 節點(Node)
- ├── Pod A
- │    ├── 容器：Node.js API
- │    └── 容器：Sidecar 日誌收集器
- ├── Pod B
- │    └── 容器：MySQL 資料庫
- └── Pod C
-      └── 容器：Redis 快取服務
-```
-
-<br>
-
-### 元件對照表
-
-| 元件 | 說明 | 類比 |
-|------|------|------|
-| Node | 實際跑應用程式的機器 | 工廠地點 |
-| Pod | 把容器包在一起的基本單位 | 一間機房、一個房間 |
-| Container | 應用程式運作的實體 | 機器、冷氣、伺服器 |
-
-<br>
-
----
-
-## 📋 EKS 資源申請流程
+## 3. 📋 EKS 資源申請流程
 
 ### 為專案申請 EKS + Monitoring + KP ServiceAccount 基本權限資源做法
 
@@ -217,7 +54,7 @@ Kubernetes 節點(Node)
 
 ---
 
-## 🚀 GitLab-CI 專案前置作業
+## 4. 🚀 GitLab-CI 專案前置作業
 
 ### 開新的 GitLab-CI 專案的前置動作
 
@@ -233,64 +70,11 @@ Kubernetes 節點(Node)
 
 ---
 
-## ❤️ Liveness Probe 存活檢查
-
-**📌 意義**：這個容器是否「還活著」，沒死掉？
-
-<br>
-
-假如你的應用程式卡住、死鎖、無限迴圈，K8S 就可以根據 Liveness 檢查決定：「喔你死了，我幫你重啟一下。」
-
-<br>
-
-**📍典型狀況**：
-
-Web API 執行到一半死掉，但沒整個 crash（K8S 看不出來）
-
-<br>
-
-Liveness 檢查會定期打某個 endpoint，發現 timeout 或回傳錯誤，就會自動重啟這個 container
-
 <br>
 
 ---
 
-## ✅ Readiness Probe 就緒檢查
-
-**📌 意義**：這個容器準備好了嗎？可以對外提供服務了嗎？
-
-<br>
-
-一個應用啟動時可能需要：
-- 連資料庫
-- 加載設定檔
-- 等第三方 API 回應
-
-<br>
-
-在這段期間內，其實「你不能讓流量進來」，因為會出錯。
-
-<br>
-
-**📍Readiness Probe 幫你**：
-
-「我還沒準備好喔！先不要把請求導過來」
-
-<br>
-
-**當 Readiness 檢查失敗**：
-- K8S 不會把流量導向這個 Pod
-- 但不會重啟它（因為它還活著，只是還沒準備好）
-
-<br>
-
-**範例**：yaml 的 secret 節點設定格式有誤
-
-<br>
-
----
-
-## 📁 Deployments 內部檔案查看
+## 7. 📁 Deployments 內部檔案查看
 
 ### 如何查看 Deployments 的內部檔案
 
@@ -332,7 +116,7 @@ env | grep YOUR_VAR_NAME
 
 ---
 
-## ⚙️ 建置專案時的配置
+## 8. ⚙️ 建置專案時的配置
 
 ### 1. UI
 
@@ -561,103 +345,11 @@ Readiness probe failed: Get "http://10.50.231.179:50350/_hc": dial tcp 10.50.231
 
 ---
 
-## 📈 HPA 水平自動擴展
-
-HPA 是 Kubernetes 的一個內建功能，可以根據資源使用狀況（如 CPU 或記憶體）自動增加或減少 Pod 數量。就像自動幫你「加人手」或「減少人力」來處理不同流量的情況。
-
-<br>
-
-### 運作範例
-
-假設你有一個後端服務叫 `cart-web-api` 正常情況只需要 2 個 Pod 就夠了
-
-<br>
-
-但有促銷活動或雙 11，一下湧入大量流量，CPU 使用率暴增
-
-<br>
-
-**HPA 自動處理流程**：
-
-1. HPA 偵測到 CPU 使用率 > 80%
-2. 自動幫你擴充成 5 個 Pod，來承受高流量
-3. 等流量退去後，再降回原本的 2 個 Pod
-
 <br>
 
 ---
 
-## ⚖️ Scale 手動擴展
-
-Scale 是一個手動調整 Pod 數量的操作方式。你可以直接告訴 Kubernetes：
-
-<br>
-
-- 「我現在想要有 5 個 Pod 就好」
-- 「把這個服務調到 10 個 Pod！」
-
-<br>
-
-這是立即執行、強制指定的數量，與系統監控指標無關。
-
-<br>
-
-### ⚠️ 注意：HPA 會覆蓋 scale 的手動設定
-
-如果你同時設定了 HPA，又手動用 scale 調整 Pod 數量，那 HPA 會：
-
-<br>
-
-在下一次監控週期（預設 15 秒）內**「打回原形」**，依照它自己的邏輯重新設定 Pod 數量。
-
-<br>
-
----
-
-## 🔐 IRSA 服務帳戶角色關聯
-
-IRSA 是讓 Kubernetes 裡的 Pod 可以「直接拿到 AWS IAM 權限」的一種安全做法。
-
-<br>
-
-而且這個權限是獨立的、不用再跟其他 Pod 共用，幫助你達成「最小權限原則（Least Privilege）」。
-
-<br>
-
-### 在 EKS 沒有 IRSA 之前
-
-如果你想讓 Pod 存取 AWS 資源（例如 S3、DynamoDB、SQS），你會這樣做：
-
-<br>
-
-1. 把 IAM Role 綁在 EC2 Node（也就是 Kubernetes 的 Worker Node）上
-2. 這樣上面跑的所有 Pod 都會自動繼承這個角色的權限
-
-<br>
-
-**❌ 問題**：所有 Pod 都能拿到相同的 IAM 權限！
-
-<br>
-
-就像你把所有辦公室的人都給了「總經理的門禁卡」一樣，風險超高！
-
-<br>
-
-### ✅ IRSA 的優勢
-
-IRSA 讓你可以：
-
-<br>
-
-- 針對「某個特定 Pod（或 Service Account）」
-- 指定它要用的 IAM Role
-- 其他 Pod 都不會拿到這個權限
-
-<br>
-
----
-
-## 📚 NYP 文件
+## 12. 📚 NYP 文件
 
 **官方文件連結**：https://www.infra.91dev.tw/nkp/
 **錯誤排除**:https://www.infra.91dev.tw/nkp/docs/troubleshooting/troubleshoot-failed-pipeline/#error-1-%E6%8B%BF%E4%B8%8D%E5%88%B0-kube-config
@@ -665,7 +357,7 @@ IRSA 讓你可以：
 
 ---
 
-## 🌍 Translation 服務調整紀錄
+## 13. 🌍 Translation 服務調整紀錄
 
 ### 調整內容
 
@@ -703,7 +395,7 @@ IRSA 讓你可以：
 
 ---
 
-## 🏷️ TAG_ID 標籤管理
+## 14. 🏷️ TAG_ID 標籤管理
 
 TAG_ID 是一個用來標記 Docker 映像（image）的『版本標籤』，通常用來唯一識別一個 build 出來的版本。
 
@@ -759,7 +451,7 @@ docker tag my-app:latest
 
 ---
 
-## 📊 Log 查看
+## 15. 📊 Log 查看
 
 ### 1. Rancher Recent Event
 
@@ -781,7 +473,7 @@ docker tag my-app:latest
 
 ---
 
-## 🌐 Ingress 網路入口
+## 16. 🌐 Ingress 網路入口
 
 Ingress 是一個資源物件，允許你定義如何將外部的 HTTP 和 HTTPS 流量導向到你的應用程式服務。
 
@@ -799,7 +491,7 @@ Ingress 提供了一個入口點，將外部的網路請求導向到你的應用
 
 ---
 
-## 🔍 如何查看部署版本
+## 17. 🔍 如何查看部署版本
 
 ![alt text](./Img/NYP_version.png)
 
@@ -807,7 +499,7 @@ Ingress 提供了一個入口點，將外部的網路請求導向到你的應用
 
 ---
 
-## ❌ Pipeline 錯誤處理紀錄
+## 18. ❌ Pipeline 錯誤處理紀錄
 
 ### 案例 1：docker auth config / am user / am password 相關權限錯誤
 
@@ -816,7 +508,7 @@ Ingress 提供了一個入口點，將外部的網路請求導向到你的應用
 <br>
 
 1. 確認 protected branch 是否已設定，這樣才會去抓 auth config
-![alt text](../Img/image-6.png)
+![alt text](./Img/image-6.png)
 <br>
 
 2. 確認 variables 是否有正確設定相關權限參數
@@ -896,7 +588,7 @@ VER_SUFFIX=$(if [ "$(echo $CI_COMMIT_REF_NAME | cut -d'/' -f 2)" = "master" ]; t
 
 ---
 
-## 🔒 Protected GroupVariable
+## 19. 🔒 Protected GroupVariable
 
 ### 問題描述
 
@@ -950,7 +642,7 @@ groupVariable 被掛上 protected，打 tag 也綁上 protected，可能造成�
 
 ---
 
-## 👤 CD_User 權限管理
+## 20. 👤 CD_User 權限管理
 
 ### 概念說明
 
@@ -1033,3 +725,133 @@ groupVariable 被掛上 protected，打 tag 也綁上 protected，可能造成�
 | Pipeline 失敗 | GitLab 中 Token 設定錯誤 | 確認 Variable 設定正確 |
 
 <br>
+
+---
+
+## 21. 🔑 Image Pull Secrets
+
+### 問題描述
+
+佈署 Translation 新服務時發生 **"no basic auth credential to pull image"** 錯誤，原因是 Kubernetes 無法正確讀取 ImagePullSecrets 來存取私有 Docker Registry。
+
+<br>
+
+### 問題原因
+
+當 Kubernetes 嘗試從私有 Docker Registry (如 `docker-dev.build.91app.io`) 拉取映像時，需要使用 ImagePullSecrets 來進行身份驗證。如果 Secrets 設定不正確或遺失，就會出現權限錯誤。
+
+<br>
+
+### 解決方案
+
+#### 步驟 1：檢查 ImagePullSecrets 設定
+
+確認 Kubernetes Deployment 或 Pod 設定中的 ImagePullSecrets 配置：
+
+![alt text](./image-2.png)
+
+<br>
+
+**重要設定項目**：
+
+| 項目 | 說明 |
+|------|------|
+| Secret Name | 指向包含 Registry 認證資訊的 Secret |
+| Registry URL | 私有 Docker Registry 的位址 |
+| 認證資料 | Docker Registry 的使用者名稱和密碼 |
+
+<br>
+
+#### 步驟 2：調整 YAML 配置
+
+透過修改 Kubernetes YAML 檔案來正確設定 ImagePullSecrets：
+
+![alt text](./image-3.png)
+
+<br>
+
+**YAML 範例配置**：
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: translation-service
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+      - name: docker-registry-secret
+      containers:
+      - name: translation
+        image: docker-dev.build.91app.io/91app/translation:latest
+```
+
+<br>
+
+#### 步驟 3：重新部署服務
+
+**自動重新部署**：
+- 修改設定檔後，系統會自動觸發重新部署
+
+**手動重新部署**：
+- 如果沒有修改設定檔，需要手動執行重新部署
+
+![alt text](./image-4.png)
+
+<br>
+
+### 常見錯誤類型
+
+| 錯誤訊息 | 可能原因 | 解決方案 |
+|----------|----------|----------|
+| `no basic auth credentials` | ImagePullSecret 不存在或格式錯誤 | 檢查 Secret 設定和引用 |
+| `pull access denied` | Registry 權限不足 | 確認 Registry 認證資料正確 |
+| `image not found` | 映像路徑或標籤錯誤 | 驗證映像名稱和版本標籤 |
+| `timeout` | 網路連線問題 | 檢查 Registry 網路可達性 |
+
+<br>
+
+### 最佳實務
+
+**Secret 管理**：
+- 使用 Kubernetes Secret 儲存敏感的認證資料
+- 定期輪換 Registry 認證資訊
+- 避免在 YAML 中明文儲存密碼
+
+<br>
+
+**部署流程**：
+- 在每個 Namespace 中建立對應的 ImagePullSecret
+- 確保 ServiceAccount 有正確的 Secret 關聯
+- 使用 Helm 或其他工具統一管理 Secret 配置
+
+<br>
+
+### 驗證步驟
+
+**檢查 Secret 是否存在**：
+```bash
+kubectl get secrets -n <namespace>
+kubectl describe secret docker-registry-secret -n <namespace>
+```
+
+<br>
+
+**檢查 Pod 狀態**：
+```bash
+kubectl get pods -n <namespace>
+kubectl describe pod <pod-name> -n <namespace>
+```
+
+<br>
+
+**查看詳細錯誤**：
+```bash
+kubectl logs <pod-name> -n <namespace>
+kubectl get events -n <namespace> --sort-by=.metadata.creationTimestamp
+```
+
+<br>
+
+---
