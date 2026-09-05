@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一個遺失的 Tag 引發的血案 — &lt;/script&gt; 的故事</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d2e;
+    --border: #2a2d3e;
+    --text: #e2e8f0;
+    --muted: #8892b0;
+    --accent: #64ffda;
+    --red: #ff5555;
+    --yellow: #f1fa8c;
+    --purple: #bd93f9;
+    --blue: #8be9fd;
+    --green: #50fa7b;
+    --orange: #ffb86c;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #0f1117 0%, #1a1d2e 60%, #0d1b2a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 72px 24px 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '</script>';
+    position: absolute;
+    font-size: 180px;
+    font-family: monospace;
+    color: rgba(255,85,85,0.04);
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .hero .tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); background: rgba(100,255,218,0.08); border: 1px solid rgba(100,255,218,0.2); border-radius: 4px; padding: 4px 12px; margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
+  .hero h1 span { color: var(--red); }
+  .hero .subtitle { font-size: 17px; color: var(--muted); max-width: 560px; margin: 0 auto; }
+
+  /* ── Layout ── */
+  .container { max-width: 780px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* ── Chapter ── */
+  .chapter { margin-bottom: 56px; }
+  .chapter-num {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .chapter h2 { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+  .chapter p { color: #cbd5e1; margin-bottom: 16px; }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    font-size: 13px;
+  }
+  .code-block .code-header {
+    background: #161b22;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .code-block .code-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-block pre { padding: 20px; overflow-x: auto; line-height: 1.8; }
+  .hl-red    { color: var(--red); }
+  .hl-green  { color: var(--green); }
+  .hl-yellow { color: var(--yellow); }
+  .hl-purple { color: var(--purple); }
+  .hl-blue   { color: var(--blue); }
+  .hl-orange { color: var(--orange); }
+  .hl-muted  { color: var(--muted); }
+  .hl-accent { color: var(--accent); }
+
+  /* ── Callout ── */
+  .callout {
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-left: 3px solid;
+    font-size: 14px;
+  }
+  .callout.danger  { background: rgba(255,85,85,0.07);  border-color: var(--red);    color: #fca5a5; }
+  .callout.info    { background: rgba(139,233,253,0.07); border-color: var(--blue);   color: #bae6fd; }
+  .callout.success { background: rgba(80,250,123,0.07); border-color: var(--green);  color: #bbf7d0; }
+  .callout.warn    { background: rgba(241,250,140,0.07); border-color: var(--yellow); color: #fef08a; }
+  .callout strong  { display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: .3px; }
+
+  /* ── Parser animation ── */
+  .parser-demo {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 20px 0;
+  }
+  .parser-demo h4 { font-size: 13px; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .parse-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-family: monospace;
+    font-size: 13px;
+  }
+  .parse-row .token { flex: 0 0 220px; }
+  .parse-row .arrow { color: var(--muted); flex: 0 0 24px; text-align: center; }
+  .parse-row .result { flex: 1; font-size: 12px; }
+  .parse-row.good  { background: rgba(80,250,123,0.05); }
+  .parse-row.bad   { background: rgba(255,85,85,0.07); }
+  .parse-row.warn  { background: rgba(241,250,140,0.05); }
+
+  /* ── Timeline ── */
+  .tl { margin: 20px 0; }
+  .tl-item { display: flex; gap: 16px; margin-bottom: 20px; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; flex: 0 0 32px; }
+  .tl-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; flex-shrink: 0;
+  }
+  .tl-circle.red    { background: rgba(255,85,85,0.15); color: var(--red); border: 1.5px solid var(--red); }
+  .tl-circle.green  { background: rgba(80,250,123,0.1); color: var(--green); border: 1.5px solid var(--green); }
+  .tl-circle.yellow { background: rgba(241,250,140,0.1); color: var(--yellow); border: 1.5px solid var(--yellow); }
+  .tl-line-v { width: 2px; background: var(--border); flex: 1; margin-top: 4px; }
+  .tl-content { flex: 1; padding-top: 4px; }
+  .tl-content h4 { font-size: 14px; margin-bottom: 4px; }
+  .tl-content p  { font-size: 13px; color: var(--muted); }
+
+  /* ── Key insight box ── */
+  .insight {
+    background: linear-gradient(135deg, rgba(100,255,218,0.05) 0%, rgba(189,147,249,0.05) 100%);
+    border: 1px solid rgba(100,255,218,0.2);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 32px 0;
+    text-align: center;
+  }
+  .insight .emoji { font-size: 36px; margin-bottom: 12px; }
+  .insight h3 { font-size: 20px; color: var(--accent); margin-bottom: 8px; }
+  .insight p { color: var(--muted); font-size: 14px; }
+
+  /* ── Rule card ── */
+  .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+  @media (max-width: 600px) { .rules { grid-template-columns: 1fr; } }
+  .rule-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .rule-card .rule-icon { font-size: 22px; margin-bottom: 8px; }
+  .rule-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .rule-card p  { font-size: 12px; color: var(--muted); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 32px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .footer code { color: var(--accent); background: rgba(100,255,218,0.07); padding: 2px 6px; border-radius: 4px; }
+
+  code { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.9em; color: var(--accent); background: rgba(100,255,218,0.07); padding: 1px 5px; border-radius: 3px; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="tag">Debug Story</div>
+  <h1>一個遺失的 Tag<br>引發的<span> 血案</span></h1>
+  <p class="subtitle">當 <code>&lt;/script&gt;</code> 消失，瀏覽器會默默吞掉你的整個世界</p>
+</div>
+
+<div class="container">
+
+  <!-- Chapter 1 -->
+  <div class="chapter">
+    <div class="chapter-num">Chapter 01</div>
+    <h2>🔍 案發現場</h2>
+    <p>
+      一份定期購系統架構文件，有個精心設計的 tab 切換功能，可以在 <strong>C4 Context、C4 Container、Sequence Diagram</strong> 之間切換。
+      圖表渲染正常，按鈕樣式正確，視覺上一切看起來都很好。
+    </p>
+    <p>
+      但是——<strong>點下去，什麼反應都沒有。</strong>
+    </p>
+
+    <div class="callout danger">
+      <strong>🚨 症狀</strong>
+      按鈕有 cursor: pointer，有 onclick="showDiag(...)"，卻完全無法切換 tab。
+      情境時間軸的另一組 tab 也同樣失效。
+    </div>
+
+    <p>第一反應：是 Mermaid.js 的問題嗎？是 <code>display:none</code> 的元素沒有渲染嗎？</p>
+    <p>加了 <code>mermaid.run()</code>，還是沒用。加了 setTimeout，還是沒用。懷疑過 CDN 載入時序，懷疑過 CSS 層疊，就是沒想到最單純的那個可能。</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Chapter 2 -->
+  <div class="chapter">
+    <div class="chapter-num">Chapter 02</div>
+    <h2>🪄 第一個線索：殭屍程式碼</h2>
+    <p>
+      仔細翻 script block，在 <code>showScenario()</code> 函式結尾的 <code>}</code> 之後，
+      赫然出現了 32 行<strong>孤立的物件資料</strong>——這是幾個版本前被刪除的舊架構殘留，
+      沒有變數宣告，直接暴露在頂層：
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#febc2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        script block（有問題的版本）
+      </div>
+      <pre><span class="hl-purple">function</span> <span class="hl-green">showScenario</span>(key) {
+  <span class="hl-muted">// ... 正常的函式內容 ...</span>
+}   <span class="hl-muted">// ← 函式結束</span>
+
+<span class="hl-red">// ⚠️ 這些是殘留資料，沒有任何變數宣告，直接暴露在頂層！</span>
+<span class="hl-red">  success: [</span>
+<span class="hl-red">    { day:0, label:'消費者首購', emoji:'🛒', ... },</span>
+<span class="hl-red">    { day:0, label:'RegularOrderInitJob', ... },</span>
+<span class="hl-red">    <span class="hl-muted">// ... 30 行 ...</span></span>
+<span class="hl-red">  ],</span>
+<span class="hl-red">  fail: [ ... ],</span>
+<span class="hl-red">  pending: [ ... ],</span>
+<span class="hl-red">};</span></pre>
+    </div>
+
+    <p>這在 JavaScript 裡是語法錯誤。刪掉之後……還是沒有用。</p>
+    <p>所以有<strong>第二個 bug</strong>，而且更隱蔽。</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Chapter 3 -->
+  <div class="chapter">
+    <div class="chapter-num">Chapter 03</div>
+    <h2>💀 真正的兇手：消失的 <code>&lt;/script&gt;</code></h2>
+    <p>
+      檢查 script block 的結尾，發現了讓人目瞪口呆的事：
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#febc2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        index.html（問題版本）— script 尾端
+      </div>
+      <pre>  <span class="hl-purple">function</span> <span class="hl-green">showDiag</span>(key) {
+    <span class="hl-muted">// ...</span>
+  }
+  <span class="hl-green">showDiag</span>(<span class="hl-yellow">'c4ctx'</span>);
+
+<span class="hl-red">&lt;!-- ❌ 這裡應該有 &lt;/script&gt;，但它不見了 --&gt;</span>
+
+<span class="hl-orange">&lt;/body&gt;</span>
+<span class="hl-orange">&lt;/html&gt;</span></pre>
+    </div>
+
+    <div class="callout danger">
+      <strong>🔴 問題核心</strong>
+      <code>&lt;/script&gt;</code> 標籤遺失。HTML parser 看不到它，就永遠不知道 script 在哪裡結束。
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Chapter 4 -->
+  <div class="chapter">
+    <div class="chapter-num">Chapter 04</div>
+    <h2>🧠 瀏覽器 Parser 的視角</h2>
+    <p>
+      要理解為什麼這麼嚴重，需要了解瀏覽器解析 HTML 的規則。
+      HTML parser 在遇到 <code>&lt;script&gt;</code> 時，會進入<strong>特殊模式</strong>：
+    </p>
+
+    <div class="parser-demo">
+      <h4>📖 HTML Parser 行為模擬</h4>
+
+      <div class="parse-row good">
+        <span class="token" style="color:var(--blue)">&lt;script&gt;</span>
+        <span class="arrow">→</span>
+        <span class="result" style="color:var(--yellow)">🔀 進入 Script 模式，停止解析 HTML</span>
+      </div>
+      <div class="parse-row good">
+        <span class="token" style="color:var(--green)">function showDiag() {...}</span>
+        <span class="arrow">→</span>
+        <span class="result" style="color:var(--muted)">✅ 解析為 JavaScript 程式碼</span>
+      </div>
+      <div class="parse-row warn">
+        <span class="token" style="color:var(--red)">&lt;/body&gt;</span>
+        <span class="arrow">→</span>
+        <span class="result" style="color:var(--yellow)">⚠️ 仍在 Script 模式！當成 JS 文字，<strong>不是</strong> HTML tag</span>
+      </div>
+      <div class="parse-row bad">
+        <span class="token" style="color:var(--red)">&lt;/html&gt;</span>
+        <span class="arrow">→</span>
+        <span class="result" style="color:var(--red)">❌ 仍在 Script 模式！整份文件已結束，script 從未執行</span>
+      </div>
+    </div>
+
+    <div class="insight">
+      <div class="emoji">⚖️</div>
+      <h3>HTML Parser 的鐵律</h3>
+      <p><code>&lt;script&gt;</code> 開始的區塊，<strong>只有 <code>&lt;/script&gt;</code> 才能結束它</strong>。<br>
+      <code>&lt;/body&gt;</code>、<code>&lt;/html&gt;</code>、檔案結尾——全部無效。<br>
+      沒有 <code>&lt;/script&gt;</code>，整個 script block 靜默地從未被執行。</p>
+    </div>
+
+    <p>
+      這就是為什麼所有函式都定義了，<code>onclick</code> 也寫了，但點按鈕完全沒反應——
+      <code>showDiag</code> 和 <code>showScenario</code> 根本<strong>不存在於全域</strong>。
+    </p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Chapter 5 -->
+  <div class="chapter">
+    <div class="chapter-num">Chapter 05</div>
+    <h2>✅ 修復與還原</h2>
+
+    <div class="tl">
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-circle red">1</div>
+          <div class="tl-line-v"></div>
+        </div>
+        <div class="tl-content">
+          <h4 style="color:var(--red)">刪除殭屍程式碼</h4>
+          <p>移除 showScenario() 結尾後的 32 行孤立 SCENARIOS 物件資料。這消除了語法錯誤，但 tab 仍然無法切換。</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-circle yellow">2</div>
+          <div class="tl-line-v"></div>
+        </div>
+        <div class="tl-content">
+          <h4 style="color:var(--yellow)">找到真正的根本原因</h4>
+          <p>仔細確認 script block 結尾，發現 <code>&lt;/script&gt;</code> 完全缺失。</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-circle green">3</div>
+        </div>
+        <div class="tl-content">
+          <h4 style="color:var(--green)">補上一行，全部修復</h4>
+          <p>在 <code>showDiag('c4ctx');</code> 後加上 <code>&lt;/script&gt;</code>，兩組 tab（情境時間軸 + 架構圖）立即全部正常。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#febc2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        修復後的正確寫法
+      </div>
+      <pre>  <span class="hl-green">showDiag</span>(<span class="hl-yellow">'c4ctx'</span>);
+
+<span class="hl-accent">&lt;/script&gt;</span>  <span class="hl-muted">← 就是這一行，缺一不可</span>
+<span class="hl-orange">&lt;/body&gt;</span>
+<span class="hl-orange">&lt;/html&gt;</span></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Chapter 6: Takeaways -->
+  <div class="chapter">
+    <div class="chapter-num">Chapter 06</div>
+    <h2>📌 帶走的教訓</h2>
+
+    <div class="rules">
+      <div class="rule-card">
+        <div class="rule-icon">🔒</div>
+        <h4>Script 有且只有一種結束方式</h4>
+        <p><code>&lt;/script&gt;</code> 是唯一能結束 script block 的 token。任何其他 HTML tag 在 script mode 下都是透明的。</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon">🔇</div>
+        <h4>這個錯誤不會有警告</h4>
+        <p>瀏覽器不會報錯，頁面也可以正常渲染。只有 JS 函式靜默地從未存在，onclick 呼叫靜默地失敗。</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon">🧹</div>
+        <h4>清理殘留程式碼</h4>
+        <p>舊版本的殘留資料若沒有對應的變數宣告，直接暴露在頂層會造成語法錯誤。刪除時要確保完整。</p>
+      </div>
+      <div class="rule-card">
+        <div class="rule-icon">🐛</div>
+        <h4>Debug 要從最基礎的開始</h4>
+        <p>onclick 完全沒反應時，第一步應該是確認函式是否真的被定義，而不是假設函式存在去追更複雜的邏輯。</p>
+      </div>
+    </div>
+
+    <div class="callout success">
+      <strong>✅ 快速排查 checklist</strong>
+      onclick 無反應時：① 打開 DevTools Console 確認有無 JS 錯誤 → ② 直接在 Console 呼叫函式名稱確認是否存在 → ③ 確認 &lt;script&gt; 是否有對應的 &lt;/script&gt;
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>Debug Story · <code>&lt;/script&gt;</code> · 一行 tag 的重量</p>
+  <p style="margin-top:8px;font-size:12px">「最難找到的 bug，往往是最不起眼的那一個。」</p>
+</div>
+
+</body>
+</html>

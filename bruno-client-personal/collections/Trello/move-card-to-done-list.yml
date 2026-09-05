@@ -1,0 +1,25 @@
+info:
+  name: move-card-to-done-list
+  type: http
+  seq: 7
+
+http:
+  method: PUT
+  url: "{{base-url}}/1/cards/{{cardId}}?key={{key}}&token={{token}}&idList={{DoneListId}}"
+  params:
+    - name: key
+      value: "{{key}}"
+      type: query
+    - name: token
+      value: "{{token}}"
+      type: query
+    - name: idList
+      value: "{{DoneListId}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

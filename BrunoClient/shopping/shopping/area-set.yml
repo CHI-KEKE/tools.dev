@@ -1,0 +1,44 @@
+info:
+  name: area-set
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/api/carts/area-set"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+    - name: N1-HOST
+      value: "{{host}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "cartUniqueKey": "c2b02c4e-6f20-4218-a06e-b7689db33753",
+          "selectedShippingArea": {
+              "id": 25,
+              "name": "阿根廷",
+              "countryId": 25,
+              "countryName": "阿根廷",
+              "countryEnglishName": "Argentina",
+              "countryCode": "54",
+              "countryAliasCode": "AR",
+              "isLocal": false,
+              "defaultSelectedEnable": true,
+              "languageKey": "argentina",
+              "shippingAreaSort": 0,
+              "deliveryTypeName": "A3多冷門國家地區配送",
+              "deliveryTypeId": 25094,
+              "isDisplayDeliveryType": false
+          }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,12 @@
+name: HKPROD
+variables:
+  - name: base-url
+    value: https://91app-live.hk.91app.io
+  - name: wss-url
+    value: wss://ryts9j68th.execute-api.ap-southeast-1.amazonaws.com/91applive
+  - name: Cookie
+    value: ""
+  - name: shopId
+    value: "20"
+  - name: k8s-public-url
+    value: https://91app-live.hk.91app.io

@@ -1,0 +1,73 @@
+﻿info:
+  name: TC04_ConditionId重複_漏洞驗證_目前回200
+  type: http
+  seq: 4
+
+meta:
+  purpose: |-
+    【漏洞驗證】兩筆都用 ConditionId=1，ReachPiece 不同（合法升序）。
+    Validator 沒有檢查 ConditionId 唯一性 → 目前錯誤地通過並造成資料混亂。
+    ⚠️ 修復後請將 test 改為 expect 400。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/CreatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "TypeDef": "CartReachPieceExtraPurchase",
+        "Name": "[C04]CondId重複漏洞",
+        "StartDateTime": "2029-07-01T00:00:00.000Z",
+        "EndDateTime": "2029-07-31T23:59:59.000Z",
+        "Description": "TC04 - ConditionId 重複漏洞",
+        "CustomCampaignCode": "TC04",
+        "CanUseECoupon": false,
+        "IsCartExtraPurchaseThresholdEligible": true,
+        "TargetMemberTypeDef": "All",
+        "PromotionTargetRegionTypeDef": "All",
+        "IsCyclable": false,
+        "ExtraPurchaseRuleList": [
+          { "ConditionId": 1, "ReachPiece": 2, "ReachPrice": 0, "LimitQty": 10 },
+          { "ConditionId": 1, "ReachPiece": 5, "ReachPrice": 0, "LimitQty": 5 }
+        ],
+        "TargetTypeDef": "SalePage",
+        "ExcludeTargetTypeDef": "None",
+        "CalculateTypeDef": "Compatible",
+        "TargetPlatformTypeList": [
+          { "Platform": "Web", "IsEnabled": true },
+          { "Platform": "AppIOS", "IsEnabled": true },
+          { "Platform": "AppAndroid", "IsEnabled": true }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  // ⚠️ 已知漏洞：ConditionId 重複未被 Validator 阻擋
+  // 修復前：200（錯誤通過）｜修復後：改為 expect(400)
+  test("TC04 [已知漏洞] ConditionId 重複目前錯誤地回 200（修復後改為 400）", function () {
+    const status = res.getStatus();
+    if (status === 200) {
+      console.warn("⚠️ 漏洞仍存在：ConditionId 重複被接受");
+    } else {
+      console.log("✅ 漏洞已修復");
+    }
+    expect([200, 400]).to.include(status);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

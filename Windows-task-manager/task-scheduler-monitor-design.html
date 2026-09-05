@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows 排程監控告警系統 — 設計與實作紀錄</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #ffffff;
+    --ink: #1e293b;
+    --muted: #64748b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --warn: #d97706;
+    --danger: #dc2626;
+    --border: #e2e8f0;
+    --code-bg: #0b1220;
+    --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 260px, #f1f5f9 260px);
+    color: var(--ink);
+    line-height: 1.7;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero {
+    padding: 56px 24px 40px;
+    color: #f8fafc;
+    text-align: center;
+  }
+  header.hero .eyebrow {
+    display: inline-block;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #93c5fd;
+    background: rgba(147,197,253,0.12);
+    border: 1px solid rgba(147,197,253,0.35);
+    border-radius: 999px;
+    padding: 4px 14px;
+    margin-bottom: 16px;
+  }
+  header.hero h1 {
+    font-size: 30px;
+    margin: 0 0 10px;
+  }
+  header.hero p {
+    color: #cbd5e1;
+    max-width: 640px;
+    margin: 0 auto;
+    font-size: 15px;
+  }
+  nav.toc {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-top: -30px;
+    box-shadow: 0 12px 30px -18px rgba(15,23,42,0.35);
+  }
+  nav.toc h2 { font-size: 14px; color: var(--muted); margin: 0 0 10px; text-transform: uppercase; letter-spacing: .06em;}
+  nav.toc ol { columns: 2; gap: 24px; margin: 0; padding-left: 20px; }
+  nav.toc li { margin-bottom: 6px; }
+  nav.toc a { color: var(--accent); text-decoration: none; font-size: 14.5px; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    margin-top: 24px;
+    box-shadow: 0 12px 30px -22px rgba(15,23,42,0.25);
+  }
+  section h2 {
+    font-size: 21px;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  section .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 20px; }
+  h3 { font-size: 16.5px; margin: 24px 0 10px; color: #0f172a; }
+  p { margin: 10px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 999px;
+  }
+  .badge.ok { background: #dcfce7; color: var(--ok); }
+  .badge.warn { background: #fef3c7; color: var(--warn); }
+  .badge.danger { background: #fee2e2; color: var(--danger); }
+  .badge.info { background: var(--accent-soft); color: var(--accent); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #f8fafc; font-weight: 700; color: #334155; }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 18px 0;
+  }
+  @media (max-width: 820px) {
+    .grid-3 { grid-template-columns: 1fr; }
+    nav.toc ol { columns: 1; }
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: #f8fafc;
+  }
+  .card h4 { margin: 0 0 8px; font-size: 15px; }
+  .card ul { padding-left: 18px; font-size: 13.5px; color: #334155; }
+  .card.recommended { border-color: #93c5fd; background: var(--accent-soft); }
+  .card.recommended h4::after {
+    content: " ✓ 最終採用";
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 16px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  code {
+    font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+  }
+  p code, li code, td code {
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 16px 0;
+  }
+  .flow .step {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #334155;
+  }
+  .flow .arrow { color: var(--muted); font-size: 18px; }
+
+  .tree {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .note {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+  .note.warn { border-color: var(--warn); background: #fffbeb; }
+  .note.danger { border-color: var(--danger); background: #fef2f2; }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-top: 40px;
+  }
+
+  .compare-good::before { content: "✔ "; color: var(--ok); font-weight: 700; }
+  .compare-bad::before { content: "✘ "; color: var(--danger); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">Windows Task Manager · 監控告警設計文件</span>
+  <h1>排程任務漏排 / 失敗告警系統</h1>
+  <p>從「Enabled 與 State 的判斷邏輯」出發，逐步推導出獨立 Worker Service 的告警監控架構與實作內容。</p>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目錄</h2>
+    <ol>
+      <li><a href="#section1">排程任務的啟用/停用與執行狀態判斷</a></li>
+      <li><a href="#section2">「該跑卻沒跑」的判斷邏輯設計</a></li>
+      <li><a href="#section3">告警系統的宿主方案比較</a></li>
+      <li><a href="#section4">最終方案：獨立 Worker Service</a></li>
+      <li><a href="#section5">實作內容與專案結構</a></li>
+      <li><a href="#section6">部署為 Windows Service</a></li>
+      <li><a href="#section7">後續待辦事項</a></li>
+    </ol>
+  </nav>
+
+  <section id="section1">
+    <h2><span class="num">1</span>排程任務的啟用/停用與執行狀態判斷</h2>
+    <p class="sub">對應 <code>Microsoft.Win32.TaskScheduler</code> 函式庫的兩個核心屬性</p>
+
+    <h3>Enabled — 是否允許被觸發（靜態設定）</h3>
+    <p>對應 <code>Task.Enabled</code> 屬性（底層為 COM <code>IRegisteredTask.Enabled</code> / XML 定義中的
+    <code>&lt;Settings&gt;&lt;Enabled&gt;true/false&lt;/Enabled&gt;</code>）。這是使用者手動設定的旗標，代表任務
+    <strong>是否被允許觸發執行</strong>，與目前有沒有在跑無關。</p>
+
+    <h3>State — 目前實際執行狀態（動態值）</h3>
+    <p>對應 <code>Task.State</code>（<code>TaskState</code> enum），由 Windows 依任務目前實際運行情形決定：</p>
+    <table>
+      <tr><th>狀態值</th><th>意義</th></tr>
+      <tr><td><span class="badge info">Unknown</span></td><td>無法判斷</td></tr>
+      <tr><td><span class="badge danger">Disabled</span></td><td>任務被停用</td></tr>
+      <tr><td><span class="badge warn">Queued</span></td><td>已排入佇列，等待執行</td></tr>
+      <tr><td><span class="badge ok">Ready</span></td><td>已啟用，等待下次觸發時間</td></tr>
+      <tr><td><span class="badge info">Running</span></td><td>正在執行中</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>關鍵重點：</strong>Enabled 是「是否允許被觸發」的靜態設定值，State 是「目前實際狀態」的動態值。
+      兩者有關聯（停用時 State 一定是 Disabled），但不完全等價 —— 啟用的任務 State 仍可能是 Ready（閒置）或 Running（執行中）。
+    </div>
+  </section>
+
+  <section id="section2">
+    <h2><span class="num">2</span>「該跑卻沒跑」的判斷邏輯設計</h2>
+    <p class="sub">如何事後確認排程在特定時間該執行卻沒有執行</p>
+
+    <p>單純篩選 <code>State == Ready</code> 並不足夠，需要結合 Trigger 定義與實際執行歷史來判斷：</p>
+
+    <div class="flow">
+      <div class="step">1. 排除 Disabled 任務</div>
+      <span class="arrow">→</span>
+      <div class="step">2. 用 Trigger 算出應執行時間</div>
+      <span class="arrow">→</span>
+      <div class="step">3. 比對實際執行紀錄</div>
+    </div>
+
+    <table>
+      <tr><th>情境</th><th>判斷條件</th><th>結論</th></tr>
+      <tr>
+        <td>漏排</td>
+        <td><code>LastRunTime &lt; expectedLastRun</code>（或為 null）</td>
+        <td><span class="badge danger">該跑沒跑</span></td>
+      </tr>
+      <tr>
+        <td>執行失敗</td>
+        <td><code>LastRunTime ≈ expectedLastRun</code> 但 <code>LastTaskResult != 0</code></td>
+        <td><span class="badge warn">有跑但失敗</span></td>
+      </tr>
+      <tr>
+        <td>卡死（v1 暫不實作）</td>
+        <td>State 持續 <code>Running</code> 超過預期執行時長</td>
+        <td><span class="badge info">可能卡死佔用</span></td>
+      </tr>
+    </table>
+
+    <h3>技術關鍵：如何計算「理論上應執行時間」</h3>
+    <p><code>Microsoft.Win32.TaskScheduler</code> 提供內建方法
+      <code>Task.GetRunTimes(DateTime start, DateTime end, uint count)</code>，
+      可直接算出某個時間區間內「理論上應該觸發的所有時間點」，不需要自行解析 Trigger 的週期規則（每日/每週/Cron 等）。</p>
+
+    <h3>技術關鍵：如何取得「實際執行結果」</h3>
+    <p>透過 Windows Event Log 頻道 <code>Microsoft-Windows-TaskScheduler/Operational</code>，
+      解析 <strong>EventID 200</strong>（Action started）與 <strong>EventID 201</strong>（Action completed，含 ResultCode），
+      按時間配對成一筆筆執行紀錄，比單純讀取 COM API 的 <code>LastRunTime</code>/<code>LastTaskResult</code> 更可靠。</p>
+  </section>
+
+  <section id="section3">
+    <h2><span class="num">3</span>告警系統的宿主方案比較</h2>
+    <p class="sub">監控巡檢邏輯要跑在哪裡？三種方案的取捨</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <h4>方案 A：掛在既有網站的 BackgroundService</h4>
+        <ul>
+          <li class="compare-good">開發成本最低，共用 DI/Logging</li>
+          <li class="compare-bad">生命週期綁定網站，IIS Recycle / Idle Timeout 會中斷</li>
+          <li class="compare-bad">與網站共用資源，可能互相影響</li>
+          <li class="compare-bad">多 instance 時需額外處理重複執行</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>方案 B：單次觸發型 Console App</h4>
+        <ul>
+          <li class="compare-good">邏輯簡單，跑完即結束</li>
+          <li class="compare-bad">仍需依賴 Windows Task Scheduler 觸發（等於用排程器監控排程器）</li>
+          <li class="compare-bad">告警去重狀態需要額外落地儲存</li>
+        </ul>
+      </div>
+      <div class="card recommended">
+        <h4>方案 C：獨立 Worker Service</h4>
+        <ul>
+          <li class="compare-good">不依賴網站生命週期，也不依賴外部排程觸發</li>
+          <li class="compare-good">內部自帶 PeriodicTimer 常駐巡檢</li>
+          <li class="compare-good">可註冊成 Windows Service，開機自動啟動、當機自動重啟</li>
+          <li class="compare-good">資源與部署完全獨立於網站</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>觀念釐清：</strong><code>BackgroundService</code> 是 <code>Microsoft.Extensions.Hosting</code> 的概念，
+      跟 ASP.NET Core／網站沒有必然關係。<strong>Worker Service</strong>（<code>dotnet new worker</code>）本質上就是一個
+      「純背景服務用的 Console 程式」—— 沒有網站、沒有 Kestrel，只有 Generic Host + 你的 BackgroundService。
+    </div>
+  </section>
+
+  <section id="section4">
+    <h2><span class="num">4</span>最終方案：獨立 Worker Service</h2>
+    <p class="sub">v1 範圍確認</p>
+
+    <table>
+      <tr><th>項目</th><th>v1 決策</th></tr>
+      <tr><td>偵測範圍</td><td>僅本機（localhost），不含遠端伺服器</td></tr>
+      <tr><td>告警規則</td><td>漏排 + 執行失敗（暫不做卡死判斷）</td></tr>
+      <tr><td>通知方式</td><td>寫入 Log 檔案（Serilog），介面預留未來擴充 Email/Slack/Teams</td></tr>
+      <tr><td>告警去重</td><td>記憶體內字典（同一輪 process 內不重複發送同一筆）</td></tr>
+      <tr><td>程式碼共用</td><td>完全獨立專案，不參考網站程式碼，自行實作精簡版 Task Scheduler 讀取邏輯</td></tr>
+      <tr><td>巡檢頻率</td><td>預設 10 分鐘（可設定）</td></tr>
+      <tr><td>容錯緩衝</td><td>預設 15 分鐘（可設定），避免主機延遲誤判</td></tr>
+      <tr><td>回顧區間</td><td>預設 24 小時（可設定）</td></tr>
+    </table>
+  </section>
+
+  <section id="section5">
+    <h2><span class="num">5</span>實作內容與專案結構</h2>
+    <p class="sub">已建立並驗證通過</p>
+
+    <div class="tree">src/
+├── WindowsTaskManager                 (既有網站，未變動)
+├── WindowsTaskManager.Monitor          (新增：獨立 Worker Service)
+│   ├── Program.cs                      Generic Host + UseWindowsService + Serilog
+│   ├── Models/
+│   │   └── MonitoredTask.cs            MonitoredTask, TaskExecutionRecord, TaskAlert
+│   ├── Options/
+│   │   └── MonitorOptions.cs           IntervalMinutes / ToleranceMinutes / LookbackHours
+│   ├── Services/
+│   │   ├── ISchedulerReader.cs
+│   │   ├── SchedulerReader.cs           讀取 Task Scheduler + Event Log
+│   │   ├── IAlertNotifier.cs
+│   │   └── LogAlertNotifier.cs          告警輸出到 Serilog
+│   ├── Workers/
+│   │   └── TaskMonitorWorker.cs         BackgroundService 巡檢主邏輯
+│   └── appsettings.json
+└── nine1.tools.windows-task-manager.sln  (已加入 Monitor 專案)</div>
+
+    <h3>巡檢邏輯流程</h3>
+    <div class="flow">
+      <div class="step">GetEnabledTasks()</div>
+      <span class="arrow">→</span>
+      <div class="step">GetExpectedLastRunTime()</div>
+      <span class="arrow">→</span>
+      <div class="step">超過容錯緩衝？</div>
+      <span class="arrow">→</span>
+      <div class="step">GetHistory() 比對</div>
+      <span class="arrow">→</span>
+      <div class="step">去重後 Notify()</div>
+    </div>
+
+    <h3>核心程式碼片段</h3>
+    <pre><code>// SchedulerReader.cs — 計算理論上最後一次應觸發時間
+public DateTime? GetExpectedLastRunTime(string taskPath, DateTime windowStart, DateTime windowEnd)
+{
+    using var ts = new TaskService();
+    var task = ts.GetTask(taskPath);
+    if (task == null) return null;
+
+    // GetRunTimes 直接回傳區間內所有應觸發時間點，取最後一筆
+    var runTimes = task.GetRunTimes(windowStart, windowEnd, 1000);
+    return runTimes.Length > 0 ? runTimes[^1] : null;
+}</code></pre>
+
+    <pre><code>// TaskMonitorWorker.cs — 判斷漏排 / 失敗
+var expectedLastRun = _schedulerReader.GetExpectedLastRunTime(taskPath, windowStart, now);
+if (expectedLastRun == null) return;               // 區間內無應觸發時間
+
+var deadline = expectedLastRun.Value + tolerance;
+if (now < deadline) return;                          // 尚未超過容錯緩衝
+
+var matched = history.FirstOrDefault(近似 expectedLastRun 的執行紀錄);
+
+if (matched == null)              → 漏排告警 (Missed)
+else if (!matched.IsSuccess)       → 失敗告警 (Failed)</code></pre>
+
+    <div class="note">
+      <strong>已驗證：</strong><code>dotnet build</code> 整個 solution 成功（網站專案不受影響）；
+      實際執行 <code>dotnet run</code> 巡檢本機 59 個已啟用任務，正確找出因機器睡眠/關機導致的漏排案例，驗證邏輯運作正常。
+    </div>
+  </section>
+
+  <section id="section6">
+    <h2><span class="num">6</span>部署為 Windows Service</h2>
+    <p class="sub">概念說明：什麼是「註冊成 Windows Service」</p>
+
+    <p>把 Worker 的執行檔交給 Windows 的<strong>服務管理員（Service Control Manager, SCM）</strong>接管，
+      使其成為像「Print Spooler」一樣可在服務清單中看到、開機自動啟動、不需登入帳號即可常駐執行的程式。</p>
+
+    <table>
+      <tr><th>現況（dotnet run）</th><th>註冊成服務後</th></tr>
+      <tr>
+        <td>前景 process，關閉終端機即結束</td>
+        <td>背景常駐，出現在 <code>services.msc</code></td>
+      </tr>
+      <tr>
+        <td>需手動啟動</td>
+        <td>可設定開機自動啟動（Automatic）</td>
+      </tr>
+      <tr>
+        <td>當機需手動重啟</td>
+        <td>可設定 Recovery：當機自動重啟</td>
+      </tr>
+      <tr>
+        <td>需要使用者登入才能執行</td>
+        <td>不需登入 Windows 也能背景執行</td>
+      </tr>
+    </table>
+
+    <h3>部署指令（需系統管理員權限）</h3>
+    <pre><code>dotnet publish -c Release -o C:\Services\WindowsTaskManager.Monitor
+
+New-Service -Name "WindowsTaskManager.Monitor" `
+  -BinaryPathName "C:\Services\WindowsTaskManager.Monitor\WindowsTaskManager.Monitor.exe" `
+  -DisplayName "Windows Task Manager - 排程監控" `
+  -StartupType Automatic
+
+Start-Service -Name "WindowsTaskManager.Monitor"</code></pre>
+
+    <div class="note warn">
+      <strong>注意：</strong>此步驟會在機器上實際安裝系統服務，需要系統管理員權限，且會持續在背景執行、消耗資源，
+      直到手動移除。建議先於測試環境驗證告警邏輯與門檻值符合預期後，再於正式伺服器部署。
+    </div>
+  </section>
+
+  <section id="section7">
+    <h2><span class="num">7</span>後續待辦事項</h2>
+    <table>
+      <tr><th>項目</th><th>狀態</th><th>備註</th></tr>
+      <tr><td>建立獨立 Worker Service 專案</td><td><span class="badge ok">已完成</span></td><td>—</td></tr>
+      <tr><td>實作精簡版 Task Scheduler 讀取邏輯</td><td><span class="badge ok">已完成</span></td><td>SchedulerReader</td></tr>
+      <tr><td>實作 Log 告警輸出</td><td><span class="badge ok">已完成</span></td><td>LogAlertNotifier</td></tr>
+      <tr><td>實作巡檢主邏輯</td><td><span class="badge ok">已完成</span></td><td>TaskMonitorWorker</td></tr>
+      <tr><td>設定檔設計</td><td><span class="badge ok">已完成</span></td><td>MonitorOptions</td></tr>
+      <tr><td>部署為 Windows Service 並驗證</td><td><span class="badge warn">待處理</span></td><td>需系統管理員權限，待正式排程</td></tr>
+      <tr><td>卡死判斷（Running 逾時）</td><td><span class="badge info">暫緩</span></td><td>v1 範圍縮減，未來可加入</td></tr>
+      <tr><td>告警持久化去重</td><td><span class="badge info">暫緩</span></td><td>目前為記憶體內去重，重啟服務會重置</td></tr>
+      <tr><td>Email / Slack / Teams 通知</td><td><span class="badge info">暫緩</span></td><td>介面已預留擴充點</td></tr>
+      <tr><td>支援多台遠端伺服器巡檢</td><td><span class="badge info">暫緩</span></td><td>v1 僅本機</td></tr>
+    </table>
+  </section>
+
+  <footer>Windows Task Manager · 排程監控告警設計文件 — 由 GitHub Copilot CLI 協助整理</footer>
+</div>
+
+</body>
+</html>

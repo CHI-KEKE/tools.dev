@@ -1,0 +1,4 @@
+name: custom-uat-prod
+variables:
+  - name: x-secret
+    value: 

@@ -1,0 +1,32 @@
+opencollection: 1.0.0
+
+info:
+  name: Trello
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: base-url
+      value: https://api.trello.com
+    - name: key
+      value: 4184a232b02225cdcefae8dd19e0a44d
+    - name: token
+      value: ATTA7107e0cc3c5783fb789022ece6c243ba60d4bd4357ea34f0ea1e1022eab2d805DA84B034
+    - name: boardNumber
+      value: "6"
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

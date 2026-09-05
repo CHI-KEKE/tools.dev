@@ -1,0 +1,40 @@
+
+@host = https://sms.dev.91dev.tw
+
+@Cookie = _fbp=fb.1.1764829887192.388335359747575142; SL_C_23361dd035530_SID={"61a79bbd82d029bef2eb0eebfe201ecae641c22f":{"sessionId":"o9SH74uFjUHQFdjOFJfqk","visitorId":"pj1lGNjRLcFQS4ZFS71a8"}}; _clck=nwv4gr%5E2%5Eg1v%5E0%5E2172; __gads=ID=3a5843d5da425745:T=1765843815:RT=1765843815:S=ALNI_MZcceiW30Z9ULe78Zi19ne6XXysZw; __gpi=UID=000011cbab288416:T=1765843815:RT=1765843815:S=ALNI_MbHXONsPDl3xR29NTK7F8EDazhZog; __eoi=ID=d98a22409003d828:T=1765843815:RT=1765843815:S=AA-AfjZRPjS5qkIp8oN02rQJBOC-; _gcl_au=1.1.1239928245.1763426748.656949898.1765844734.1765844733; ad2udid=66f10aaa921938.25089637f6c86ed618c2441273e77a9dc1c67ea2; _ga_PXC7ENYBGM=GS2.1.s1766368718$o4$g1$t1766368879$j60$l0$h0; sid=a085aa157ec24d09b359793ef6a5f763; _gid=GA1.2.58795644.1766713090; _ga_P9SKT1T0T2=GS2.2.s1766713090$o36$g1$t1766713150$j60$l0$h0; _ga_2WFJBS7B20=GS2.1.s1766712838$o882$g1$t1766713441$j53$l0$h0; .AspNet.Cookies=oYUT7gormk9jjhokNTZBR5_whtIT2PgmpXSziu34b-m6E7durQa12elWrw3twWQLvlYo_ykCwqA6RaWtwZwHZ_su0SHFzzW6KTMpo_Jw-dyMQfIyK1qDUj9K1Hzk7O84ypdrWZ3yzstUjNZaCoyL1wi-IDCYGwHGyeOvw0apzJBM6F_jcSvYuyFQB7pPzKW_9lhmyVzwBDw1vx5c_E0O0e5xf_O16dc0IROfH-rADfUmbBsc6sQttLyqcwl-fCwAUA8elhRWYMRC-giO-TcZ8enSZ5ufX8C4rhcYrt8Niuo1tW7th3EXs1Y9rxv0QC3PZIITYhhFCad1nZB_Br1rdAr8kpxPSzz0wzpmv6H2zZfBQG7Ex0he7S1FIHbVf7D0U6se3Q5rGzxcuWMQYxry0LXFFbxi5SAaTu6EkAn-__cIKC_lyljcbeZxynWILkN4qrUpu5wcrmBSFK0M1BpvQDNuTgu05dCorkcnmkta9wAvq8fdi1tDvY5925bpkhagO_IHNj4Npladb69NKD0hwKL--UKlm7gVLH8_fdk3WLO-9zz5pp_uSINWDscRg0fjvhiQwjZFOd82KxBxa4dqP3NL60NQmDhlGAfzOcNGqCJn_oeqPUS0Cf9Z6SoafDHfAyx48fNdu6c7-Vc6juuhzjk5Po3FNSrB44bj3UwsLHy-vi5STHYg2NB5selCRekAxzAkL-CRbXz6JJhbS2cCYfJHt4DGiogZMjOcXfys5Mn7678RMiLDZKrqfvpZvMDmD_t7eagsK_tysGydQjr4yDBicr6SsOgDj3EQfbIN73e8lgvjrWykG93K2ocIWIMNKXAKt4OZZgwQffzMWpnJww; _ga=GA1.2.461524625.1764829887; _gat=1
+@shopId = 83
+@categoryId = 3135
+
+### 出貨
+POST {{host}}/Api/GlobalShipping/CreateShippingOrder
+Cookie: {{Cookie}}
+content-type: application/json
+
+{
+    "CollectDate": "2025/12/26",
+    "Content": "eng",
+    "ServiceCode": "EP-CS0E5",
+    "Value": 11.3,
+    "Weight": 0.005,
+    "PackingList": [
+        {
+            "TradesOrderSlaveCode": "MS251224Z000001",
+            "SalesOrderSlaveId": 23769,
+            "ShippingType": 0
+        }
+    ],
+    "SalesOrderId": "15455",
+    "ShopId": 83,
+    "TradesOrderCode": "MM251224Z00001"
+}
+
+### 取得物流商
+POST {{host}}/Api/GlobalShipping/GetCourier
+Cookie: {{Cookie}}
+content-type: application/json
+
+{
+    "SalesOrderId": "15455",
+    "TotalWeight": 0.1,
+    "PickupDate": "2025-12-31T03:07:23.958Z"
+}

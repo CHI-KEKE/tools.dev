@@ -1,0 +1,25 @@
+info:
+  name: api-connections
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{k8s-public-url}}/api/websocket/connections"
+  body:
+    type: json
+    data: |-
+      {
+        "shopId": 200017,
+        "platformUserId": "string",
+        "liveSessionId": "string",
+        "connectionId": "string",
+        "userName": "string"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

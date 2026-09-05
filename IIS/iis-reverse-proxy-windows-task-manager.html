@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows Task Manager · IIS 反向代理部署指南</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#93c5fd; background:rgba(147,197,253,.12); border:1px solid rgba(147,197,253,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 27px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:820px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--accent-soft); color:var(--accent); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  h3 { font-size:15.5px; margin:22px 0 8px; color:#1e293b; }
+  h4 { font-size:14px; margin:16px 0 6px; color:#1e293b; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:10px 12px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+  td.center, th.center { text-align:center; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+  pre code { background:none; color:inherit; padding:0; }
+
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; }
+  .split .col { border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .split .col.purple { background:var(--purple-soft); border-color:#ddd6fe; }
+  .split .col.blue { background:var(--accent-soft); border-color:#bfdbfe; }
+  .split .col.danger { background:var(--danger-soft); border-color:#fecaca; }
+  .split .col.warn { background:var(--warn-soft); border-color:#fde68a; }
+  .split .col h4 { margin:0 0 8px; font-size:14px; }
+
+  .file-tag {
+    display:inline-block; font-family:Consolas,monospace; font-size:11.5px; background:#0b1220; color:#e2e8f0;
+    padding:2px 8px; border-radius:5px; margin:2px 4px 2px 0;
+  }
+
+  .steps { counter-reset: step; list-style:none; padding:0; margin:14px 0; }
+  .steps li {
+    counter-increment: step; position:relative; padding:8px 0 8px 40px; margin-bottom:4px; font-size:14px;
+  }
+  .steps li::before {
+    content: counter(step); position:absolute; left:0; top:6px; width:26px; height:26px; border-radius:50%;
+    background:var(--accent-soft); color:var(--accent); font-weight:700; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .flow {
+    background:var(--code-bg); color:var(--code-ink); border-radius:12px; padding:20px 24px;
+    font-family:Consolas,monospace; font-size:13px; line-height:2; margin:16px 0; overflow-x:auto;
+  }
+  .flow .arrow { color:#60a5fa; }
+  .flow .box { color:#fbbf24; }
+
+  .checklist { list-style:none; padding:0; margin:10px 0; }
+  .checklist li { padding:4px 0 4px 26px; position:relative; font-size:14px; }
+  .checklist li::before { content:"✅"; position:absolute; left:0; }
+
+  .badge {
+    display:inline-block; font-size:11.5px; font-weight:700; padding:2px 10px; border-radius:999px;
+    background:var(--purple-soft); color:var(--purple); margin-left:8px; vertical-align:middle;
+  }
+
+  footer { text-align:center; color:#94a3b8; font-size:12.5px; margin-top:34px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow">IIS Deployment Guide</span>
+    <h1>Windows Task Manager — IIS 反向代理部署指南</h1>
+    <p>說明 ASP.NET Core 8 應用程式 <code>nine1.tools.windows-task-manager</code> 如何透過 IIS + ASP.NET Core Module 進行反向代理部署，
+      涵蓋原理說明、前置需求、完整部署步驟、故障排除與自動化腳本。</p>
+  </header>
+
+  <!-- 1. 原理 -->
+  <section>
+    <h2><span class="num">1</span>原理：IIS 到底怎麼「反向代理」ASP.NET Core</h2>
+    <p class="sub">這不是傳統 ASP.NET (.NET Framework) 網站，IIS 不會直接執行 C# 程式碼，真正執行程式的是內建的 <strong>Kestrel</strong>。</p>
+
+    <div class="flow">
+      瀏覽器<br>
+      &nbsp;&nbsp;│&nbsp;<span class="arrow">HTTPS/HTTP request</span><br>
+      &nbsp;&nbsp;▼<br>
+      <span class="box">IIS (w3wp.exe 工作進程)</span><br>
+      &nbsp;&nbsp;│&nbsp;由 <span class="box">ASP.NET Core Module V2 (ANCMv2)</span> 攔截<br>
+      &nbsp;&nbsp;▼<br>
+      <span class="box">dotnet WindowsTaskManager.dll</span> → Kestrel → Razor Pages 管線
+    </div>
+
+    <h3>關鍵元件</h3>
+    <table>
+      <thead><tr><th>元件</th><th>角色</th></tr></thead>
+      <tbody>
+        <tr><td><strong>IIS</strong></td><td>對外接收 HTTP/HTTPS 連線、SSL 終止、Port 綁定、App Pool 進程管理</td></tr>
+        <tr><td><strong>ANCMv2</strong>（隨 Hosting Bundle 安裝的原生 IIS 模組）</td><td>攔截進站請求，依 <code>web.config</code> 指示啟動/管理 <code>dotnet.exe</code> 進程，把請求轉交給裡面的 Kestrel</td></tr>
+        <tr><td><strong>web.config</strong></td><td>告訴 ANCM 要執行哪個 dll、用什麼 hosting model、注入哪些環境變數</td></tr>
+        <tr><td><strong>Kestrel</strong></td><td>真正處理 HTTP 請求、跑 Razor Pages / Middleware 管線的 Web 伺服器</td></tr>
+      </tbody>
+    </table>
+
+    <h3>兩種 Hosting Model</h3>
+    <div class="split">
+      <div class="col blue">
+        <h4>In-Process <span class="badge">本專案採用</span></h4>
+        <p style="margin:0;">Kestrel 直接被載入到 IIS 的 <code>w3wp.exe</code> 進程內執行，ANCM 只負責轉發，沒有額外的 process/port，效能較好。</p>
+      </div>
+      <div class="col purple">
+        <h4>Out-of-Process</h4>
+        <p style="margin:0;"><code>dotnet.exe</code> 另外開一個獨立進程監聽內部 port，IIS 再用真正的反向代理（HTTP）把請求轉發過去。</p>
+      </div>
+    </div>
+
+    <p>發佈後 <code>web.config</code> 會長這樣：</p>
+    <pre><code>&lt;aspNetCore processPath="dotnet"
+            arguments=".\WindowsTaskManager.dll"
+            stdoutLogEnabled="false"
+            stdoutLogFile=".\logs\stdout"
+            hostingModel="inprocess"&gt;
+  &lt;environmentVariables&gt;
+    &lt;environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" /&gt;
+  &lt;/environmentVariables&gt;
+&lt;/aspNetCore&gt;</code></pre>
+
+    <div class="note warn">
+      <strong>重點：</strong>原始碼 <code>src\WindowsTaskManager\web.config</code> 是 <strong>0 bytes（空檔）</strong>，這是正常現象——它只是 placeholder，真正內容要靠 <code>dotnet publish</code> 才會自動產生。
+    </div>
+
+    <h3>環境變數如何影響行為</h3>
+    <p><code>Program.cs</code> 依 <code>builder.Environment.IsDevelopment()</code> 判斷要用 Demo 認證還是 Google OAuth：</p>
+    <pre><code>if (builder.Environment.IsDevelopment())
+{
+    // Development：Demo 認證（自動登入 Demo Admin，方便本機開發）
+}
+else
+{
+    // QA / Production：Google OAuth 登入
+}</code></pre>
+    <p>這完全依賴 <code>ASPNETCORE_ENVIRONMENT</code> 環境變數，對應讀取 <code>appsettings.{Environment}.json</code>。若設定錯誤，正式站可能誤跑成 Demo 模式。</p>
+  </section>
+
+  <!-- 2. 前置需求 -->
+  <section>
+    <h2><span class="num">2</span>前置需求</h2>
+
+    <h3>目標機器需安裝</h3>
+    <ul class="checklist">
+      <li><strong>IIS</strong>（伺服器管理員 → 新增角色與功能 → 勾選 Web 伺服器 (IIS)）</li>
+      <li><strong>.NET 8.0 ASP.NET Core Hosting Bundle</strong>（⚠️ 不是只裝 Runtime，一定要 Hosting Bundle，內含 ANCMv2 模組）</li>
+      <li>安裝後<strong>重開機或至少 <code>iisreset</code></strong>，讓 ANCM 模組正確註冊進 IIS</li>
+    </ul>
+    <div class="note">
+      驗證模組是否裝好：IIS 管理員 → 站台 → 模組 → 應能看到 <code>AspNetCoreModuleV2</code>。
+    </div>
+
+    <h3>Google OAuth 憑證</h3>
+    <p>到 <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> 取得 Client ID / Client Secret，並設定授權回呼 URL：</p>
+    <pre><code>https://your-domain.com/LoginCallback</code></pre>
+  </section>
+
+  <!-- 3. 部署步驟 -->
+  <section>
+    <h2><span class="num">3</span>一步步部署流程</h2>
+
+    <h3>步驟 1：建置與發佈（開發機執行）</h3>
+    <pre><code>cd "C:\91APP\AI_Devs\taskmanager\nine1.tools.windows-task-manager"
+
+# QA 環境
+dotnet publish src\WindowsTaskManager\WindowsTaskManager.csproj -c Release -o publish-qa
+
+# Production 環境
+dotnet publish src\WindowsTaskManager\WindowsTaskManager.csproj -c Release -o publish-prod</code></pre>
+    <p>發佈完成後，資料夾內會有真正產生內容的 <code>web.config</code>（而不是原始碼裡的空檔）。</p>
+
+    <h3>步驟 2：把 publish 資料夾複製到目標機器</h3>
+    <p>複製整個 <code>publish-prod</code> 到目標機，例如 <code>D:\WebSites\windows-task-manager-prod\</code>。</p>
+
+    <h3>步驟 3：編輯 web.config，加上環境變數</h3>
+    <pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;configuration&gt;
+  &lt;location path="." inheritInChildApplications="false"&gt;
+    &lt;system.webServer&gt;
+      &lt;handlers&gt;
+        &lt;add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" /&gt;
+      &lt;/handlers&gt;
+      &lt;aspNetCore processPath="dotnet"
+                  arguments=".\WindowsTaskManager.dll"
+                  stdoutLogEnabled="false"
+                  stdoutLogFile=".\logs\stdout"
+                  hostingModel="inprocess"&gt;
+        &lt;environmentVariables&gt;
+          &lt;environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" /&gt;
+          &lt;environmentVariable name="Authentication__Google__ClientId" value="your-prod-client-id" /&gt;
+          &lt;environmentVariable name="Authentication__Google__ClientSecret" value="your-prod-client-secret" /&gt;
+        &lt;/environmentVariables&gt;
+      &lt;/aspNetCore&gt;
+    &lt;/system.webServer&gt;
+  &lt;/location&gt;
+&lt;/configuration&gt;</code></pre>
+
+    <div class="note danger">
+      <strong>安全提醒：</strong><code>web.config</code> 含機敏資料，不要提交到版控。可改用下方「步驟 3-Alt」的機器層級環境變數做法。
+    </div>
+
+    <h3>步驟 3-Alt：改用 Windows 機器層級環境變數</h3>
+    <p>專案內已附 <code>setup.ps1</code>，用互動式精靈設定 Machine 層級環境變數：</p>
+    <pre><code># 以系統管理員身份執行
+.\setup.ps1</code></pre>
+    <p>或手動設定：</p>
+    <pre><code>[System.Environment]::SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production", "Machine")
+[System.Environment]::SetEnvironmentVariable("Authentication__Google__ClientId", "your-client-id", "Machine")
+[System.Environment]::SetEnvironmentVariable("Authentication__Google__ClientSecret", "your-client-secret", "Machine")
+iisreset</code></pre>
+
+    <h3>步驟 4：建立應用程式集區（App Pool）</h3>
+    <table>
+      <thead><tr><th>設定項</th><th>值</th></tr></thead>
+      <tbody>
+        <tr><td>名稱</td><td><code>WindowsTaskManager-Prod</code></td></tr>
+        <tr><td>.NET CLR 版本</td><td><strong>無受控碼</strong>（No Managed Code）— 程式碼由 <code>dotnet.exe</code> 執行，不吃 IIS 的 .NET Framework CLR</td></tr>
+        <tr><td>受控管線模式</td><td>整合式</td></tr>
+      </tbody>
+    </table>
+
+    <h3>步驟 5：建立 IIS 網站</h3>
+    <table>
+      <thead><tr><th>設定項</th><th>值</th></tr></thead>
+      <tbody>
+        <tr><td>網站名稱</td><td>Windows Task Manager (Production)</td></tr>
+        <tr><td>應用程式集區</td><td>步驟 4 建立的 <code>WindowsTaskManager-Prod</code></td></tr>
+        <tr><td>實體路徑</td><td><code>D:\WebSites\windows-task-manager-prod</code></td></tr>
+        <tr><td>繫結</td><td>依需求設定 HTTP/HTTPS，Host name 建議對齊 <code>appsettings.Production.json</code> 內設定的網域</td></tr>
+      </tbody>
+    </table>
+
+    <h3>步驟 6：設定資料夾權限</h3>
+    <pre><code>New-Item -Path "D:\WebSites\windows-task-manager-prod\logs" -ItemType Directory -Force
+
+icacls "D:\WebSites\windows-task-manager-prod" /grant "IIS AppPool\WindowsTaskManager-Prod:(OI)(CI)RX" /T
+icacls "D:\WebSites\windows-task-manager-prod\logs" /grant "IIS AppPool\WindowsTaskManager-Prod:(OI)(CI)M" /T</code></pre>
+
+    <h3>步驟 7：Google OAuth 回呼網址</h3>
+    <p>到 Google Cloud Console，把授權回呼 URL 設定為與繫結網域一致：</p>
+    <pre><code>https://windows-task-manager.hk.91dev.tw/LoginCallback</code></pre>
+    <p style="color:var(--muted); font-size:13px;">此網域取自 <code>appsettings.Production.json</code> 內 <code>ServersConfig.Servers[0].IPAddress</code> 設定，僅供參考，請依實際繫結網域調整。</p>
+
+    <h3>步驟 8：重啟並驗證</h3>
+    <pre><code>iisreset</code></pre>
+    <p>打開瀏覽器造訪網站網址，檢查：</p>
+    <ul class="checklist">
+      <li>顯示 Google 登入按鈕（<strong>不應該</strong>自動以 Demo Admin 登入）</li>
+      <li>點擊後導向 Google OAuth 頁面</li>
+      <li>登入成功後正確返回應用程式並顯示 Google 帳號名稱</li>
+      <li>角色權限正確套用</li>
+    </ul>
+  </section>
+
+  <!-- 4. 故障排除 -->
+  <section>
+    <h2><span class="num">4</span>故障排除</h2>
+    <table>
+      <thead><tr><th>問題</th><th>可能原因</th><th>解決方式</th></tr></thead>
+      <tbody>
+        <tr><td>仍顯示 "Demo Admin"</td><td><code>ASPNETCORE_ENVIRONMENT</code> 未正確設定</td><td>檢查 web.config / 機器環境變數是否為 <code>Production</code> 或 <code>QA</code>，<code>iisreset</code> 後重新確認</td></tr>
+        <tr><td>Google OAuth 登入失敗</td><td>ClientId/ClientSecret 錯誤或回呼網址不符</td><td>核對 Google Cloud Console 設定的回呼 URL 與實際網域是否一致</td></tr>
+        <tr><td>503 Service Unavailable</td><td>App Pool 停止、Hosting Bundle 未裝、權限不足</td><td>檢查 App Pool 狀態、確認已安裝 Hosting Bundle、檢查檔案權限</td></tr>
+        <tr><td>環境變數設定後未生效</td><td>IIS 未重啟、快取問題</td><td><code>iisreset /stop</code> → <code>iisreset /start</code>，或 <code>Restart-WebAppPool -Name "&lt;AppPoolName&gt;"</code></td></tr>
+        <tr><td>502.5 - Process Failure</td><td>dll 路徑錯、Runtime 版本不符</td><td>開啟 <code>stdoutLogEnabled="true"</code> 查看 <code>logs\stdout_*.log</code>，確認 .NET 8 Runtime 已安裝</td></tr>
+      </tbody>
+    </table>
+
+    <h3>除錯：啟用詳細日誌</h3>
+    <pre><code>&lt;aspNetCore processPath="dotnet"
+            arguments=".\WindowsTaskManager.dll"
+            stdoutLogEnabled="true"
+            stdoutLogFile=".\logs\stdout"
+            hostingModel="inprocess"&gt;</code></pre>
+    <p>日誌位置：<code>publish-prod\logs\stdout_*.log</code>，除錯完記得關閉（<code>stdoutLogEnabled="false"</code>），並尋找：</p>
+    <pre><code>Hosting environment: Production</code></pre>
+  </section>
+
+  <!-- 5. 安全性建議 -->
+  <section>
+    <h2><span class="num">5</span>安全性建議</h2>
+    <div class="split">
+      <div class="col warn">
+        <h4>QA 環境</h4>
+        <ul style="margin:0; padding-left:18px; font-size:13.5px;">
+          <li>使用測試專用的 Google OAuth 專案</li>
+          <li>限制授權網域</li>
+          <li>建議使用 HTTPS</li>
+          <li>可暫時啟用 stdout 日誌以便除錯</li>
+        </ul>
+      </div>
+      <div class="col danger">
+        <h4>Production 環境</h4>
+        <ul style="margin:0; padding-left:18px; font-size:13.5px;">
+          <li>使用獨立的 Google OAuth 專案</li>
+          <li>嚴格限制授權網域為正式網域</li>
+          <li>強制使用 HTTPS，停用 stdout 日誌</li>
+          <li>定期更新 OAuth 憑證，稽核日誌保留至少 90 天</li>
+          <li>機敏資料建議改用機器層級環境變數或 Azure Key Vault</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 自動化腳本 -->
+  <section>
+    <h2><span class="num">6</span>自動化部署腳本範例</h2>
+    <pre><code># deploy-prod.ps1
+param(
+    [string]$ClientId,
+    [string]$ClientSecret,
+    [string]$TargetPath = "D:\WebSites\windows-task-manager-prod"
+)
+
+Write-Host "Publishing..." -ForegroundColor Cyan
+dotnet publish src\WindowsTaskManager\WindowsTaskManager.csproj -c Release -o publish-prod
+
+Write-Host "Updating web.config..." -ForegroundColor Cyan
+$webConfigPath = "publish-prod\web.config"
+$webConfig = [xml](Get-Content $webConfigPath)
+
+$envVars = $webConfig.configuration.location.'system.webServer'.aspNetCore.environmentVariables
+if (-not $envVars) {
+    $envVars = $webConfig.CreateElement("environmentVariables")
+    $webConfig.configuration.location.'system.webServer'.aspNetCore.AppendChild($envVars)
+}
+
+$envVars.InnerXml = @"
+&lt;environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" /&gt;
+&lt;environmentVariable name="Authentication__Google__ClientId" value="$ClientId" /&gt;
+&lt;environmentVariable name="Authentication__Google__ClientSecret" value="$ClientSecret" /&gt;
+"@
+
+$webConfig.Save($webConfigPath)
+
+Write-Host "Copying files to $TargetPath..." -ForegroundColor Cyan
+Copy-Item -Path "publish-prod\*" -Destination $TargetPath -Recurse -Force
+
+Write-Host "Restarting application pool..." -ForegroundColor Cyan
+Restart-WebAppPool -Name "WindowsTaskManager-Prod"
+
+Write-Host "Deployment completed!" -ForegroundColor Green</code></pre>
+    <p>使用方式：</p>
+    <pre><code>.\deploy-prod.ps1 -ClientId "your-client-id" -ClientSecret "your-client-secret"</code></pre>
+  </section>
+
+  <!-- 7. 常用檢查指令速查 -->
+  <section>
+    <h2><span class="num">7</span>常用檢查指令速查</h2>
+    <pre><code># 查詢站台清單
+powershell.exe -Command "Import-Module WebAdministration; Get-Website | Select-Object Name, State, PhysicalPath"
+
+# 查詢應用程式集區狀態
+Get-WebAppPoolState -Name "WindowsTaskManager-Prod"
+
+# Recycle App Pool（改設定/換 dll 後手動觸發）
+Restart-WebAppPool -Name "WindowsTaskManager-Prod"
+
+# 完整重啟 IIS
+iisreset
+
+# 尾看 stdout 日誌
+Get-Content "D:\WebSites\windows-task-manager-prod\logs\stdout_*.log" -Tail 50</code></pre>
+  </section>
+
+  <!-- 8. 相關文件 -->
+  <section>
+    <h2><span class="num">8</span>相關文件</h2>
+    <div class="file-tag">DEPLOYMENT-IIS.md</div>
+    <div class="file-tag">ENVIRONMENT-CONFIGURATION.md</div>
+    <div class="file-tag">AUTHENTICATION.md</div>
+    <div class="file-tag">README.md</div>
+    <div class="file-tag">tools.dev\IIS\iis-basics.md</div>
+    <div class="file-tag">tools.dev\Windows-task-manager\</div>
+  </section>
+
+  <footer>Windows Task Manager · IIS 反向代理部署指南 — 產生於 nine1.tools.windows-task-manager 專案分析</footer>
+</div>
+</body>
+</html>

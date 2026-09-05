@@ -1,0 +1,4 @@
+interface:
+  display_name: "F2E Nine1 Code Review"
+  short_description: "Review working-tree frontend changes with requirements, checklist, and Dify"
+  default_prompt: "Use $f2e-nine1-code-review to review working-tree frontend changes against Azure DevOps Description requirements, the frontend checklist, and Dify findings."

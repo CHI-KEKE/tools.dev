@@ -1,0 +1,34 @@
+info:
+  name: get-promotionGift-list
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{base-url}}/webapi/PromotionEngineFreeGift/GetPromotionGiftList?lang=zh-HK&shopId={{shopId}}&r=t"
+  params:
+    - name: lang
+      value: zh-HK
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+    - name: r
+      value: t
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "shopId": 2,
+          "promotionEngineId": 4772,
+          "promotionTagList": null,
+          "collectionIdList":["Collection:f_115856640928516608","Collection:f_115856640995625472"]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

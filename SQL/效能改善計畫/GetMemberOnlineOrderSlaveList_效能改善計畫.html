@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GetMemberOnlineOrderSlaveList 查詢效能改善計畫</title>
+<style>
+  :root {
+    --primary: #1f6feb;
+    --primary-dark: #0d419d;
+    --danger: #d1242f;
+    --warning: #9a6700;
+    --success: #1a7f37;
+    --bg: #f6f8fa;
+    --card-bg: #ffffff;
+    --border: #d0d7de;
+    --text: #24292f;
+    --text-muted: #57606a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    line-height: 1.7;
+  }
+  header {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: #fff;
+    padding: 36px 24px;
+  }
+  header .container { max-width: 1100px; margin: 0 auto; }
+  header h1 { margin: 0 0 8px; font-size: 26px; }
+  header .meta { font-size: 13px; opacity: 0.9; }
+  header .meta code {
+    background: rgba(255,255,255,0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  h2 {
+    font-size: 20px;
+    border-left: 5px solid var(--primary);
+    padding-left: 12px;
+    margin-top: 0;
+  }
+  h3 { font-size: 16px; color: var(--primary-dark); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 14px 0;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #eef2f7;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tr:nth-child(even) { background: #fbfcfd; }
+  code, pre {
+    font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+  }
+  pre {
+    background: #0d1117;
+    color: #e6edf3;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+  }
+  code.inline {
+    background: #eef2f7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #b3261e;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge.p1 { background: #ffebe9; color: var(--danger); }
+  .badge.p2 { background: #fff8c5; color: var(--warning); }
+  .badge.p3 { background: #ddf4ff; color: var(--primary-dark); }
+  .badge.done { background: #dafbe1; color: var(--success); }
+  .stars { color: #e3b341; letter-spacing: 1px; }
+  .phase {
+    border-left: 4px solid var(--primary);
+    background: #f0f6ff;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+  }
+  .phase.p1 { border-color: var(--danger); background: #fff5f5; }
+  .phase.p2 { border-color: var(--warning); background: #fffbea; }
+  .phase.p3 { border-color: #8250df; background: #fbefff; }
+  .phase h3 { margin-top: 0; }
+  ol.steps li, ul.steps li { margin-bottom: 6px; }
+  .note {
+    font-size: 13px;
+    color: var(--text-muted);
+    border-left: 3px solid var(--border);
+    padding-left: 12px;
+    margin: 10px 0;
+  }
+  .why {
+    font-size: 14px;
+    background: #ddf4ff;
+    border-left: 3px solid var(--primary);
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .why b { color: var(--primary-dark); }
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 24px;
+  }
+  .toc {
+    columns: 2;
+    font-size: 14px;
+  }
+  .toc a { color: var(--primary-dark); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  @media (max-width: 700px) {
+    .toc { columns: 1; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>📊 GetMemberOnlineOrderSlaveList 查詢效能改善計畫</h1>
+    <div class="meta">
+      來源專案：<code>NineYi.Scm.ApiV2</code> ｜
+      檔案：<code>DataAccess\Repositories\SalesOrders\SalesOrderRepository.cs</code> (line 1480) ｜
+      觸發 API：<code>POST /scm/v2/Location/GetLastOmoKeyPromptsFromMemberDimension</code>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>目錄</h2>
+    <div class="toc">
+      <a href="#section1">一、問題現況摘要</a>
+      <a href="#section2">二、優化技巧總覽表</a>
+      <a href="#section3">三、建議導入順序</a>
+      <a href="#section4">四、技術細節補充</a>
+      <a href="#section5b">五、針對本查詢語法的具體優化方向</a>
+      <a href="#section6">六、最佳優化寫法完整示範（三層式）</a>
+      <a href="#section5">七、與 ELMAH 事件對應關係</a>
+      <a href="#section8">八、架構層深入分析：平行任務資源競爭</a>
+    </div>
+  </div>
+
+  <div class="card" id="section1">
+    <h2>一、問題現況摘要</h2>
+    <p>此查詢用於 <code class="inline">GetMemberOmoOrderKeyPrompt.GetKeyPrompt</code>，計算會員近 12 個月的線上消費淨額，供「跨通路消費」重要提示卡片使用。ELMAH 錯誤 <code class="inline">EntityCommandExecutionException</code> / <code class="inline">Win32Exception (Execution Timeout Expired)</code> 皆源自此查詢在高資料量會員/商店下執行過慢。</p>
+    <pre><code>public List&lt;MemberOnlineOrderSlaveEntity&gt; GetMemberOnlineOrderSlaveList(
+    long shopId, int memberId, DateTime startDate, DateTime endDate, IEnumerable&lt;string&gt; salesOrderStatusList)
+{
+    var transactionOptions = new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted };
+    using (var transactionScope = new TransactionScope(TransactionScopeOption.Required, transactionOptions))
+    {
+        var result = from salesOrderSlave in this._erpReadDbContext.SalesOrderSlave.Valids()
+                     join orderSlaveFlow in this._erpReadDbContext.OrderSlaveFlow.Valids()
+                         on salesOrderSlave.SalesOrderSlave_Id equals orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveId
+                     join salesOrderGroup in this._erpReadDbContext.SalesOrderGroup.Valids()
+                         on orderSlaveFlow.OrderSlaveFlow_TradesOrderGroupId equals salesOrderGroup.SalesOrderGroup_TradesOrderGroupId
+                     join returnGoodsOrderSlave in this._erpReadDbContext.ReturnGoodsOrderSlave.Valids()
+                         on orderSlaveFlow.OrderSlaveFlow_ReturnGoodsOrderSlaveId equals returnGoodsOrderSlave.ReturnGoodsOrderSlave_Id
+                         into leftJoinReturnGoodsOrderSlave
+                     from finishedReturnGoodsOrderSlave in leftJoinReturnGoodsOrderSlave
+                         .Where(x =&gt; x.ReturnGoodsOrderSlave_StatusDef == "Finish").DefaultIfEmpty()
+                     where orderSlaveFlow.OrderSlaveFlow_MemberId == memberId
+                        && orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveShopId == shopId
+                        && salesOrderGroup.SalesOrderGroup_DateTime &gt;= startDate
+                        && salesOrderGroup.SalesOrderGroup_DateTime &lt; endDate
+                        && salesOrderStatusList.Contains(orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveStatusDef)
+                     select new MemberOnlineOrderSlaveEntity() { /* 5 個欄位 */ };
+
+        return result.ToList(); // ⚠️ 搬回全部明細列，非僅回傳加總結果
+    }
+}</code></pre>
+    <h3>已知問題點</h3>
+    <ul class="steps">
+      <li>4 張表 Join（<code class="inline">SalesOrderSlave</code> ⋈ <code class="inline">OrderSlaveFlow</code> ⋈ <code class="inline">SalesOrderGroup</code> ⟕ <code class="inline">ReturnGoodsOrderSlave</code>），查詢範圍為近 <b>12 個月</b>訂單。</li>
+      <li>呼叫端只需要「總金額」，卻用 <code class="inline">.ToList()</code> 搬回全部明細再於應用層 <code class="inline">.Sum()</code> 加總。</li>
+      <li>與其他 9 個 <code class="inline">IOmoKeyPrompt</code> 平行執行（<code class="inline">Task.Run</code> + <code class="inline">Task.WhenAll().Wait()</code>），外層 <b>沒有 try/catch</b>，逾時會讓整支 API 500。</li>
+      <li>ELMAH 六維分析顯示錯誤集中在訂單量大的少數會員/商店（ShopId 82、19 佔約 73%），且常與其他平行任務同時間爆發。</li>
+    </ul>
+  </div>
+
+  <div class="card" id="section2">
+    <h2>二、優化技巧總覽表</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>技巧類別</th><th>具體做法</th><th>預期效果</th><th>風險/成本</th><th>建議優先度</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>資料庫端聚合</td><td>把 <code class="inline">.ToList()</code> 後應用層 <code class="inline">.Sum()</code> 改為 EF/SQL 直接於資料庫端 <code class="inline">SUM()</code>，只回傳總金額</td><td>大幅減少資料搬移量與記憶體用量</td><td>低</td><td><span class="stars">★★★★★</span></td></tr>
+        <tr><td>2</td><td>索引優化</td><td>確認/新增 <code class="inline">OrderSlaveFlow(MemberId, SalesOrderSlaveShopId, SalesOrderSlaveStatusDef)</code>、<code class="inline">SalesOrderGroup(TradesOrderGroupId, DateTime)</code> 複合索引</td><td>Join 走 Index Seek 而非 Scan</td><td>低（唯讀索引），需 DBA 執行</td><td><span class="stars">★★★★★</span></td></tr>
+        <tr><td>3</td><td>查詢範圍縮小</td><td>12/15 個月時間窗改為可設定，或分層策略（近期優先，超過門檻才擴大）</td><td>直接降低掃描資料量</td><td>中，需業務確認</td><td><span class="stars">★★★★☆</span></td></tr>
+        <tr><td>4</td><td>快取策略</td><td>依 <code class="inline">ShopId+MemberId</code> 快取結果（比照 <code class="inline">LoyaltyPointsHelper.GetLoyaltyPointCenterInfo</code>），TTL 3~10 分鐘</td><td>短時間重複呼叫不必重複打 DB</td><td>中，需確認資料時效可接受延遲</td><td><span class="stars">★★★★☆</span></td></tr>
+        <tr><td>5</td><td>例外處理防護</td><td><code class="inline">GetMemberOmoOrderKeyPrompt.GetKeyPrompt</code> 加上 <code class="inline">try/catch</code></td><td>避免單一查詢逾時拖垮整支 API</td><td>低</td><td><span class="badge p1">止血優先</span></td></tr>
+        <tr><td>6</td><td>減少 Join 表數</td><td>評估用 <code class="inline">OrderSlaveFlow_ReturnGoodsTotalPayment</code> 彙總欄位取代即時 Join 退貨表</td><td>減少一次 Join</td><td>中，需確認欄位即時性與正確性</td><td><span class="stars">★★★☆☆</span></td></tr>
+        <tr><td>7</td><td>分頁 / TOP 限制</td><td>加 <code class="inline">OrderBy + Take(N)</code> 限制筆數</td><td>降低最壞情況掃描量</td><td>中，本案為加總情境不適用</td><td><span class="stars">★★☆☆☆</span></td></tr>
+        <tr><td>8</td><td>平行架構調整</td><td>檢視 <code class="inline">OmoKeyPromptsService</code> 的 <code class="inline">Task.Run</code> + <code class="inline">Task.WhenAll().Wait()</code> 架構是否造成 ThreadPool/連線池競爭</td><td>降低單次請求多查詢同時撞牆機率</td><td>高，需完整迴歸測試</td><td><span class="stars">★★★☆☆</span></td></tr>
+        <tr><td>9</td><td>預先彙總表</td><td>改由 NMQ/排程 Job 定期計算「會員近12個月線上消費淨額」寫入彙總表，API 直接查表</td><td>即時計算 → 查表，效能大幅提升</td><td>高，需新增資料表、批次 Job、一致性設計</td><td><span class="stars">★★★☆☆</span>（長期）</td></tr>
+        <tr><td>10</td><td>CommandTimeout 調整</td><td>個別調高 EF <code class="inline">Database.CommandTimeout</code></td><td>短期減少逾時錯誤次數</td><td>低成本但治標不治本</td><td><span class="stars">★☆☆☆☆</span></td></tr>
+        <tr><td>11</td><td>Read-Only 隔離層級</td><td>已使用 <code class="inline">ReadUncommitted</code>（NOLOCK）+ 讀取專用 DbContext</td><td>已避免鎖等待問題</td><td>已實作</td><td><span class="badge done">已完成</span></td></tr>
+        <tr><td>12</td><td>查詢計畫監控</td><td>導入 SQL Server Query Store / Extended Events 建立效能基準與告警</td><td>提早發現效能衰退</td><td>低，長期維運措施</td><td><span class="stars">★★★☆☆</span></td></tr>
+        <tr><td>13</td><td>讀寫分離資源調整</td><td>確認唯讀複本硬體資源（CPU/Memory/IO）是否為瓶頸</td><td>基礎設施層面提升承載能力</td><td>中，涉及 Infra 成本</td><td><span class="stars">★★☆☆☆</span></td></tr>
+        <tr><td>14</td><td>重試/斷路器</td><td>對外部相依（如點數中心 API）導入 Polly retry/circuit breaker</td><td>降低外部服務不穩定造成連鎖失敗</td><td>低（供其他錯誤類型參考，非本查詢適用）</td><td><span class="stars">-</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" id="section3">
+    <h2>三、建議導入順序（依 CP 值排序）</h2>
+
+    <div class="phase p1">
+      <h3><span class="badge p1">第一階段</span> 立即止血（低風險、可快速上線）</h3>
+      <ol class="steps">
+        <li><b>方案 5</b>：<code class="inline">GetMemberOmoOrderKeyPrompt.GetKeyPrompt</code> 補上 <code class="inline">try/catch</code>，避免整支 API 500。</li>
+        <li><b>方案 2</b>：請 DBA 確認/補上索引。</li>
+        <li><b>方案 1</b>：把應用層 <code class="inline">.Sum()</code> 改為資料庫端 <code class="inline">SUM()</code> 聚合。</li>
+      </ol>
+    </div>
+
+    <div class="phase p2">
+      <h3><span class="badge p2">第二階段</span> 中期優化（需評估與確認）</h3>
+      <ol class="steps">
+        <li><b>方案 4</b>：加入短效快取。</li>
+        <li><b>方案 6</b>：評估用既有彙總欄位取代即時 Join 退貨表。</li>
+        <li><b>方案 3</b>：與業務確認是否可縮短查詢時間範圍。</li>
+      </ol>
+    </div>
+
+    <div class="phase p3">
+      <h3><span class="badge p3">第三階段</span> 長期架構優化</h3>
+      <ol class="steps">
+        <li><b>方案 8</b>：重新檢視 OMO KeyPrompt 平行呼叫架構。</li>
+        <li><b>方案 9</b>：評估導入預先彙總表。</li>
+        <li><b>方案 12、13</b>：建立長期監控機制與基礎設施擴充評估。</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="card" id="section4">
+    <h2>四、各方案技術細節補充</h2>
+
+    <h3>4.1 資料庫端聚合（方案 1）</h3>
+    <pre><code>// 現行：搬回全部明細，應用層加總
+var list = query.ToList();
+var total = list.Sum(x =&gt; x.SalesOrderSlaveTotalPayment - x.ReturnGoodsOrderSlaveTotalPayment);
+
+// 建議：讓 SQL Server 端直接算 SUM，只回傳單一數字
+var total = query.Sum(x =&gt; x.SalesOrderSlaveTotalPayment - x.ReturnGoodsOrderSlaveTotalPayment);
+// 若同時需要「最後一筆訂單時間」，可用 GroupBy 一次取得 Sum 與 Max(DateTime)</code></pre>
+    <div class="note">注意：若呼叫端同時需要 <code class="inline">OnlineOrderLastTradeDateTime</code>（最後一筆訂單時間），可用 <code class="inline">GroupBy</code> 一次取得 Sum 與 Max，仍比搬全部明細列有效率。</div>
+
+    <h3>4.2 索引建議方向（方案 2）</h3>
+    <ul class="steps">
+      <li><code class="inline">OrderSlaveFlow</code>：<code class="inline">(MemberId, SalesOrderSlaveShopId)</code> INCLUDE <code class="inline">(SalesOrderSlaveStatusDef, TradesOrderGroupId, SalesOrderSlaveId, ReturnGoodsOrderSlaveId)</code></li>
+      <li><code class="inline">SalesOrderGroup</code>：確認 <code class="inline">TradesOrderGroupId</code>（Join Key）與 <code class="inline">DateTime</code>（範圍篩選）的索引涵蓋情形</li>
+      <li>實際索引設計仍須以 DBA 依「執行計畫 + 統計資訊」為準，避免過度索引造成寫入負擔</li>
+    </ul>
+
+    <h3>4.3 快取策略示意（方案 4）</h3>
+    <pre><code>var result = this._cacheService.Get&lt;List&lt;MemberOnlineOrderSlaveEntity&gt;&gt;(
+    group: "OmoKeyPrompt",
+    feature: "MemberOnlineOrderSlaveList",
+    key: $"{shopId}_{memberId}",
+    expireTime: TimeSpan.FromMinutes(5),
+    getDataFunc: () =&gt; this.QueryMemberOnlineOrderSlaveListFromDb(shopId, memberId, startDate, endDate, salesOrderStatusList));</code></pre>
+
+    <h3>4.4 平行架構風險（方案 8）</h3>
+    <p><code class="inline">OmoKeyPromptsService.GetOmoKeyPromptsFromMemberDimension</code> 用 <code class="inline">Task.Run</code> 同時觸發 10 個 KeyPrompt，並用 <code class="inline">Task.WhenAll(...).Wait()</code> 同步等待。這個模式下：</p>
+    <ul class="steps">
+      <li>每個 <code class="inline">Task.Run</code> 佔用一個 ThreadPool 執行緒，內部又用 <code class="inline">.Result</code>/<code class="inline">.Wait()</code> 阻塞，容易造成 <b>ThreadPool 執行緒耗盡</b>。</li>
+      <li>多個 KeyPrompt 各自開啟 DB 連線同時施壓，容易集體撞上 Connection Pool 或 DB 資源上限，解釋了「同一秒多種例外同時發生」的現象。</li>
+      <li>長期建議評估改用真正的 <code class="inline">async/await</code>（而非 <code class="inline">Task.Run</code> 包裝同步方法）搭配 <code class="inline">Task.WhenAll</code>，減少執行緒佔用。</li>
+    </ul>
+  </div>
+
+  <div class="card" id="section5b">
+    <h2>五、針對本查詢語法的具體優化方向</h2>
+    <p>以下針對 <code class="inline">GetMemberOnlineOrderSlaveList</code> 這段 LINQ 查詢本身的寫法，逐項提出可直接落地的語法級優化，皆附「現行寫法 → 建議寫法」對照。</p>
+
+    <h3>5.1 調整查詢起始表與過濾順序（Filter Push-down）</h3>
+    <p><b>問題</b>：目前查詢從 <code class="inline">SalesOrderSlave</code>（無篩選條件的大表）開始 Join，<code class="inline">memberId</code>/<code class="inline">shopId</code> 這兩個高選擇性條件卻掛在 <code class="inline">orderSlaveFlow</code> 欄位、寫在最後的 <code class="inline">where</code>。EF6 對「起始表」與「篩選條件位置」的翻譯有時無法完全自動下推。</p>
+    <div class="why"><b>為什麼有效（白話說明）</b>：想像成先去全公司員工名單挨個核對，再慢慢篩出「這位會員」的紀錄；跟先只挑出「這位會員」的資料夾，再去查其他關聯資料，兩者要處理的資料量天差地遠。<code class="inline">memberId</code> + <code class="inline">shopId</code> 是本查詢辨識度最高的條件（一次就能篩到剩幾百筆），理應第一個套用；把它放在查詢最前面當作起始表，能讓資料庫盡早縮小戰場，而不是先把大量不相關的資料 Join 起來、算完才丟掉。</div>
+    <pre><code>// 現行：從 SalesOrderSlave 開始，篩選條件在最後
+var result = from salesOrderSlave in this._erpReadDbContext.SalesOrderSlave.Valids()
+             join orderSlaveFlow in this._erpReadDbContext.OrderSlaveFlow.Valids()
+             on salesOrderSlave.SalesOrderSlave_Id equals orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveId
+             ...
+             where orderSlaveFlow.OrderSlaveFlow_MemberId == memberId
+             && orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveShopId == shopId
+             ...</code></pre>
+    <pre><code>// 建議：從 OrderSlaveFlow 開始，先套用高選擇性條件（MemberId + ShopId + 狀態），再往外 Join
+var filteredFlow = this._erpReadDbContext.OrderSlaveFlow.Valids()
+    .Where(f =&gt; f.OrderSlaveFlow_MemberId == memberId
+             && f.OrderSlaveFlow_SalesOrderSlaveShopId == shopId
+             && salesOrderStatusList.Contains(f.OrderSlaveFlow_SalesOrderSlaveStatusDef));
+
+var result = from orderSlaveFlow in filteredFlow
+             join salesOrderSlave in this._erpReadDbContext.SalesOrderSlave.Valids()
+             on orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveId equals salesOrderSlave.SalesOrderSlave_Id
+             join salesOrderGroup in this._erpReadDbContext.SalesOrderGroup.Valids()
+             on orderSlaveFlow.OrderSlaveFlow_TradesOrderGroupId equals salesOrderGroup.SalesOrderGroup_TradesOrderGroupId
+             where salesOrderGroup.SalesOrderGroup_DateTime &gt;= startDate && salesOrderGroup.SalesOrderGroup_DateTime &lt; endDate
+             ...</code></pre>
+    <div class="note">效果：讓資料庫優先用 (MemberId, ShopId) 索引把資料範圍縮到最小，再做後續 Join，減少中間結果集大小。實際效益仍取決於索引是否存在（見方案2）。</div>
+
+    <h3>5.2 用 <code class="inline">!=</code> 取代大型 <code class="inline">IN</code> 清單（Contains）</h3>
+    <p><b>問題</b>：呼叫端傳入的 <code class="inline">salesOrderStatusList</code> 是「排除 Cancel 和 Fail」後的所有其餘狀態，等於把一個「排除 2 個值」的條件，反向組成一個可能有 8~10 個值的 <code class="inline">IN (...)</code> 清單再傳給 SQL。</p>
+    <div class="why"><b>為什麼有效（白話說明）</b>：這就像你想說「除了小明和小華以外的人都算」，卻寫成「小美、小強、小英…（把班上其他 8 個人名字都列出來）都算」——結果一樣，但後者要資料庫逐一比對 8~10 個字串值，前者只需比對 2 個。狀態欄位通常是字串型別，比對的值越多、優化器要評估的分支就越多，也更難有效利用索引的等值查找特性。改成「排除 2 個值」不只是效能問題，也讓程式碼更貼近需求本意（我們要的其實就是「未取消、未失敗」）。</div>
+    <pre><code>// 現行：呼叫端組出一個大 IN 清單
+var orderStatus = Enum.GetNames(typeof(SalesOrderSlaveStatusEnum))
+    .Where(x =&gt; x != SalesOrderSlaveStatusEnum.Cancel.ToString() && x != SalesOrderSlaveStatusEnum.Fail.ToString())
+    .ToList();
+// SQL 端：WHERE StatusDef IN ('A','B','C',...多個值)</code></pre>
+    <pre><code>// 建議：直接排除，改寫成 NOT IN 兩個值
+where orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveStatusDef != SalesOrderSlaveStatusEnum.Cancel.ToString()
+   && orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveStatusDef != SalesOrderSlaveStatusEnum.Fail.ToString()
+// SQL 端：WHERE StatusDef NOT IN ('Cancel','Fail')</code></pre>
+    <div class="note">效果：NOT IN (2值) 對查詢優化器而言比 IN (8~10值) 更容易命中索引、產生更精簡的執行計畫，語意也更直接表達「排除已取消/失敗」的意圖。</div>
+
+    <h3>5.3 用既有彙總欄位取代 Join <code class="inline">ReturnGoodsOrderSlave</code></h3>
+    <p><b>問題</b>：目前用 LEFT JOIN 即時查詢 <code class="inline">ReturnGoodsOrderSlave</code> 並篩選 <code class="inline">StatusDef == "Finish"</code>，但 <code class="inline">OrderSlaveFlow</code> 資料表本身已有 <code class="inline">OrderSlaveFlow_ReturnGoodsTotalPayment</code>（退貨總金額）欄位。</p>
+    <div class="why"><b>為什麼有效（白話說明）</b>：每多 Join 一張表，資料庫就要多做一次「配對比對」的工作，資料量越大越明顯（本查詢一次要撈近 1 年資料）。如果別的表格已經幫你「事先算好」退貨金額並存成一個欄位，直接讀那個欄位就好，不需要每次都重新去退貨明細表現場算一遍——就像「帳本上已經寫好本月退款總額」，直接看那一行數字，不必每次都把每張退貨單翻出來重新加總。前提是要先確認那個「已經算好的欄位」跟你即時算出來的結果意義完全一樣，這也是為什麼標註需要前置確認。</div>
+    <pre><code>// 現行：多一次 LEFT JOIN + 狀態篩選
+join returnGoodsOrderSlave in this._erpReadDbContext.ReturnGoodsOrderSlave.Valids()
+on orderSlaveFlow.OrderSlaveFlow_ReturnGoodsOrderSlaveId equals returnGoodsOrderSlave.ReturnGoodsOrderSlave_Id
+into leftJoinReturnGoodsOrderSlave
+from finishedReturnGoodsOrderSlave in leftJoinReturnGoodsOrderSlave
+    .Where(x =&gt; x.ReturnGoodsOrderSlave_StatusDef == "Finish").DefaultIfEmpty()
+...
+ReturnGoodsOrderSlaveTotalPayment = finishedReturnGoodsOrderSlave.ReturnGoodsOrderSlave_TotalPayment ?? 0</code></pre>
+    <pre><code>// 建議（需先與資料負責人確認欄位語意/即時性是否等同）：
+// 直接使用 OrderSlaveFlow 上已彙總的退貨金額欄位，省去一次 Join
+ReturnGoodsOrderSlaveTotalPayment = orderSlaveFlow.OrderSlaveFlow_ReturnGoodsTotalPayment</code></pre>
+    <div class="note">效果：4 表 Join 降為 3 表 Join。<br><b>⚠️ 前置確認</b>：需先確認該欄位是否僅計入「已完成（Finish）」的退貨、更新時機是否與即時查詢一致，避免金額計算邏輯跑掉。</div>
+
+    <h3>5.4 評估用 <code class="inline">OrderSlaveFlow</code> 既有日期欄位取代 Join <code class="inline">SalesOrderGroup</code></h3>
+    <p><b>觀察</b>：<code class="inline">OrderSlaveFlow</code> 資料表已有 <code class="inline">OrderSlaveFlow_TradesOrderSlaveDateTime</code>（訂單成立日期時間）欄位。若此欄位與 <code class="inline">SalesOrderGroup_DateTime</code> 語意等價，理論上可以省去 Join <code class="inline">SalesOrderGroup</code> 這張表。</p>
+    <div class="why"><b>為什麼有效（白話說明）</b>：跟 5.3 是同樣的道理——如果「同一張表」上已經有你要的日期欄位，就不需要為了拿一個日期特地多 Join 一張表。差別在於：<code class="inline">SalesOrderGroup</code> 記的是「整張購物車（一次結帳，可能包含多個明細）」的成立時間，而 <code class="inline">OrderSlaveFlow_TradesOrderSlaveDateTime</code> 記的是「單一明細流程」的時間。多數情況兩者會非常接近甚至相同，但這只是「通常如此」，不是資料庫規則保證的「一定如此」。所以這項優化效益高（可再省一張表的 Join），但風險也最高：若兩者其實有落差，篩出來的訂單範圍就會跟原本不一樣，等於改變了業務邏輯，因此需先請熟悉這兩張表的人確認語意一致才能安心採用。</div>
+    <pre><code>// 建議方向（需先驗證兩欄位資料是否一致，不可貿然替換）：
+where orderSlaveFlow.OrderSlaveFlow_TradesOrderSlaveDateTime &gt;= startDate
+   && orderSlaveFlow.OrderSlaveFlow_TradesOrderSlaveDateTime &lt; endDate</code></pre>
+    <div class="note">⚠️ 前置確認：<code class="inline">SalesOrderGroup</code> 是購物車（訂單群組）層級的時間，<code class="inline">OrderSlaveFlow</code> 是單筆明細流程層級的時間，兩者「通常」同值，但不保證 100% 一致。<b>這項優化需要資料/需求方確認語意等價後才能採用</b>，屬於高效益但需審慎驗證的項目。</div>
+
+    <h3>5.5 加上 <code class="inline">AsNoTracking()</code>（若尚未啟用）</h3>
+    <div class="why"><b>為什麼有效（白話說明）</b>：EF 預設會幫每一筆查詢回來的資料「建檔追蹤」，方便之後修改後呼叫 <code class="inline">SaveChanges()</code> 能知道哪裡變了。但這份查詢只是「讀資料算金額」，不會修改也不會存回去，那份「建檔追蹤」動作就完全是白工——多花 CPU 時間記錄一份你根本不會用到的變更快照，資料量越大這個多餘負擔越明顯。<code class="inline">AsNoTracking()</code> 就是告訴 EF「這批資料我只看不改，不用幫我建檔」，讓它省下這道手續。</div>
+    <pre><code>// 建議：讀取專用查詢加上 AsNoTracking()，避免 EF Change Tracker 追蹤查詢結果
+var result = (from ... select ...).AsNoTracking();</code></pre>
+    <div class="note">效果：此查詢僅供讀取彙總，不需要 EF 追蹤實體異動，可降低 Context 記憶體與 CPU 開銷，尤其在搬回大量列時效果更明顯。</div>
+
+    <h3>5.6 讓聚合真正下推到資料庫（與方案1呼應，附完整改寫）</h3>
+    <div class="why"><b>為什麼有效（白話說明）</b>：目前的寫法是「把近一年所有符合條件的訂單明細一筆一筆搬回應用程式伺服器，再由 C# 程式碼做加總」。但呼叫端最終只需要「一個總金額」和「最後交易時間」這兩個數字，卻要先把可能成千上百筆的明細資料，透過網路傳輸、佔用應用程式記憶體、逐筆迭代加總。這就像你只想知道「這個月花了多少錢」，卻要求銀行把每一筆交易明細都印出來寄給你，你再自己拿計算機加總——不如直接請銀行（資料庫）算好總額，只告訴你一個數字就好。資料庫本身就是為了「大量資料聚合計算」而生的高效引擎（有索引、有平行處理），讓它做 SUM/MAX 遠比把資料搬到應用層再迭代快得多，也大幅減少網路傳輸量與應用程式記憶體壓力。</div>
+    <pre><code>// 建議：查詢直接回傳彙總結果，而非明細列表
+public MemberOnlineOrderSummaryEntity GetMemberOnlineOrderSummary(
+    long shopId, int memberId, DateTime startDate, DateTime endDate, IEnumerable&lt;string&gt; excludedStatusList)
+{
+    var transactionOptions = new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted };
+    using (var transactionScope = new TransactionScope(TransactionScopeOption.Required, transactionOptions))
+    {
+        var query = from orderSlaveFlow in this._erpReadDbContext.OrderSlaveFlow.Valids()
+                    join salesOrderSlave in this._erpReadDbContext.SalesOrderSlave.Valids()
+                    on orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveId equals salesOrderSlave.SalesOrderSlave_Id
+                    join salesOrderGroup in this._erpReadDbContext.SalesOrderGroup.Valids()
+                    on orderSlaveFlow.OrderSlaveFlow_TradesOrderGroupId equals salesOrderGroup.SalesOrderGroup_TradesOrderGroupId
+                    where orderSlaveFlow.OrderSlaveFlow_MemberId == memberId
+                       && orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveShopId == shopId
+                       && salesOrderGroup.SalesOrderGroup_DateTime &gt;= startDate
+                       && salesOrderGroup.SalesOrderGroup_DateTime &lt; endDate
+                       && orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveStatusDef != SalesOrderSlaveStatusEnum.Cancel.ToString()
+                       && orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveStatusDef != SalesOrderSlaveStatusEnum.Fail.ToString()
+                    select new
+                    {
+                        salesOrderSlave.SalesOrderSlave_TotalPayment,
+                        orderSlaveFlow.OrderSlaveFlow_ReturnGoodsTotalPayment,
+                        salesOrderGroup.SalesOrderGroup_DateTime
+                    };
+
+        // 資料庫端直接算總金額與最後交易時間，只回傳一列彙總結果
+        var summary = query
+            .GroupBy(x =&gt; 1)
+            .Select(g =&gt; new MemberOnlineOrderSummaryEntity
+            {
+                TotalNetAmount = g.Sum(x =&gt; (x.SalesOrderSlave_TotalPayment ?? 0) - (x.OrderSlaveFlow_ReturnGoodsTotalPayment)),
+                LastTradeDateTime = g.Max(x =&gt; (DateTime?)x.SalesOrderGroup_DateTime)
+            })
+            .FirstOrDefault();
+
+        return summary ?? new MemberOnlineOrderSummaryEntity();
+    }
+}</code></pre>
+    <div class="note">效果：新增 <code class="inline">MemberOnlineOrderSummaryEntity</code>（僅含 TotalNetAmount、LastTradeDateTime），查詢結果從「N 筆明細」變成「1 筆彙總」。<br>⚠️ 影響範圍：呼叫端 <code class="inline">GetMemberOmoOrderKeyPrompt.GetKeyPrompt</code> 需同步調整，並補上對應單元測試（依團隊規範使用 NSubstitute mock Repository）。</div>
+
+    <h3>5.7 若語法優化仍不足：Dapper 手寫 SQL 作為最後手段</h3>
+    <div class="why"><b>為什麼有效（白話說明）</b>：EF6 是透過「翻譯」把 LINQ 轉成 SQL，翻譯過程有時候會「詞不達意」——尤其是多表 Join 又加上 GroupBy 這種複雜組合，EF6 產生的 SQL 結構不一定是資料庫執行效率最好的寫法（可能多包一層子查詢、或沒用上期望的索引）。Dapper 則讓你直接手寫 SQL、掌控每個細節，就像自己開車 vs. 坐別人開的車：能精準控制轉彎時機、加速煞車，而不是依賴翻譯層的自動決策。但這也表示要自己維護 SQL 字串、失去 EF 的型別安全與自動化好處，屬於效益最大但改動與維護成本也最高的手段，因此建議留到前面幾項都做完仍不夠快時才考慮。</div>
+    <p>若上述 LINQ 層級優化後，實際執行計畫仍不理想，可評估針對此單一高風險查詢改用 Dapper（專案已引入 Dapper 1.50.2）撰寫手工優化過的 SQL，直接控制 Join 順序、索引提示、聚合方式，作為效能優化的最後一道手段。建議排在語法優化與索引調整都驗證無效後再考慮。</p>
+
+    <h3>5.8 「先篩選出子集合、再 Join」是否有效？（拆分查詢討論）</h3>
+    <p><b>問題發想</b>：能不能先查出符合條件的 <code class="inline">OrderSlaveFlow</code>（或其 SalesOrderSlaveId）子集合，再拿這批 ID 去跟其他表 Join，藉此縮小 Join 的資料量？</p>
+    <p><b>結論</b>：這個直覺是對的，但「拆」的位置很關鍵，拆錯地方效果適得其反。</p>
+    <table>
+      <thead><tr><th>拆法</th><th>是否有效</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>LINQ 兩段查詢，但中間沒有 <code class="inline">.ToList()</code> 中斷</td><td>❌ 無效</td><td>EF6 仍會把兩段組合翻譯成同一支 SQL，對資料庫來說跟寫一支查詢完全一樣</td></tr>
+        <tr><td>LINQ 兩段查詢，中間 <code class="inline">.ToList()</code> 真的拆成兩次 DB 往返</td><td>⚠️ 視資料量，會員訂單量大時反而更差</td><td>第二步 <code class="inline">Contains(idList)</code> 會被翻成巨大的 <code class="inline">IN (@p0...@p3000)</code>，SQL Server 單一查詢參數上限 2100 個，超過會直接壞掉；即使沒超過，龐大且每次不同的 IN 清單也會讓執行計畫無法有效複用/快取。資料庫實際要碰觸的 row 數並沒有減少，多一次往返沒省到工</td></tr>
+        <tr><td><b>同一支 SQL 內用 CTE / 子查詢表達「先篩選、再 Join」的順序</b>（見六、Tier 3 範例）</td><td>✅ 有效，風險最低</td><td>仍是單一執行計畫、單一次往返，優化器可以先執行篩選幅度最大的那段（索引夠好會是 Index Seek），再對縮小後的集合做 Join，沒有 IN 清單爆炸的風險</td></tr>
+        <tr><td>真正縮小查詢範圍（縮短月份、加索引）</td><td>✅ 效果最直接</td><td>從根本減少資料庫要碰觸的實際 row 數，其他拆法都只是「換個方式碰觸差不多量的資料」</td></tr>
+      </tbody>
+    </table>
+    <div class="why"><b>白話總結</b>：拆分的價值不在「C# 程式碼分兩段寫」，而在於「SQL 執行計畫能不能先鎖定小範圍再做後續工作」。在 EF6 LINQ 裡，只要把高選擇性條件放在起始表（見 5.1），優化器通常會自動做到「先篩選、再 Join」；如果還是不夠快，正確的下一步是把「先篩選」用 CTE/暫存表的方式直接寫進 SQL 裡（見六、Tier 3 範例），而不是在應用層真的切成兩次資料庫呼叫並傳一串 ID 清單回去，那樣反而容易踩到 IN 清單上限與執行計畫快取失效的地雷。</div>
+  </div>
+
+  <div class="card" id="section6">
+    <h2>六、最佳優化寫法完整示範（三層式）</h2>
+    <p>以下依「風險與效益」分成三層，建議由 Tier 1 開始導入，觀察效果後再評估是否往下一層走。</p>
+
+    <h3>Tier 1：安全立即可用版本（不改變任何業務語意，純查詢結構優化）</h3>
+    <p>套用範圍：起始表改為 <code class="inline">OrderSlaveFlow</code>（5.1 filter push-down）、<code class="inline">!=</code> 取代大 IN 清單（5.2）、<code class="inline">AsNoTracking()</code>（5.5）、聚合下推到資料庫（5.6）。<b>保留</b> Join <code class="inline">ReturnGoodsOrderSlave</code> 與 <code class="inline">SalesOrderGroup</code>，因為省略它們（5.3/5.4）需要業務方驗證欄位語意，這裡先不冒險。</p>
+    <pre><code>/// &lt;summary&gt;
+/// 取得會員線上訂單彙總（淨消費金額、最後交易時間）
+/// &lt;/summary&gt;
+public MemberOnlineOrderSummaryEntity GetMemberOnlineOrderSummary(
+    long shopId, int memberId, DateTime startDate, DateTime endDate)
+{
+    var transactionOptions = new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted };
+    using (var transactionScope = new TransactionScope(TransactionScopeOption.Required, transactionOptions))
+    {
+        // 先套用高選擇性條件（MemberId + ShopId + 狀態），把起始集合縮到最小
+        var filteredFlow = this._erpReadDbContext.OrderSlaveFlow.Valids()
+            .Where(f =&gt; f.OrderSlaveFlow_MemberId == memberId
+                     && f.OrderSlaveFlow_SalesOrderSlaveShopId == shopId
+                     && f.OrderSlaveFlow_SalesOrderSlaveStatusDef != SalesOrderSlaveStatusEnum.Cancel.ToString()
+                     && f.OrderSlaveFlow_SalesOrderSlaveStatusDef != SalesOrderSlaveStatusEnum.Fail.ToString());
+
+        var query = from orderSlaveFlow in filteredFlow
+                    join salesOrderSlave in this._erpReadDbContext.SalesOrderSlave.Valids()
+                    on orderSlaveFlow.OrderSlaveFlow_SalesOrderSlaveId equals salesOrderSlave.SalesOrderSlave_Id
+                    join salesOrderGroup in this._erpReadDbContext.SalesOrderGroup.Valids()
+                    on orderSlaveFlow.OrderSlaveFlow_TradesOrderGroupId equals salesOrderGroup.SalesOrderGroup_TradesOrderGroupId
+                    join returnGoodsOrderSlave in this._erpReadDbContext.ReturnGoodsOrderSlave.Valids()
+                    on orderSlaveFlow.OrderSlaveFlow_ReturnGoodsOrderSlaveId equals returnGoodsOrderSlave.ReturnGoodsOrderSlave_Id
+                    into leftJoinReturnGoodsOrderSlave
+                    from finishedReturnGoodsOrderSlave in leftJoinReturnGoodsOrderSlave
+                        .Where(x =&gt; x.ReturnGoodsOrderSlave_StatusDef == "Finish").DefaultIfEmpty()
+                    where salesOrderGroup.SalesOrderGroup_DateTime &gt;= startDate
+                       && salesOrderGroup.SalesOrderGroup_DateTime &lt; endDate
+                    select new
+                    {
+                        salesOrderSlave.SalesOrderSlave_TotalPayment,
+                        ReturnPayment = finishedReturnGoodsOrderSlave.ReturnGoodsOrderSlave_TotalPayment,
+                        salesOrderGroup.SalesOrderGroup_DateTime
+                    };
+
+        // 聚合下推到資料庫，只回傳一列彙總結果，不搬明細回應用層
+        var summary = query
+            .AsNoTracking()
+            .GroupBy(x =&gt; 1)
+            .Select(g =&gt; new MemberOnlineOrderSummaryEntity
+            {
+                TotalNetAmount = g.Sum(x =&gt; (x.SalesOrderSlave_TotalPayment ?? 0) - (x.ReturnPayment ?? 0)),
+                LastTradeDateTime = g.Max(x =&gt; (DateTime?)x.SalesOrderGroup_DateTime)
+            })
+            .FirstOrDefault();
+
+        return summary ?? new MemberOnlineOrderSummaryEntity();
+    }
+}</code></pre>
+    <div class="note">⚠️ 呼叫端 <code class="inline">GetMemberOmoOrderKeyPrompt</code> 需同步從「拿明細清單自己 <code class="inline">.Sum()</code>」改為直接讀 <code class="inline">TotalNetAmount</code>/<code class="inline">LastTradeDateTime</code>；並補上 NSubstitute 單元測試（依團隊規範）。</div>
+
+    <h3>Tier 2：業務方驗證欄位語意後可再省 2 張表 Join</h3>
+    <p>若確認 <code class="inline">OrderSlaveFlow_ReturnGoodsTotalPayment</code> 等同即時 Join 算出的退貨金額、且 <code class="inline">OrderSlaveFlow_TradesOrderSlaveDateTime</code> 等同 <code class="inline">SalesOrderGroup_DateTime</code>，可以整段查詢再瘦身成<b>完全不用 Join</b>：</p>
+    <pre><code>var summary = this._erpReadDbContext.OrderSlaveFlow.Valids()
+    .Where(f =&gt; f.OrderSlaveFlow_MemberId == memberId
+             && f.OrderSlaveFlow_SalesOrderSlaveShopId == shopId
+             && f.OrderSlaveFlow_SalesOrderSlaveStatusDef != SalesOrderSlaveStatusEnum.Cancel.ToString()
+             && f.OrderSlaveFlow_SalesOrderSlaveStatusDef != SalesOrderSlaveStatusEnum.Fail.ToString()
+             && f.OrderSlaveFlow_TradesOrderSlaveDateTime &gt;= startDate
+             && f.OrderSlaveFlow_TradesOrderSlaveDateTime &lt; endDate)
+    .AsNoTracking()
+    .GroupBy(x =&gt; 1)
+    .Select(g =&gt; new MemberOnlineOrderSummaryEntity
+    {
+        TotalNetAmount = g.Sum(x =&gt; x.OrderSlaveFlow_TotalPayment - x.OrderSlaveFlow_ReturnGoodsTotalPayment),
+        LastTradeDateTime = g.Max(x =&gt; (DateTime?)x.OrderSlaveFlow_TradesOrderSlaveDateTime)
+    })
+    .FirstOrDefault() ?? new MemberOnlineOrderSummaryEntity();</code></pre>
+    <div class="note">單表查詢＋聚合，理論上只要 <code class="inline">(MemberId, ShopId, StatusDef)</code> 有索引，執行速度會非常快。<b>這層要先跟資料負責人確認欄位等價性才能上線</b>，風險最高但效益也最大。</div>
+
+    <h3>Tier 3：終極手段（Dapper + CTE，Tier 1/2 都不夠快時才用）</h3>
+    <pre><code>public MemberOnlineOrderSummaryEntity GetMemberOnlineOrderSummary(long shopId, int memberId, DateTime startDate, DateTime endDate)
+{
+    const string sql = @"
+        ;WITH FilteredFlow AS (
+            SELECT OrderSlaveFlow_SalesOrderSlaveId, OrderSlaveFlow_TradesOrderGroupId,
+                   OrderSlaveFlow_ReturnGoodsOrderSlaveId
+            FROM OrderSlaveFlow WITH (NOLOCK)
+            WHERE OrderSlaveFlow_MemberId = @MemberId
+              AND OrderSlaveFlow_SalesOrderSlaveShopId = @ShopId
+              AND OrderSlaveFlow_SalesOrderSlaveStatusDef NOT IN ('Cancel','Fail')
+        )
+        SELECT
+            SUM(s.SalesOrderSlave_TotalPayment - ISNULL(r.ReturnGoodsOrderSlave_TotalPayment, 0)) AS TotalNetAmount,
+            MAX(g.SalesOrderGroup_DateTime) AS LastTradeDateTime
+        FROM FilteredFlow f
+        JOIN SalesOrderSlave s WITH (NOLOCK) ON s.SalesOrderSlave_Id = f.OrderSlaveFlow_SalesOrderSlaveId
+        JOIN SalesOrderGroup g WITH (NOLOCK) ON g.SalesOrderGroup_TradesOrderGroupId = f.OrderSlaveFlow_TradesOrderGroupId
+                                              AND g.SalesOrderGroup_DateTime &gt;= @StartDate AND g.SalesOrderGroup_DateTime &lt; @EndDate
+        LEFT JOIN ReturnGoodsOrderSlave r WITH (NOLOCK) ON r.ReturnGoodsOrderSlave_Id = f.OrderSlaveFlow_ReturnGoodsOrderSlaveId
+                                                          AND r.ReturnGoodsOrderSlave_StatusDef = 'Finish';";
+
+    using (var connection = this._erpReadDbContext.Database.Connection)
+    {
+        return connection.QueryFirstOrDefault&lt;MemberOnlineOrderSummaryEntity&gt;(sql,
+            new { MemberId = memberId, ShopId = shopId, StartDate = startDate, EndDate = endDate })
+            ?? new MemberOnlineOrderSummaryEntity();
+    }
+}</code></pre>
+    <div class="note">單一 SQL、單一往返，CTE 讓執行計畫可以先窄化 <code class="inline">OrderSlaveFlow</code>，聚合完全在 DB 端完成，最大程度控制執行計畫，但失去 EF 型別安全，需自行維護 SQL 字串。</div>
+
+    <div class="why"><b>建議採用順序</b>：Tier 1（現在就能做，零風險）→ 補索引（DBA 確認 <code class="inline">OrderSlaveFlow(MemberId, ShopId, StatusDef)</code>）→ 觀察是否解決 timeout → 若還不夠，才考慮 Tier 2（需驗證）或 Tier 3（Dapper）。</div>
+  </div>
+
+  <div class="card" id="section5">
+    <h2>七、與 ELMAH 事件的對應關係</h2>
+    <table>
+      <thead><tr><th>ELMAH 錯誤類型</th><th>對應優化方案</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">EntityCommandExecutionException</code>（本查詢逾時且無 try/catch 導致 API 500）</td><td>方案 5（止血）+ 方案 1、2、3（治本）</td></tr>
+        <tr><td><code class="inline">Win32Exception</code>（ECoupon 歷程查詢逾時，機制類似）</td><td>可套用相同的方案 1、2、4 於 <code class="inline">ECouponInfoRepository.GeECouponInfoMemberHistoryList</code></td></tr>
+        <tr><td>多種錯誤同一時間點群聚發生</td><td>方案 8（平行架構調整）能降低群聚效應</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" id="section8">
+    <h2>八、架構層深入分析：<code class="inline">OmoKeyPromptsService</code> 平行任務的資源競爭問題</h2>
+    <div class="note">本章節整理自對 <code class="inline">/scm/v2/LocationMember/GetOmoKeyPromptsFromMemberDimension</code>（與 <code class="inline">Location/GetLastOmoKeyPromptsFromMemberDimension</code> 底層共用同一個 Service）近 1~2 週 ELMAH 時間分布分析後，延伸出的架構層根因討論。與第五、六章「單一查詢語法優化」不同，本章聚焦在「9 個平行任務彼此之間」的交互影響。</div>
+
+    <h3>8.1 時間分布：規律性群聚現象</h3>
+    <table>
+      <thead><tr><th>維度</th><th>近一週</th><th>近兩週（~10天）</th></tr></thead>
+      <tbody>
+        <tr><td><b>分鐘級群聚</b>：<code class="inline">:11</code>～<code class="inline">:13</code> 三分鐘窗口佔比</td><td>82%（155/189）</td><td>81.6%（177/217）</td></tr>
+        <tr><td>Exception Type 排序</td><td>Win32Exception(67.7%) &gt; EntityCommandExecutionException(23.8%) &gt; TaskCanceledException(5.3%) &gt; FlurlHttpException(3.2%)</td><td>比例幾乎一致</td></tr>
+        <tr><td>ShopId 集中</td><td>9、19、82 三家佔約 78%</td><td>比例幾乎一致</td></tr>
+      </tbody>
+    </table>
+    <div class="why"><b>結論</b>：不論發生在哪個小時（10/11/12/18點…），錯誤都高度集中在該小時第 11~13 分，兩次觀測比例幾乎相同，代表這是<b>穩定、規律性的排程/門市裝置心跳觸發</b>，並非偶發流量尖峰，強烈建議追查固定週期性排程或門市 App 輪詢設定的來源。ELMAH Dashboard 資料保留期實測僅約 10 天，「近兩週」分析實際只能取得約 10 天真實資料。</div>
+
+    <h3>8.2 驗證：多種 Exception Type 是否「同時發生」</h3>
+    <p>用 ELMAH 記錄的 <code class="inline">queryString</code>（含 <code class="inline">t</code>+<code class="inline">ts</code>+簽章，可視為單一請求的唯一識別碼）分組驗證：</p>
+    <table>
+      <thead><tr><th>指標</th><th>數字</th></tr></thead>
+      <tbody>
+        <tr><td>10 天內獨立請求數（依 queryString 去重）</td><td>103 次</td></tr>
+        <tr><td><b>同一次請求內同時出現 2 種以上不同 Exception Type</b></td><td><b>64 次（62%）</b></td></tr>
+      </tbody>
+    </table>
+    <pre><code>07/18 11:13:05 Shop=19 => [Win32Exception, EntityCommandExecutionException, Win32Exception, TaskCanceledException]（同一次請求）</code></pre>
+    <div class="why"><b>結論</b>：多數情況下，DB 連線逾時（Win32Exception）、SQL 逾時（EntityCommandExecutionException）、外部服務逾時（TaskCanceledException/FlurlHttpException），是在<b>同一次會員查詢中同時發生</b>，並非各自獨立巧合，直接對應下方 8.3 的平行任務架構。</div>
+
+    <h3>8.3 <code class="inline">OmoKeyPromptsService</code> 的 9 個平行任務盤點</h3>
+    <p><code class="inline">GetOmoKeyPromptsFromMemberDimension</code> 用 <code class="inline">Task.Run</code> 同時派出 9 個 <code class="inline">IOmoKeyPrompt</code> 任務，<code class="inline">Task.WhenAll().Wait()</code> 阻塞等待彙總：</p>
+    <table>
+      <thead><tr><th>#</th><th>Task Name</th><th>型態</th><th>DB 表（去重後）</th><th>外部 API</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>AppDownloadDataTask</td><td>DB + 外部API</td><td>DeviceAPPMapping、VipMemberPresentExtendedSummary、pub_content、coupon_pool</td><td>CampaignService</td></tr>
+        <tr><td>2</td><td>BirthdayPresentDataTask</td><td>DB + 外部API</td><td>VipMember系列、ECoupon系列、coupon、CrmMember系列（多表）、ShopMember(SP)</td><td>CampaignService</td></tr>
+        <tr><td>3</td><td>MemberCouponDataTask</td><td>純 DB</td><td>設定表 + coupon/pub_content/ECoupon系列 + ShopMember</td><td>無</td></tr>
+        <tr><td>4</td><td>MemberFillInfoTask</td><td>純 DB</td><td>VipMemberInfo、CrmMember</td><td>無</td></tr>
+        <tr><td>5</td><td>MemberLoyaltyPointDataTask</td><td>純 DB</td><td>點數帳戶表 + ECoupon系列</td><td>無</td></tr>
+        <tr><td>6</td><td>OpenCardPresentTask</td><td>DB + 外部API</td><td>VipMemberPresent、VipMemberInfo、pub_content、coupon_pool、ShopMember(SP)</td><td>CampaignService</td></tr>
+        <tr><td>7</td><td>ShoppingCartDataTask</td><td>純 DB（單一SP）</td><td>GetShopMemberShoppingCartList SP</td><td>無</td></tr>
+        <tr><td>8</td><td>MemberLineIdBindingInfoTask</td><td>DB + 外部API</td><td>MemberLineMapping + 合約表</td><td>Omnichat</td></tr>
+        <tr><td>9</td><td><b>OmoOrderDataTask</b>（唯一無 try/catch）</td><td>純 DB，範圍最大最重</td><td>SalesOrderSlave/OrderSlaveFlow/SalesOrderGroup/ReturnGoodsOrderSlave（近1年）+ CrmMember、ShopContractFeature、Shop</td><td>無</td></tr>
+      </tbody>
+    </table>
+    <div class="note">沒有任何任務是「純外部 API」，全部或多或少都查 DB；CampaignService 被 4 個任務重複呼叫，是外部依賴最集中的單點；第 9 個任務（也是唯一沒有 try/catch 的）剛好也是查詢範圍最大、最容易逾時的任務。</div>
+
+    <h3>8.4 「自己撞自己」：同一次請求內的重複查詢</h3>
+    <table>
+      <thead><tr><th>重複的資料</th><th>同時被幾個任務查</th><th>涉及任務</th><th>呼叫方法</th></tr></thead>
+      <tbody>
+        <tr><td>CrmMember（同一組 MemberId+ShopId）</td><td>3 個</td><td>Birthday、FillInfo、<b>OmoOrder</b></td><td><code class="inline">ICrmMemberRepository.GetCrmMemberWithNoLock(MemberId, ShopId)</code>，參數完全相同</td></tr>
+        <tr><td>會員 ECoupon/Coupon 清單</td><td>2 個</td><td>Birthday、OpenCardPresent</td><td><code class="inline">IShopMemberRepository.GetShopMemberECouponAndCouponList(ShopId, MemberId)</code></td></tr>
+        <tr><td>pub_content/coupon_pool</td><td>2 個</td><td>AppDownload、OpenCardPresent</td><td><code class="inline">ICouponRepository.GetCouponPoolList</code></td></tr>
+        <tr><td>VipMember 系列</td><td>3 個</td><td>AppDownload、Birthday、OpenCardPresent</td><td><code class="inline">IVipMemberRepository.*</code></td></tr>
+      </tbody>
+    </table>
+    <pre><code>public CrmMember GetCrmMemberWithNoLock(int nineYiMemberId, long shopId)
+{
+    var transactionOptions = new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted };
+    using (var ts = new TransactionScope(TransactionScopeOption.Required, transactionOptions))
+    {
+        return this._crmDbContext.CrmMember.Valids()
+            .Where(i => i.CrmMember_NineYiMemberId == nineYiMemberId && i.CrmMember_ShopId == shopId)
+            .FirstOrDefault();
+    }
+}</code></pre>
+    <div class="why">同一次請求裡，3 個不同 <code class="inline">Task.Run</code> 執行緒各自開一個新 <code class="inline">TransactionScope</code>、各自借一條 DB 連線，去查<b>完全一樣的一筆資料</b>。</div>
+
+    <h3>8.5 這是「鎖競爭」還是「資源排隊」？</h3>
+    <p><b>釐清一個容易誤解的地方</b>：這種重複查詢造成的「卡到」，<b>不是 SQL 鎖等待（lock blocking）</b>，而是<b>資源池排隊（resource contention）</b>：</p>
+    <ul>
+      <li><code class="inline">GetCrmMemberWithNoLock</code> 特意用 <code class="inline">IsolationLevel.ReadUncommitted</code>（等同 NOLOCK），刻意避開了列鎖／被寫入鎖擋到的情況，多個純讀取查詢彼此鎖住的機率本來就低。</li>
+      <li>真正的競爭發生在<b>應用層與 DB 層的有限資源池</b>：ADO.NET 連線池（每個查詢都要借一條實體連線）、.NET ThreadPool（<code class="inline">Task.Run</code> 佔用的工作執行緒）、DB Server 端 CPU/IO（重複計算同樣的東西 N 次，浪費算力）。</li>
+    </ul>
+
+    <h3>8.6 是否因連線池壓力導致無法同時送出查詢？</h3>
+    <div class="note">實測確認：SCMAPIV2 專案所有 connection string（CrmDbContext、CrmDbARContext 等）<b>皆未明確設定 Max Pool Size</b>，代表全部使用 ADO.NET SqlClient 預設值 <b>Max Pool Size = 100</b>。</div>
+    <ol class="steps">
+      <li>單一次請求，9 個任務中至少 6 個查 DB，且部分重複查詢同一資料 → 保守估計<b>一次請求可能同時消耗 5~8 條連線</b></li>
+      <li>疊加 8.1 發現的「:11~13分 多商店同時觸發」現象，若同一秒有 15~20 個會員請求同時發生 → <b>理論連線需求可達 100~150+，逼近/超過 Max Pool Size=100</b></li>
+      <li>這正好解釋 <code class="inline">Win32Exception</code> 為何是最大宗（67.7%）：其典型訊息為 <i>"Timeout expired. The timeout period elapsed prior to obtaining a connection from the pool..."</i>，即應用程式連 DB 之前，光是排隊等一條可用連線就先逾時，而非查詢本身跑很慢</li>
+      <li>少數擠過連線階段、真的送進 DB 的查詢，又因 DB 端資源同時被打滿，逾時炸出 <code class="inline">EntityCommandExecutionException</code>（SQL 命令逾時）</li>
+    </ol>
+
+    <h3>8.7 治本 vs 治標：兩種互補（非互斥）的優化方向</h3>
+    <table>
+      <thead><tr><th>方向</th><th>做法</th><th>性質</th><th>效果</th></tr></thead>
+      <tbody>
+        <tr><td><b>治本</b></td><td>在 <code class="inline">GetOmoKeyPromptsFromMemberDimension</code> 最上層，把會被多任務共用的資料（CrmMember、GetShopMemberECouponAndCouponList 結果、VipMember 資訊）查詢一次，再以參數傳給下面 9 個 <code class="inline">IOmoKeyPrompt.GetKeyPrompt()</code>，取代各自重複查</td><td>架構調整，需修改介面簽名</td><td>直接減少每次請求消耗的連線數與重複查詢量（如 CrmMember 從 3 次降到 1 次）</td></tr>
+        <tr><td><b>治標</b></td><td>調高 Max Pool Size 並建立連線數監控（如 SQL Server DMV <code class="inline">sys.dm_exec_connections</code> 或 APM）</td><td>設定調整</td><td>讓系統有更多緩衝撐過尖峰，但不解決浪費本身</td></tr>
+        <tr><td><b>止血</b>（方案5）</td><td><code class="inline">GetMemberOmoOrderKeyPrompt</code> 補上 try/catch</td><td>低風險</td><td>避免單一任務逾時直接讓整支 API 500</td></tr>
+        <tr><td><b>追查根因</b></td><td>排查固定分鐘級群聚（:11~13分）背後的排程/門市裝置心跳來源，評估加入 jitter 分散觸發時間</td><td>需跨團隊確認</td><td>從源頭降低瞬間併發量，是影響最大的長期解法</td></tr>
+      </tbody>
+    </table>
+    <div class="why"><b>建議導入順序</b>：止血（try/catch）→ 追查排程根因（jitter分散）→ 治本（共用資料預查，減少重複）→ 視監控數據決定是否治標（調高連線池）。</div>
+
+    <h3>8.8 實測修正：Timeout 真正原因為何？如何找證據驗證？</h3>
+    <div class="note"><b>修正發現</b>：調閱一筆 Win32Exception 的完整 ELMAH detail，發現「連線池排隊」假設並未獲得直接證據支持。</div>
+    <pre><code>Win32Exception: The wait operation timed out
+  &lt;- EntityCommandExecutionException
+    &lt;- SqlException: Execution Timeout Expired.
+      The timeout period elapsed prior to completion of the operation or the server is not responding.</code></pre>
+    <p>核對全部 217 筆訊息文字分布：</p>
+    <table>
+      <thead><tr><th>Exception Type</th><th>筆數</th><th>訊息內容</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">Win32Exception</code></td><td>146</td><td><b>一律</b>是 <code class="inline">The wait operation timed out</code></td></tr>
+        <tr><td><code class="inline">EntityCommandExecutionException</code></td><td>53</td><td>一律是外層包裝訊息，內層即上方 SqlException</td></tr>
+        <tr><td><code class="inline">TaskCanceledException</code></td><td>12</td><td><code class="inline">A task was canceled</code></td></tr>
+        <tr><td><code class="inline">FlurlHttpException</code></td><td>6</td><td><b>400 Bad Request</b> 呼叫 CampaignService <code class="inline">GetMemberPresentInfo</code>（非 timeout，是業務參數錯誤）</td></tr>
+      </tbody>
+    </table>
+    <div class="why"><b>修正結論</b>：<code class="inline">Win32Exception</code>/<code class="inline">EntityCommandExecutionException</code> 實際上是 <b>SQL 命令「執行逾時」（CommandTimeout 到期）</b>——查詢已成功取得連線、送進 DB 開始執行，但跑太久才逾時，訊息中完全沒有出現連線池滿的典型字樣（"...prior to obtaining a connection from the pool..."）。真正瓶頸更可能在 <b>DB Server 端執行資源（CPU/IO/鎖等待）被瞬間打滿</b>，而非應用層連線池排隊。此結論仍與「9個任務重複查詢、浪費DB算力」的推論相關，但機制描述需修正為「DB端忙不過來」而非「連線池爆了」。另外 <code class="inline">FlurlHttpException</code> 屬於不同性質的錯誤（CampaignService 業務參數問題），不應與前三種 timeout 類錯誤混在一起分析。</div>
+
+    <h4>後續驗證方法（如何找證據證實/推翻上述修正結論）</h4>
+    <table>
+      <thead><tr><th>#</th><th>方法</th><th>做法</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>DB端歷史數據回溯</b>（最推薦，免改程式碼）</td><td>若有 Query Store：查 <code class="inline">sys.query_store_runtime_stats</code>，比對可疑 SQL 在 :11~13分 vs 其他時間的平均執行時間/CPU/邏輯讀取次數；若無則調閱 PerfMon/Zabbix/Datadog 的 Batch Requests/sec、% CPU、Page Life Expectancy、Lock Waits/sec 歷史</td><td>直接證實「DB端當下是否真的變慢/資源被打滿」</td></tr>
+        <tr><td>2</td><td><b>即時監控</b>（下次尖峰現場抓證據）</td><td>請 DBA 開 SQL Server Extended Events session，過濾 sql_statement_completed/rpc_completed 且 duration 超過門檻；同時查應用端 <b>Application Insights 的 Dependency 追蹤</b>（ELMAH log 內已見 App Insights 追蹤欄位，代表已在運作，可直接查）</td><td>確認 :11~13分 是否真有大量同類 SQL <b>同時</b>被送進執行，且已有現成監控管道</td></tr>
+        <tr><td>3</td><td><b>程式碼埋點計時</b>（分辨排隊延遲 vs 真執行慢）</td><td>在 Task.Run 內用 Stopwatch 分別記錄「dispatch到開始執行的排隊延遲」與「實際查詢/呼叫耗時」兩段時間並記錄 log</td><td>queueDelay 大 → ThreadPool 執行緒不足；execTime 大 → 真的是 DB/外部服務慢，可精確定位問題在應用層還是 DB 層</td></tr>
+        <tr><td>4</td><td><b>受控實驗</b>（Staging重現）</td><td>用 JMeter/k6 對 QA/Staging 模擬同一秒 15~20 個不同會員打此 API，觀察能否重現相同 Exception Type 分布比例</td><td>能重現 → 證實是併發量本身造成；不能重現 → 代表 Prod DB 當下可能疊加其他背景負載（批次工作/報表查詢）</td></tr>
+        <tr><td>5</td><td><b>驗證固定分鐘群聚來源</b></td><td>查 IIS Log/CloudFront Log，篩出 :11~13分 請求，比對 User-Agent/clientIP 是否集中特定門市裝置或排程來源 IP；或直接詢問門市 App/NMQ 排程 owner 是否有固定該時段執行的心跳/輪詢任務，並嘗試 A/B 測試延後排程觀察錯誤是否消失</td><td>找出瞬間高併發的真正觸發源頭，是治本方案中影響最大的一步</td></tr>
+      </tbody>
+    </table>
+    <pre><code>// 方法3 示範：Task.Run 埋點
+var dispatchTime = DateTime.UtcNow;
+Task.Run(() =>
+{
+    var startTime = DateTime.UtcNow;
+    var queueDelay = (startTime - dispatchTime).TotalMilliseconds; // ThreadPool 排隊延遲
+    var sw = Stopwatch.StartNew();
+    var result = keyPrompt.GetKeyPrompt(request);
+    sw.Stop(); // SQL/外部呼叫實際耗時
+    _logger.Info($"{keyPrompt.GetType().Name} queueDelay={queueDelay}ms execTime={sw.ElapsedMilliseconds}ms");
+    return result;
+});</code></pre>
+
+    <h3>8.9 更關鍵的發現：問題不限於單一 API，而是「呼叫端跨 API 同時發動 + 重試風暴」</h3>
+    <div class="note">前面 8.1~8.8 的分析都聚焦在 <code class="inline">OmoKeyPromptsService</code> 這一支 API 內部的架構問題。本節進一步擴大範圍，撈取近 10 天內<b>整個 NineYi.ScmApiV2 應用</b>所有 URL 的 Win32Exception（訊息含 wait operation）記錄（共 7,640 筆），驗證「呼叫端是否本來就會一次打多支 API」，結果發現問題規模比單一 API 分析要大得多。</div>
+
+    <h4>證據 1：同一分鐘、同一商店，多達 8 種完全不同的 API 一起爆</h4>
+    <pre><code>07/16 18:12, Shop=9 => 470筆, URLs=[
+  GetOmoKeyPromptsFromMemberDimension | GetLocationOfflineSalesOrderList |
+  GetMemberConsumptionInfo | GetCouponList | GetMemberTradesOrderInfoAr |
+  GetMemberTradesOrderInfo | GetPickupConfirmList | GetArrivedConfirmList
+]
+07/17 11:12, Shop=9 => 250筆, URLs=[7 種不同 API]
+07/18 11:13, Shop=19 => 210筆, URLs=[4 種不同 API]</code></pre>
+    <div class="why">依「date+分鐘+ShopId」分組，10 天內共 171 組錯誤群聚，其中 <b>62 組（36%）同時出現 2 種以上不同 URL 的 API 一起爆</b>，證實不只是 <code class="inline">OmoKeyPromptsService</code> 內部 9 個任務互相影響，<b>呼叫端本身就會在同一時間點對一整批完全不同的 API 發動請求</b>。</div>
+
+    <h4>證據 2：追蹤 t（呼叫端身分識別碼）——確認是同一客戶端所為</h4>
+    <pre><code>07/16 18:12 Shop=9 這波 470 筆錯誤：
+  t=00631528 → 470次（同一client）
+  t=62251364 → 280次</code></pre>
+    <div class="why">抽樣看 <code class="inline">t=00631528</code> 這個呼叫端，同一分鐘內依序打了 GetLocationOfflineSalesOrderList（大量重複）→ GetCouponList → GetMemberConsumptionInfo → ...，<b>確認是同一個整合端（可能是門市 POS 系統或後台整合帳號）在極短時間內連續呼叫多支不同 API</b>。</div>
+
+    <h4>證據 3（更嚴重）：同一支 API 在同一秒內被重複打 10~20 次</h4>
+    <pre><code>GetLocationOfflineSalesOrderList，相同 ts=1784254304 → 20次
+                                  相同 ts=1784254306 → 20次
+                                  相同 ts=1784254313 → 20次</code></pre>
+    <div class="why">同一個簽章時間戳（代表極短時間內）同一支 API 被重複呼叫 10~20 次，高度符合「<b>逾時後立即重試（Retry Storm）</b>」的典型反模式：呼叫端缺乏 backoff 機制，一逾時就馬上重打，DB 當下已經在忙、本來就快撐不住，重試瞬間讓負載雪上加霜，形成自我放大的惡性循環。</div>
+
+    <h4>影響範圍對照（10 天內 Win32Exception 依 URL 統計 Top 5）</h4>
+    <table>
+      <thead><tr><th>URL</th><th>筆數</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">/scm/v2/Location/GetLocationOfflineSalesOrderList</code></td><td>1,470</td></tr>
+        <tr><td><code class="inline">/scm/v2/LocationMember/GetOmoKeyPromptsFromMemberDimension</code></td><td>1,460</td></tr>
+        <tr><td><code class="inline">/scm/v2/ShopMember/GetCouponList</code></td><td>1,290</td></tr>
+        <tr><td><code class="inline">/scm/v2/Location/GetLastOmoKeyPromptsFromMemberDimension</code></td><td>930</td></tr>
+        <tr><td><code class="inline">/scm/v2/LocationMemberOrder/GetMemberConsumptionInfo</code></td><td>690</td></tr>
+      </tbody>
+    </table>
+    <div class="note"><b>其他 API（如 GetLocationOfflineSalesOrderList、GetCouponList）受影響次數甚至比本文件聚焦分析的 OMO KeyPrompt API 還多</b>，代表這是<b>跨整個應用層級的共用 DB 資源問題</b>，並非 OmoKeyPromptsService 獨有。</div>
+
+    <h4>修正後的完整因果鏈</h4>
+    <pre><code>少數幾個整合客戶端(t=00631528等)在固定時間點(:11~13分等)
+  → 同時對「多支不同API」發起大量請求(非單一API內部問題)
+  → 部分請求逾時後，缺乏 backoff 機制立即重試
+  → 短時間內同一API被重打10~20次，疊加多支不同API的請求
+  → DB Server 執行資源(CPU/IO)被大量重複且無意義的請求瞬間打滿
+  → 幾乎「同時」所有觸碰DB的API(不限於OMO KeyPrompt)全部 Win32Exception 逾時</code></pre>
+
+    <h4>建議下一步</h4>
+    <ol class="steps">
+      <li>找出 <code class="inline">t=00631528</code>、<code class="inline">t=62251364</code> 等高頻客戶端對應的實際店家/整合系統（透過 <code class="inline">SupplierApiProfile</code> 表反查其 t token 對應的商店與系統名稱），了解其呼叫模式（門市 POS？後台批次 job？第三方整合？）</li>
+      <li>確認呼叫端是否存在無限重試機制，若有，建議協調對方加入 exponential backoff + 最大重試次數限制</li>
+      <li>評估是否該對高頻客戶端做 Rate Limiting / 節流（可在 <code class="inline">ValidateTokenHandler</code> 或 API Gateway 層依 t 做限流），避免單一客戶端的重試風暴拖垮整個共用 DB</li>
+      <li><b>本節發現與前述 8.1~8.8 的關係</b>：OmoKeyPromptsService 內部 9 任務重複查詢（8.4）與連線/執行資源競爭（8.6、8.8）依然是真實存在的問題，但它們是在「呼叫端已經先製造出跨 API 高併發」的前提下被放大的次要因子；<b>真正影響範圍最大、優先度最高的治本方向，應是先處理呼叫端的重試風暴與跨 API 併發，而非只優化單一 API 內部邏輯</b>。</li>
+    </ol>
+
+    <h3>8.10 這幾支 API 會互相影響嗎？逐支拆解「他們是否共用同一個 DB」</h3>
+    <div class="note">承接 8.9 節的疑問：既然是不同 API，為什麼會「同時」逾時？本節逐支追蹤程式碼，確認每支 API 實際連到哪一個資料庫（連線字串名稱）與哪個實體 DB Server 叢集，藉此證明「互相影響」不是巧合，而是<b>架構上原本就共用同一批 DB 資源</b>。</div>
+
+    <h4>8.10.1 SCMAPIV2 的 DB 拓樸：兩組實體 DB Server 叢集</h4>
+    <div class="why">從 <code class="inline">WebSite\ConnectionStrings.config</code> 可看到，SCMAPIV2 同時連接下列多個資料庫，且明顯分屬<b>兩個實體 DB Server（Listener）叢集</b>：</div>
+    <table>
+      <thead><tr><th>DB Server 叢集</th><th>連線字串名稱</th><th>對應資料庫</th></tr></thead>
+      <tbody>
+        <tr><td>Lstn2</td><td><code class="inline">WebStore</code> / <code class="inline">WebStore.ReadOnly</code></td><td>WebStoreDB</td></tr>
+        <tr><td>Lstn2</td><td><code class="inline">APP</code></td><td>APPDB</td></tr>
+        <tr><td>Lstn2</td><td><code class="inline">Info</code></td><td>InfoDB</td></tr>
+        <tr><td>Lstn2</td><td><code class="inline">Notification</code></td><td>NotificationDB</td></tr>
+        <tr><td>Lstn2</td><td><code class="inline">ExceptionLog</code></td><td>ExceptionLogDB</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">CRM</code> / <code class="inline">CRM.ReadOnly</code></td><td>CRMDB</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">CRMAR.ReadOnly</code></td><td>CRMDBAR（CRM 歷史封存）</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">ERP</code> / <code class="inline">ERP.ReadOnly</code></td><td>ERPDB</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">ERPAR.ReadOnly</code></td><td>ERPDBAR</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">Audience</code> / <code class="inline">Audience.ReadOnly</code></td><td>AudienceDB</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">NineYiDW</code> / <code class="inline">NineYiDW.ReadOnly</code></td><td>NineYiDW（報表倉儲）</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">Channel</code> / <code class="inline">Channel.ReadOnly</code></td><td>ChannelDB</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">CRMTemp</code></td><td>CRMTempDB</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">Trace</code></td><td>TRACEDB</td></tr>
+        <tr><td>Lstn3</td><td><code class="inline">AuthExternal</code></td><td>AuthExternalDB</td></tr>
+      </tbody>
+    </table>
+    <div class="why">⚠️ <b>關鍵重點</b>：<code class="inline">Lstn3</code> 這一組 DB Server，同時扛著 CRM、CRMAR、ERP、ERPAR、Audience、NineYiDW、Channel、CRMTemp、Trace、AuthExternal <b>共 10 個資料庫</b>。就算 7 支 API 彼此查詢的「資料庫」不同（如一支查 CRM、一支查 ERP），只要都落在 Lstn3 這一組實體伺服器上，<b>依然是共用同一批實體 CPU / IO / TempDB / 連線數</b>，會互相搶資源。</div>
+
+    <h4>8.10.2 逐支 API 拆解：查哪個 DB、哪些表</h4>
+    <table>
+      <thead><tr><th>#</th><th>API</th><th>內部關鍵資料流</th><th>使用的 DB（連線字串）</th><th>DB Server 叢集</th><th>主要資料表（節錄）</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code class="inline">GetOmoKeyPromptsFromMemberDimension</code>（9個平行任務加總）</td><td>OmoKeyPromptsService → 9個 IOmoKeyPrompt 任務</td><td><b>WebStore</b>（7個任務）+ <b>CRM</b>（3個任務）+ <b>ERP</b>（1個任務，OmoOrderDataTask）</td><td><b>Lstn2 + Lstn3 都命中</b></td><td>WebStore：ECoupon/ECouponSlave/VipMember/VipMemberPresent/Coupon/DeviceAPPMapping/ShoppingCart系列；CRM：CrmMember/CrmMemberTier；ERP：SalesOrder/SalesOrderSlave/SalesOrderGroup</td></tr>
+        <tr><td>2</td><td><code class="inline">GetLastOmoKeyPromptsFromMemberDimension</code></td><td>同上9任務 + 讀取歷史摘要/紀錄</td><td>同上（WebStore+CRM+ERP）<b>再加上 Info（OmoKeyPromptSummary）+ Trace（OmoKeyPromptHistory）</b></td><td><b>Lstn2 + Lstn3 都命中</b>（範圍比#1更廣）</td><td>同上 + OmoKeyPromptSummary（Info）、OmoKeyPromptHistory（Trace）</td></tr>
+        <tr><td>3</td><td><code class="inline">GetAvailableECoupon</code></td><td>ECouponService.GetMemberAvailableToTakeECouponList</td><td><b>WebStore</b></td><td><b>Lstn2</b></td><td>ECoupon、ECouponSlave、ECouponRelativeSlave、VipMember、ECouponPromotionTagMapping</td></tr>
+        <tr><td>4</td><td><code class="inline">GetLocationOfflineSalesOrderList</code></td><td>CrmOrderService.GetOfflineSalesOrderList → CrmOrderRepository</td><td><b>CRM</b></td><td><b>Lstn3</b></td><td>CrmOrder、CrmOrderSlave、CrmOrderLocation、CrmOrderCustomField、CrmShopMemberCard、CrmReturnGoodsOrderSlave</td></tr>
+        <tr><td>5</td><td><code class="inline">GetCouponList</code></td><td>ShopMemberService.GetShopMemberECouponAndCouponList</td><td><b>WebStore</b>（主查詢）+ <b>ERP</b>（GetShopMemberECouponListFromERP）</td><td><b>Lstn2 + Lstn3 都命中</b></td><td>WebStore：ECoupon、ECouponSlave、VipMember、ECouponPromotionTagMapping；ERP：ERP側優惠券歸檔資料</td></tr>
+        <tr><td>6</td><td><code class="inline">GetMemberConsumptionInfo</code></td><td>LocationMemberOrderService.GetMemberConsumptionInfo</td><td><b>NineYiDW</b>（SalesOrderDMRepository）+ <b>CRM</b>（CrmMemberRepository、CrmSalesOrderRepository）</td><td><b>Lstn3</b></td><td>SalesOrderDM（NineYiDW）、CrmMember、CrmMemberSummary、CrmSalesOrder（CRM）</td></tr>
+        <tr><td>7</td><td><code class="inline">GetMemberTradesOrderInfoAr</code></td><td>MemberTradesOrderService.GetMemberTradesOrderAr → SalesOrderRepository.GetMultiTradesOrderListAr</td><td><b>ERP</b>（主查詢）+ <b>WebStore</b>（VipMember查詢）</td><td><b>Lstn2 + Lstn3 都命中</b></td><td>ERP：SalesOrder、SalesOrderSlave、SalesOrderGroup、OrderSlaveFlow、ReturnGoodsOrder、ReturnGoodsOrderSlave、RefundRequest、SalesOrderFee；WebStore：VipMember</td></tr>
+      </tbody>
+    </table>
+
+    <h4>8.10.3 共用矩陣：這 7 支 API 到底疊在哪裡</h4>
+    <table>
+      <thead><tr><th>DB / 連線字串</th><th>Server 叢集</th><th>命中的 API</th></tr></thead>
+      <tbody>
+        <tr><td>WebStoreDB</td><td>Lstn2</td><td>#1 OmoKeyPrompts、#2 LastOmoKeyPrompts、#3 GetAvailableECoupon、#5 GetCouponList、#7 GetMemberTradesOrderInfoAr（VipMember）</td></tr>
+        <tr><td>CRMDB</td><td>Lstn3</td><td>#1 OmoKeyPrompts、#2 LastOmoKeyPrompts、#4 GetLocationOfflineSalesOrderList、#6 GetMemberConsumptionInfo</td></tr>
+        <tr><td>ERPDB</td><td>Lstn3</td><td>#1 OmoKeyPrompts（OmoOrderDataTask）、#2 LastOmoKeyPrompts、#5 GetCouponList、#7 GetMemberTradesOrderInfoAr</td></tr>
+        <tr><td>NineYiDW</td><td>Lstn3</td><td>#6 GetMemberConsumptionInfo</td></tr>
+        <tr><td>InfoDB</td><td>Lstn2</td><td>#2 LastOmoKeyPrompts</td></tr>
+        <tr><td>TraceDB</td><td>Lstn3</td><td>#2 LastOmoKeyPrompts</td></tr>
+      </tbody>
+    </table>
+    <div class="why">結論一目瞭然：
+      <ul>
+        <li><b>WebStoreDB（Lstn2）被 5 支 API 共用</b>：#1、#2、#3、#5、#7 全部都會打到 WebStoreDB，且其中 VipMember、ECoupon/ECouponSlave 這幾張表<b>被 3 支以上不同 API 重複查詢</b>（不只是同一支 API 內部 9 任務互撞，是跨 API 一起撞同一批表）。</li>
+        <li><b>CRMDB（Lstn3）被 4 支 API 共用</b>：#1、#2、#4、#6，且 CrmMember 這張表在 8.9 節之前的分析中，本來就已知會被單一 API 內部 3 個任務重複查，現在加上跨 API 疊加，實際同時查詢 CrmMember 的併發數遠比先前估計還高。</li>
+        <li><b>ERPDB（Lstn3）被 4 支 API 共用</b>：#1、#2、#5、#7，SalesOrder/SalesOrderSlave/SalesOrderGroup 系列表在 #1（OmoOrderDataTask）與 #7（GetMemberTradesOrderInfoAr）都會查，且兩者剛好都是 8.9 節驗證出「同一分鐘會一起爆」的 API 組合成員。</li>
+        <li><b>Lstn3 這個實體 DB Server 叢集，是目前 7 支 API 中有 4 支（CRM/ERP/NineYiDW/Trace 相關）共同的實體資源瓶頸</b>——即使各自查的邏輯資料庫不同，仍是同一台（組）DB Server 在扛所有查詢執行、CPU、IO、TempDB 與連線數。</li>
+      </ul>
+    </div>
+
+    <h4>8.10.4 回答核心問題：這幾支 API 是否會互相影響？</h4>
+    <div class="note"><b>答案：會，而且有兩層機制同時成立：</b></div>
+    <ol class="steps">
+      <li><b>邏輯層共用（DB/表級）</b>：#1/#2/#3/#5/#7 共用 WebStoreDB，#1/#2/#4/#6 共用 CRMDB，#1/#2/#5/#7 共用 ERPDB。只要其中任兩支 API 同時被高頻呼叫，就會直接對同一顆資料庫、甚至同一張表發起額外的查詢負載，加劇鎖等待/資源排隊。</li>
+      <li><b>實體層共用（Server 叢集級）</b>：即使兩支 API 查詢的是「不同資料庫」（例如一支查 CRM、一支查 ERP），只要都落在 Lstn3 這一組實體 DB Server 上，仍會共用同一批 CPU/IO/連線資源，這解釋了為何 8.9 節觀察到「完全不相關的 API 名稱（如 GetLocationOfflineSalesOrderList 查 CRM、GetMemberTradesOrderInfoAr 查 ERP）會在同一分鐘一起爆」——兩者邏輯資料庫不同，但實體伺服器相同。</li>
+    </ol>
+    <div class="why">換句話說，8.9 節發現的「呼叫端跨 API 同時發動 + 重試風暴」之所以會造成<b>幾乎所有 API 同時 timeout</b>，正是因為這些 API 背後的 DB 佈局本來就高度重疊：<b>沒有任何一支 API 是完全獨立的 DB 資源孤島</b>，Lstn3 這組伺服器尤其是所有 CRM/ERP 系 API 的共同承受點。</div>
+
+    <h4>8.10.5 表級交叉比對：這 7 支 API 共同查詢了哪些資料表</h4>
+    <div class="note">8.10.3 節是「共用同一個 DB」層級的分析，本節更進一步，精確到「共用同一張表」層級，找出被 2 支以上不同 API 同時查詢的實際資料表。</div>
+    <table>
+      <thead><tr><th>資料表</th><th>命中的 API 數</th><th>涉及的 API</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">VipMember</code></td><td><b>5 支</b></td><td>GetOmoKeyPromptsFromMemberDimension、GetLastOmoKeyPromptsFromMemberDimension、GetCouponList、GetMemberTradesOrderInfoAr、GetAvailableECoupon</td></tr>
+        <tr><td><code class="inline">ECoupon</code></td><td>4 支</td><td>上述除 GetMemberTradesOrderInfoAr 外的 4 支</td></tr>
+        <tr><td><code class="inline">ECouponSlave</code></td><td>4 支</td><td>同上</td></tr>
+        <tr><td><code class="inline">SalesOrder</code></td><td>3 支</td><td>GetOmoKeyPromptsFromMemberDimension、GetLastOmoKeyPromptsFromMemberDimension、GetMemberTradesOrderInfoAr</td></tr>
+        <tr><td><code class="inline">SalesOrderSlave</code></td><td>3 支</td><td>同上</td></tr>
+        <tr><td><code class="inline">SalesOrderGroup</code></td><td>3 支</td><td>同上</td></tr>
+        <tr><td><code class="inline">CrmMember</code></td><td>3 支</td><td>GetOmoKeyPromptsFromMemberDimension、GetLastOmoKeyPromptsFromMemberDimension、GetMemberConsumptionInfo</td></tr>
+        <tr><td><code class="inline">ShoppingCart</code>系列、CrmMemberTier、DeviceAPPMapping、VipMemberPresent、Coupon</td><td>2 支</td><td>僅 GetOmoKeyPromptsFromMemberDimension 與 GetLastOmoKeyPromptsFromMemberDimension（兩者本來就是同一套 9 任務邏輯的變體）</td></tr>
+        <tr><td><code class="inline">ECouponPromotionTagMapping</code></td><td>2 支</td><td>GetCouponList、GetAvailableECoupon</td></tr>
+      </tbody>
+    </table>
+    <div class="why"><b>重點解讀：</b>
+      <ol class="steps">
+        <li><b>VipMember 是全場最熱門的共用表</b>，被 5 支完全不同用途的 API 同時查詢——這是「多支 API 同時發動 → 同一張表被多重併發打」現象中最直接的物理證據，比 8.10.3 節「同一 DB」層級的推論更進一步、精確到表級。</li>
+        <li><b>ECoupon/ECouponSlave</b> 被 4 支優惠券相關 API 共用，是次要熱點。</li>
+        <li><b>SalesOrder/SalesOrderSlave/SalesOrderGroup</b> 被 OMO 提示類與訂單查詢類 API 共用，對應到 8.10.3 節「ERPDB 被 4 支 API 共用」的結論在表級的具體落地。</li>
+        <li>GetLocationOfflineSalesOrderList（CRM 系）目前是唯一一支<b>沒有跟其他 API 共用任何實際表</b>的，它會受影響完全是因為「同一台 Lstn3 實體 DB Server」的資源競爭，而非表級鎖競爭。</li>
+      </ol>
+    </div>
+
+    <h3>8.11 用實際 ELMAH 資料驗證：這 7 支 API 是否「確實會被同時發動」？</h3>
+    <div class="note">8.10 節從程式碼證明了「這幾支 API 共用同一批 DB」，屬於<b>架構上具備互相影響的條件</b>。本節換一個角度，直接拿近 10 天內 elmah_win32_full10d.json（7,640 筆 Win32Exception）的原始資料，針對前述 7 支 API 逐一檢驗「是否真的會同時發動」，不再只是理論推論。</div>
+
+    <h4>8.11.1 先確認每支 API 在近 10 天內是否真的有出現</h4>
+    <table>
+      <thead><tr><th>API</th><th>近 10 天 Win32Exception 筆數</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">GetLocationOfflineSalesOrderList</code></td><td>1,470</td></tr>
+        <tr><td><code class="inline">GetOmoKeyPromptsFromMemberDimension</code></td><td>1,460</td></tr>
+        <tr><td><code class="inline">GetCouponList</code></td><td>1,290</td></tr>
+        <tr><td><code class="inline">GetLastOmoKeyPromptsFromMemberDimension</code></td><td>930</td></tr>
+        <tr><td><code class="inline">GetMemberConsumptionInfo</code></td><td>690</td></tr>
+        <tr><td><code class="inline">GetMemberTradesOrderInfoAr</code></td><td>200</td></tr>
+        <tr><td><code class="inline">GetAvailableECoupon</code></td><td><b>0</b>（近 10 天完全無記錄）</td></tr>
+      </tbody>
+    </table>
+    <div class="why">⚠️ <b>GetAvailableECoupon 目前查無資料</b>，可能已改名、流量極低或呼叫模式改變，因此<b>本節「同時發動」的驗證僅針對其餘 6 支 API</b>，GetAvailableECoupon 無法用近期資料佐證是否會同時被發動。</div>
+
+    <h4>8.11.2 以「同商店 + 同分鐘」為單位，統計這 6 支 API 彼此共現的頻率</h4>
+    <div class="why">只保留這 6 支目標 API 的錯誤記錄（共 6,040 筆），依「商店 + 分鐘」分組，共得到 <b>127 組</b>錯誤群聚，其中 <b>56 組（44%）同時出現 2 支以上目標 API</b>：</div>
+    <table>
+      <thead><tr><th>同組內出現的不同 API 數</th><th>組數</th></tr></thead>
+      <tbody>
+        <tr><td>2 支</td><td>13</td></tr>
+        <tr><td>3 支</td><td>20</td></tr>
+        <tr><td>4 支</td><td>15</td></tr>
+        <tr><td>5 支</td><td>7</td></tr>
+        <tr><td><b>6 支（全部命中）</b></td><td><b>1</b></td></tr>
+      </tbody>
+    </table>
+    <div class="note"><b>代表性案例（6 支 API 全部同時發動）：</b></div>
+    <pre><code>商店 Shop=14，07/19 20:12 這一分鐘，共 140 筆 Win32Exception 同時炸開：
+  GetOmoKeyPromptsFromMemberDimension       40 次
+  GetCouponList                             20 次
+  GetLastOmoKeyPromptsFromMemberDimension   20 次
+  GetLocationOfflineSalesOrderList          20 次
+  GetMemberConsumptionInfo                  20 次
+  GetMemberTradesOrderInfoAr                20 次</code></pre>
+    <div class="why">這證實：<b>不是巧合、不是理論推導，而是實際發生過「同一分鐘、同一商店，6 支完全不同的 API 全部一起 timeout」的真實案例。</b></div>
+
+    <h4>8.11.3 兩兩配對（Pairwise）共現次數：哪兩支 API 最常一起炸</h4>
+    <table>
+      <thead><tr><th>API 配對</th><th>同分鐘+同商店共現次數</th></tr></thead>
+      <tbody>
+        <tr><td>GetCouponList + GetLocationOfflineSalesOrderList</td><td>43</td></tr>
+        <tr><td>GetCouponList + GetOmoKeyPromptsFromMemberDimension</td><td>39</td></tr>
+        <tr><td>GetLocationOfflineSalesOrderList + GetOmoKeyPromptsFromMemberDimension</td><td>37</td></tr>
+        <tr><td>GetLocationOfflineSalesOrderList + GetMemberConsumptionInfo</td><td>25</td></tr>
+        <tr><td>GetCouponList + GetMemberConsumptionInfo</td><td>24</td></tr>
+        <tr><td>GetMemberConsumptionInfo + GetOmoKeyPromptsFromMemberDimension</td><td>20</td></tr>
+        <tr><td>GetCouponList + GetLastOmoKeyPromptsFromMemberDimension</td><td>9</td></tr>
+        <tr><td>GetCouponList + GetMemberTradesOrderInfoAr</td><td>8</td></tr>
+        <tr><td>GetLastOmoKeyPromptsFromMemberDimension + GetLocationOfflineSalesOrderList</td><td>8</td></tr>
+        <tr><td>GetMemberConsumptionInfo + GetMemberTradesOrderInfoAr</td><td>8</td></tr>
+        <tr><td>GetLocationOfflineSalesOrderList + GetMemberTradesOrderInfoAr</td><td>8</td></tr>
+        <tr><td>GetLastOmoKeyPromptsFromMemberDimension + GetOmoKeyPromptsFromMemberDimension</td><td>7</td></tr>
+        <tr><td>GetLastOmoKeyPromptsFromMemberDimension + GetMemberConsumptionInfo</td><td>6</td></tr>
+        <tr><td>GetMemberTradesOrderInfoAr + GetOmoKeyPromptsFromMemberDimension</td><td>4</td></tr>
+        <tr><td>GetLastOmoKeyPromptsFromMemberDimension + GetMemberTradesOrderInfoAr</td><td>2</td></tr>
+      </tbody>
+    </table>
+    <div class="why"><b>觀察重點</b>：共現次數前三名（GetCouponList、GetLocationOfflineSalesOrderList、GetOmoKeyPromptsFromMemberDimension 兩兩互配）恰好對應到 8.10.3 節共用矩陣中<b>同時命中 WebStoreDB（GetCouponList、GetOmoKeyPromptsFromMemberDimension）以及跨 CRMDB/Lstn3（GetLocationOfflineSalesOrderList）</b>的組合，證據面（實際共現次數）與架構面（共用 DB／共用 Server）兩者互相吻合，並非各自獨立的巧合。</div>
+
+    <h4>8.11.4 本節結論</h4>
+    <ol class="steps">
+      <li><b>是的，這幾支 API（GetOmoKeyPromptsFromMemberDimension、GetLastOmoKeyPromptsFromMemberDimension、GetLocationOfflineSalesOrderList、GetCouponList、GetMemberConsumptionInfo、GetMemberTradesOrderInfoAr）確實會被同時發動</b>——近 10 天內有 44% 的錯誤群聚時間點包含 2 支以上這些 API，甚至有 1 個時間點（Shop=14、07/19 20:12）6 支全部同時發動並同時 timeout。</li>
+      <li><b>GetAvailableECoupon 是唯一無法驗證的例外</b>——近 10 天無任何 Win32Exception 記錄，若要確認它是否仍會被一起呼叫，需改查其「正常呼叫」的存取記錄（而非只查錯誤記錄），或確認此端點近期是否已被前端/整合端棄用。</li>
+      <li>這個「確實同時發動」的事實，加上 8.10 節「這些 API 本來就共用同一批 DB / 同一組實體 Server」的架構事實，<b>兩者疊加起來才是造成大量 API 同時 timeout 的完整成因</b>：同時發動只是條件之一，若這些 API 各自查詢完全獨立的 DB，就算同時發動也不會互相拖累；正因為它們在架構上共用資源，同時發動才會真正造成資源競爭與連鎖逾時。</li>
+    </ol>
+
+    <h3>8.12 每一波爆量是否都是「同一組」API？固定核心 + 變動長尾</h3>
+    <div class="note">延伸 8.11 的問題：以 10 天內全部 56 組「同商店＋30秒內、跨 2 支以上 API」的爆量群集為樣本，統計<b>每一支 API 在這些群集中出現的機率</b>，藉此判斷「是否每次炸的都是同一批 API」。</div>
+
+    <h4>8.12.1 各 API 在多 API 爆量群集中的出現機率（56 組樣本）</h4>
+    <table>
+      <thead><tr><th>API</th><th>出現次數 / 56 組</th><th>出現機率</th><th>角色</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">ShopMember/GetCouponList</code></td><td>45</td><td>80.4%</td><td><b>核心常客</b></td></tr>
+        <tr><td><code class="inline">Location/GetLocationOfflineSalesOrderList</code></td><td>43</td><td>76.8%</td><td><b>核心常客</b></td></tr>
+        <tr><td><code class="inline">LocationMember/GetOmoKeyPromptsFromMemberDimension</code></td><td>39</td><td>69.6%</td><td><b>核心常客</b></td></tr>
+        <tr><td><code class="inline">LocationMemberOrder/GetMemberConsumptionInfo</code></td><td>25</td><td>44.6%</td><td>常見</td></tr>
+        <tr><td><code class="inline">LocationMemberOrder/GetMemberTradesOrderInfoAr</code></td><td>9</td><td>16.1%</td><td>偶爾</td></tr>
+        <tr><td><code class="inline">SalesOrder/GetMemberTradesOrderInfo</code></td><td>8</td><td>14.3%</td><td>偶爾</td></tr>
+        <tr><td><code class="inline">Location/GetLastOmoKeyPromptsFromMemberDimension</code></td><td>8</td><td>14.3%</td><td>偶爾</td></tr>
+        <tr><td><code class="inline">LocationPickup/GetArrivedConfirmList</code></td><td>7</td><td>12.5%</td><td>偶爾</td></tr>
+        <tr><td><code class="inline">LocationPickup/PickupConfirm</code></td><td>6</td><td>10.7%</td><td>偶爾</td></tr>
+        <tr><td><code class="inline">LocationPickup/GetPickupConfirmList</code></td><td>6</td><td>10.7%</td><td>偶爾</td></tr>
+        <tr><td><code class="inline">SalesOrder/ConfirmSalesOrderSlave</code></td><td>2</td><td>3.6%</td><td><b>長尾</b></td></tr>
+        <tr><td><code class="inline">Location/RedeemPointExchangeECoupon</code></td><td>2</td><td>3.6%</td><td><b>長尾</b></td></tr>
+        <tr><td><code class="inline">LocationPickup/GetSalesOrderList</code></td><td>2</td><td>3.6%</td><td><b>長尾</b></td></tr>
+        <tr><td><code class="inline">Frontline/LoyaltyPoint/GetTransactions</code></td><td>1</td><td>1.8%</td><td><b>長尾</b></td></tr>
+      </tbody>
+    </table>
+
+    <h4>8.12.2 案例對照：2026-07-22 12:15 中午這一波（Shop 14 / 19）</h4>
+    <div class="why">當天 ELMAH 告警內容：</div>
+    <pre>Shop 14: LocationPickup/Shipping（Win32Exception ×4）
+Shop 14: SalesOrder/ConfirmSalesOrderSlave（Win32Exception ×2）
+Shop 19: Location/GetLocationOfflineSalesOrderList（Win32Exception ×4）
+Shop 19: Location/RedeemPointExchangeECoupon（Win32Exception ×2）
+Shop 19: LocationMember/GetOmoKeyPromptsFromMemberDimension（Win32Exception ×4）
+Shop 19: LocationMember/GetOmoKeyPromptsFromMemberDimension（EntityCommandExecutionException ×2）
+Shop 19: LocationMemberOrder/GetMemberConsumptionInfo（Win32Exception ×2）</pre>
+    <div class="note">對照 8.12.1 的機率表：
+      <ul>
+        <li>✅ <b>核心常客命中</b>：GetLocationOfflineSalesOrderList（77%機率）、GetOmoKeyPromptsFromMemberDimension（70%機率）、GetMemberConsumptionInfo（45%機率）都出現，符合「幾乎每波都會中獎」的預期。</li>
+        <li>➕ <b>長尾 API 加入戰局</b>：LocationPickup/Shipping（未在原 56 組樣本統計中出現過）、SalesOrder/ConfirmSalesOrderSlave（僅 3.6%機率）、Location/RedeemPointExchangeECoupon（僅 3.6%機率）— 這幾支平常很少一起爆的 API，這次也加入了。</li>
+      </ul>
+    </div>
+
+    <h4>8.12.3 結論：不是「劇本重播」，而是「固定核心 + 隨機長尾」</h4>
+    <ol class="steps">
+      <li><b>每一波爆量的 API 組成不完全相同</b>，但存在一組約 3～4 支「幾乎每次壅塞都會中獎」的<b>核心 API</b>——GetCouponList、GetLocationOfflineSalesOrderList、GetOmoKeyPromptsFromMemberDimension，這三支很可能是門市裝置/App 畫面<b>固定會呼叫的常駐輪詢或首頁摘要</b>，只要 DB 壅塞幾乎必定命中。</li>
+      <li><b>長尾 API 隨當下商店的實際操作行為變動</b>：Shipping（出貨）、ConfirmSalesOrderSlave（確認訂單）、RedeemPointExchangeECoupon（兌點）都是「使用者當下正在做某個動作」才會觸發的 API，並非固定排程，只是剛好撞上壅塞瞬間才被拖下水。</li>
+      <li>這進一步印證 8.9~8.11 節的結論：問題根源是<b>共用 DB 連線池/實體 Server 在特定時間點被瞬間打爆</b>，而不是特定幾支 API 之間有邏輯關聯——核心 API 因為呼叫頻率高、幾乎必然在壅塞當下也在執行，因此每次都「陪榜」；長尾 API 則是視當下商店的業務動作是否剛好也在同一瞬間發生而定，屬於機率性疊加，不代表兩者有依賴或觸發關係。</li>
+    </ol>
+
+    <h3>8.13 各 API 的錯誤時間集中度：逐支拆解「每支 API 都集中在什麼時間呼叫」</h3>
+    <div class="note">延伸 8.1（單一 API 規律性）與 8.9~8.12（跨 API 同時發動）的發現，本節針對前述 7 支核心/常見 API，逐支統計近 10 天 Win32Exception 的「小時分布」與「每小時內分鐘分布」，確認規律性是否每支都一致。</div>
+    <table>
+      <thead><tr><th>API</th><th>最集中的小時（Top1~2）</th><th>最集中的分鐘（Top3合計）</th><th>分鐘集中度</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">GetOmoKeyPromptsFromMemberDimension</code></td><td><b>18時</b>(570筆)、11時(340筆)</td><td>第11~13分：1,190/1,460</td><td><b>81.5%</b></td></tr>
+        <tr><td><code class="inline">GetLastOmoKeyPromptsFromMemberDimension</code></td><td><b>20時</b>(290筆)、12時(210筆)</td><td>第10~13分+第17分：550/930</td><td>59%（較分散）</td></tr>
+        <tr><td><code class="inline">GetLocationOfflineSalesOrderList</code></td><td><b>18時</b>(490筆)、12時(230筆)</td><td>第11~13分：980/1,470</td><td><b>66.7%</b></td></tr>
+        <tr><td><code class="inline">GetCouponList</code></td><td><b>18時</b>(410筆)、11時(240筆)</td><td>第11~13分：930/1,290</td><td><b>72.1%</b></td></tr>
+        <tr><td><code class="inline">GetMemberConsumptionInfo</code></td><td><b>18時</b>(290筆)、20時(140筆)</td><td>第11~12分：390/690</td><td>56.5%</td></tr>
+        <tr><td><code class="inline">GetMemberTradesOrderInfoAr</code></td><td><b>20時</b>(120筆)</td><td>第10、12、16分：120/200</td><td>60%（較分散）</td></tr>
+        <tr><td><code class="inline">GetMemberTradesOrderInfo</code></td><td><b>20時</b>(80筆)、18時(50筆)</td><td>第12~13分：100/190</td><td>52.6%</td></tr>
+      </tbody>
+    </table>
+    <div class="why"><b>觀察重點：</b>
+      <ol class="steps">
+        <li><b>18 時（下午6點）是全站共同高峰</b>——GetOmoKeyPromptsFromMemberDimension、GetLocationOfflineSalesOrderList、GetCouponList、GetMemberConsumptionInfo 這 4 支核心 API 都以 18 時為第一高峰，呼應 8.9~8.12 節「多店同時打多支 API」的現象。</li>
+        <li><b>「每小時第 11~13 分」規律性在大部分 API 都成立</b>，尤其 GetOmoKeyPromptsFromMemberDimension（81.5%）、GetCouponList（72.1%）、GetLocationOfflineSalesOrderList（66.7%）最明顯，強烈支持「固定排程/門市心跳在整點後 11~13 分觸發」的推論，且與 8.1 節單一 API 的規律性觀察一致，證實跨 API 也遵循同一套時間規律。</li>
+        <li>GetLastOmoKeyPromptsFromMemberDimension、GetMemberTradesOrderInfoAr、GetMemberTradesOrderInfo 這 3 支相對分散，高峰偏向 <b>20 時</b>，且分鐘集中度較低（52~60%），可能是不同呼叫來源（例如晚班交接或另一批門市裝置），建議後續調查排程來源時，將 18 時批次與 20 時批次分開追查，不宜混為一談。</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  文件建立日期：2026-07-21　｜　章節八更新日期：2026-07-23（ELMAH 時間分布規律性、多重例外同時性驗證、9個平行任務資源競爭分析、8.8實測修正與驗證方法、8.9跨API呼叫端重試風暴發現、8.10逐支API的DB共用矩陣分析＋8.10.5表級共用資料表交叉比對、8.11實際資料驗證多支API同時發動、8.12每波爆量API組成之固定核心與變動長尾分析＋07/22中午實際案例對照、8.13逐支API時間集中度分析）　｜　關聯來源：ELMAH errorId <code>862aeb8d-aa8a-4ca5-be74-8721c7be996e</code> 及後續同 API 六維分析、WebSite\ConnectionStrings.config 與各 Repository/DbContext 程式碼追蹤、近 10 天全應用 Win32Exception 原始資料（7,640 筆）之同商店+同分鐘共現分析、2026-07-22 12:15 ELMAH 即時告警案例（Shop 14/19）
+</footer>
+
+</body>
+</html>

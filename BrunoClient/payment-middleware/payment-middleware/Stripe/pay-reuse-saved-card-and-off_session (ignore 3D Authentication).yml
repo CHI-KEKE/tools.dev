@@ -1,0 +1,40 @@
+info:
+  name: pay-reuse-saved-card-and-off_session (ignore 3D Authentication)
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/pay/CreditCardOnce_Stripe/{{TG}}"
+  body:
+    type: json
+    data: |-
+      {  
+         "amount":"{{amount}}",
+         "country":"HK",
+         "currency":"{{currency-code}}",
+         "request_id":"{{$guid}}",
+         "device": "PC",
+         "platform": "Web",
+         "tg_code":"{{TG}}",
+         "extend_info":{  
+            "payment_flow": "{{flow}}",
+            "stripe_account":"{{acct}}",
+            "application_fee_amount": {{application_fee_amount}},
+            "three_d_secure_status_def":"PayChannelDefine",
+            "return_url": "https://shop2.91app.tw.dev/V2/PayChannel/CreditCardOnce/Stripe/TG250903R00001?shopId=2&k=b77a4774-6204-4faf-b628-c0805388cc80",
+            "is_reuse_payment_method": true,
+            "customer_id": "{{customer-id}}",
+            "payment_method": "{{pay-method}}",
+            "shop_id": {{shopId}},
+            "member_id":"{{member_id}}",
+            "off_session": true
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

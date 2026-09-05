@@ -1,0 +1,114 @@
+#########################################
+#             API settings              #
+#########################################
+
+# market 用來表示市場。如：TW, PX。
+market: TW
+# env 是用來表示部署環境，如：QA, QA3, Prod。
+env: PP
+# serviceName 用來標示服務名稱。
+serviceName: Sample-Project
+
+# api 物件用來控制 api 相關參數，如 container 使用的 image、運算資源及 hostname 等。
+api:
+  # api.role 為此服務中的角色，比如 API，BatchWorker 等。
+  role: API
+  # api.secretAccountName 可修改 deployment 的 serviceAccount 名稱 (預設不需要調整，統一為 nkp-service-account)
+  # serviceAccountName: "xxx"
+  configSource:
+    version: "latest"
+    # api.configSource.files 指定服務在特定環境下要抓取的檔案名稱
+    # files: []
+    files:
+      - s3://91app-ap-northeast-1-private-conf/TW-PP/Sample-Project/API/{{CONFIG_VERSION}}/settings.json
+  # api.secretSources 用來指定要從 AWS Secrets Manager 抓取的 secret ID。
+  # secretSource: null
+  secretSource:
+    secrets:
+      # 如果沒有資料庫以外的機密資訊，可以不用設定
+      - key: /TW-PP/Sample-Project/API/secrets
+        fileName: secrets.json
+      - key: /TW-PP/Sample-Project/API/secrets.db.sample-project-db.sample-project-db-user.json
+
+  # api.replicaCount 為期望的 Pod 數量。如果有開啟 api.autoscaling.enabled，則會使用 api.autoscaling 設定進行配置。
+  replicaCount: 1
+  # api.image 用來指定要指定的 OCI image
+  image:
+    # api.image.repository 用來指定 image 的名稱，如 "docker.build.91app.io/rd5/alpine"。
+    repository: docker.build.91app.io/91app/nine1-sample-project-web-api
+    # api.image.tag 用來指定 image 的 tag，如："1.0.0"。
+    tag: "latest"
+    # api.image.pullSecrets 用來指定 docker auth config secret 名稱 (預設不需要調整，根據 image.repository 可調整不同的 docker auth config)
+    # pullSecrets:
+    #  - 91app-build-site # for docker.build.91app.io
+    #  - 91app-build-site-dev # for docker-dev.build.91app.io
+
+  # api.podAnnotations 用來擴充 API pod 的註解 (annotations)，若無特殊需求，只需留空即可。
+  podAnnotations: {}
+
+  # api.environmentVariables 用來加入要設定的環境變數，一般不需額外調整。
+  environmentVariables:
+    ASPNETCORE_ENVIRONMENT: "Production"
+
+  # api.resources 用來指定 container 要使用的計算資源。
+  resources:
+    # api.resources.cpu 用來指定要使用多少 CPU 資源。 1 = 1顆 vCPU；0.5 = 500m = 0.5 顆 vCPU。
+    cpu: "250m"
+    # api.resources.memory 用來指定要使用多少記憶體 1 = 1 Gi = 1024Mi = 1024^3 Bytes。
+    memory: "512Mi"
+  # api.limits 用來指定 container 的上限資源。預設不需配置，會使用 api.resources 作為 limits。
+  # 注意: limits 並不是提供服務正常使用時的上限，而是當服務在使用量上升時，在自動擴展前的 burst 上限。建議搭配 autoscaling 使用。
+  # limits:
+    # api.limits.cpu 用來指定要使用多少 CPU 資源。 1 = 1顆 vCPU；0.5 = 500m = 0.5 顆 vCPU。
+    # 一般建議設定為 api.resources.cpu 的兩倍。
+    # cpu: "1000m"
+    # api.limits.memory 用來指定要使用多少記憶體 1 = 1 Gi = 1024Mi = 1024^3 Bytes。
+    # 一般建議設定為 api.resources.memory 的一樣。需經過評估才能超過原設定。
+    # memory: "512Mi"
+
+  # api.autoscaling 可設定是否讓 Pod 根據資源使用量自動擴展。目前僅支援 CPU 平均使用率。
+  autoscaling:
+    # api.autoscaling.enabled 用來開啟 autoscaling 功能。
+    enabled: true
+    # api.autoscaling.minReplicas 設定最少要有幾個 Pod (replica)。
+    minReplicas: 1
+    # api.autoscaling.maxReplicas 設定最多要有幾個 Pod (replica)。
+    maxReplicas: 2
+    # api.autoscaling.targetCPUUtilizationPercentage 指定當所有 Pod 的平均 CPU 高於多少百分比時，自動進行擴展。
+    targetCPUUtilizationPercentage: 80
+    # api.autoscaling.targetMemoryUtilizationPercentage 指定當所有 Pod 的平均 Memory 高於多少百分比時，自動進行擴展。
+    # 因此設定並不是所有的 api 都需要配置, 故預設為空值。
+    # targetMemoryUtilizationPercentage: 80
+
+  # api.servicePort 用來指定 container 暴露的 port。
+  servicePort: 5566
+  # api.ingress 設定 API 會接收 Ingress Controller 流量的相關設定
+  ingress:
+    # api.ingress.annotations 用來對 Ingress 物件加入註解 (annotations)，一般而言不需特別調整。
+    annotations: {}
+    # api.ingress.hosts 指定一系列要接收流量的 host。
+    hosts:
+      # api.ingress.hosts[*].host 為要接收流量的 host (domain name)，如："sample-project-web-api.qa.91dev.tw"。
+      - host: sample-project-internal.pp.91app.io
+        # api.ingress.hosts[*].paths 為此 host 的 path 設定，若無特別需要則不需特別調整，留空即可。
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+  canary:
+    skipAnalysis: true
+    progressDeadlineSeconds: 300
+    analysis:
+      interval: "10s"
+      threshold: 10
+      maxWeight: 100
+      stepWeights: [5, 20, 60, 100]
+      stepWeightPromotion: 20
+      metrics:
+        - name: nine1-sample-project-web-api-ingress-request-count
+          templateRef: nine1-sample-project-web-api-ingress-request-count
+          thresholdRange:
+            min: 0
+          interval: "30s"
+    customMetrics:
+      - name: nine1-sample-project-web-api-ingress-request-count
+        query: 'rate(nginx_ingress_controller_requests{namespace="ingress-nginx", ingress="{{ ingress }}",exported_namespace="pp-sample-project"}[2m])'

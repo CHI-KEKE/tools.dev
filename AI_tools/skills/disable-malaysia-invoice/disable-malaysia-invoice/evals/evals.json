@@ -1,0 +1,44 @@
+{
+  "skill_name": "disable-malaysia-invoice",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "建立關閉電子發票的 SQL 語法",
+      "expected_output": "依序詢問 VSTS 編號、ShopId、商店名稱，再建立資料夾與 SQL 檔案。",
+      "files": [],
+      "expectations": [
+        "使用 ask_user 詢問 VSTS 編號",
+        "使用 ask_user 詢問 ShopId",
+        "使用 ask_user 詢問商店名稱",
+        "建立資料夾 VSTS\\{VSTS_ID}_Insert_SalesOrderCustomInfo",
+        "產生 Step01_Insert_WebStoreDB_ShopStaticSetting_SalesOrderMemo.sql",
+        "SQL 內容包含 SELECT、INSERT、VERIFY 三段",
+        "使用 show_file 展示產出的 SQL"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "幫我新增一間商店不使用 MY 電子發票，VSTS 是 VSTS603001，ShopId 是 200200，商店是 OSIM Thailand",
+      "expected_output": "直接使用提供的資訊建立資料夾與 SQL，不再詢問已知欄位。",
+      "files": [],
+      "expectations": [
+        "建立資料夾 VSTS\\VSTS603001_Insert_SalesOrderCustomInfo",
+        "產生 SQL 檔案，@shopId = 200200",
+        "SQL 中的 PrimaryKey 為 Custom/MalaysiaInvoice/200200",
+        "CreatedUser 與 UpdatedUser 皆為 VSTS603001",
+        "SQL 的 -- 開頭描述包含 OSIM Thailand"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "某商店不使用MY電子發票，請建立 SQL",
+      "expected_output": "資訊不完整，依序詢問 VSTS 編號、ShopId、商店名稱後建立。",
+      "files": [],
+      "expectations": [
+        "辨識觸發關鍵字「不使用MY電子發票」",
+        "使用 ask_user 補齊缺少的三個資訊",
+        "建立正確的資料夾與 SQL 檔案"
+      ]
+    }
+  ]
+}

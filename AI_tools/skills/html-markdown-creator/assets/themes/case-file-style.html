@@ -1,0 +1,269 @@
+<!--
+主題：復古病歷表／案卷風（case-file-style）
+適用：事件回顧、故障排查、異常紀錄整理、多案例並排對照，需要清楚的「紅=危險急迫／琥珀=待觀察／綠=已解決」風險分級語意時使用。
+不適合：品牌／自然／生活療癒主題（改用 organic-glass-style 或 cozy-meadow-style），也不適合單純知識型白皮書（改用 warm-paper-style）。
+本主題整合原 hexo-article-creator 的 medical-chart／vertical-timeline／stage-cards／plan-cards／flow-banner-note 五個元件，共用同一套米白牛皮紙感 + 等寬字體 + 鏽紅/琥珀/墨綠配色。
+
+doc-* 對應變數：
+  --doc-accent:#3d6b66; --doc-accent2:#a3441e; --doc-ink:#2f4f4f; --doc-sub:#6b6250;
+  --doc-card:#fbfaf6; --doc-line:#c9c3ae; --doc-bg:#f2efe4; --doc-shadow:0 1px 3px rgba(0,0,0,.08);
+
+風險分級色語意（全文一致）：
+  紅／鏽紅 (#a3441e)＝需要立即關注的危險、失敗、根因
+  琥珀 (#b8860b)＝待觀察、Pending、警示但非致命
+  綠 (#4f7942)＝已解決、成功、結案
+  墨綠/中性 (#2f4f4f)＝一般資訊性節點、流程步驟
+
+包含區塊：
+  1. medchart-wrap + medchart：情境對照卡（病歷表風格），並排比較多個案例（症狀/量測值/過程/診斷結論）
+  2. case-timeline + tl-event：垂直時間軸卡片，呈現隨時間演進的事件序列，色點依 warn/danger/done 分級
+  3. stage-grid + stage-card：並排階段卡片，說明流程拆成幾個獨立階段
+     注意：stage-tag 只能放天然獨立的短標籤（如 STEP 1），標題沒有天然短標籤時不要硬拆，直接放進 stage-name
+  4. plan-card：改善方案卡（編號 + 優先度標籤 high/mid/low）
+  5. flow-banner + flow-note + flow-table-wrap：圖表區段標題、提示/警示框、表格外框
+-->
+
+<style>
+.medchart-wrap { display: flex; flex-direction: column; gap: 28px; margin: 24px 0; }
+.medchart {
+  background: #fbfaf6;
+  border: 1px solid #c9c3ae;
+  border-radius: 4px;
+  position: relative;
+  font-family: 'Courier New', 'Consolas', 'PingFang TC', monospace;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding-bottom: 4px;
+}
+.medchart::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+  background: repeating-linear-gradient(180deg, #b9c9c6 0 10px, transparent 10px 20px);
+}
+.medchart-top {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px 10px 26px; border-bottom: 2px solid #2f4f4f;
+}
+.medchart-cross { width: 26px; height: 26px; flex-shrink: 0; position: relative; }
+.medchart-cross::before, .medchart-cross::after { content: ''; position: absolute; background: #3d6b66; }
+.medchart-cross::before { left: 45%; top: 0; width: 12%; height: 100%; }
+.medchart-cross::after  { top: 45%; left: 0; height: 12%; width: 100%; }
+.medchart-title { font-weight: 700; font-size: 1.02rem; color: #2f4f4f; letter-spacing: 1px; }
+.medchart-title small { display:block; font-weight:400; font-size:0.72rem; color:#8a9a97; letter-spacing:2px; margin-top:2px; }
+
+.medchart-idbar { display: flex; flex-wrap: wrap; gap: 0; margin: 10px 20px 10px 26px; border: 1px solid #c9c3ae; }
+.medchart-idbox { flex: 1; min-width: 140px; border-right: 1px dashed #c9c3ae; padding: 6px 12px; }
+.medchart-idbox:last-child { border-right: none; }
+.medchart-idbox .k { font-size: 0.68rem; color: #8a8272; letter-spacing: 1px; }
+.medchart-idbox .v { font-size: 0.88rem; color: #2f2f2f; font-weight: 700; }
+
+.medchart-field { margin: 0 20px 0 26px; padding: 10px 0; border-bottom: 1px dashed #d8d3c2; }
+.medchart-field:last-of-type { border-bottom: none; }
+.medchart-field .k {
+  display: inline-block; font-size: 0.72rem; color: #6b6250; letter-spacing: 2px;
+  border: 1px solid #c9c3ae; border-radius: 2px; padding: 1px 8px; margin-bottom: 6px; background: #f2efe4;
+}
+.medchart-field .v { font-size: 0.88rem; color: #2b2b2b; line-height: 1.9; }
+.medchart-field .v code { background: #eef0eb; padding: 1px 6px; border-radius: 3px; font-size: 0.85em; color: #a3441e; }
+.medchart-field ol, .medchart-field ul { margin: 4px 0 0; padding-left: 20px; }
+
+.medchart-stamp {
+  display: inline-block; margin: 14px 20px 18px 26px; padding: 6px 16px;
+  border: 3px double #a3441e; color: #a3441e; font-weight: 700; font-size: 0.85rem;
+  letter-spacing: 2px; transform: rotate(-3deg); border-radius: 4px; background: rgba(163,68,30,0.04);
+}
+
+.case-timeline { position: relative; margin: 20px 0 30px; padding-left: 36px; }
+.case-timeline::before {
+  content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px; width: 2px;
+  background: repeating-linear-gradient(180deg, #b9c9c6 0 8px, transparent 8px 16px);
+}
+.tl-event { position: relative; margin-bottom: 18px; }
+.tl-event:last-child { margin-bottom: 0; }
+.tl-event::before {
+  content: ''; position: absolute; left: -31px; top: 3px; width: 12px; height: 12px;
+  border-radius: 50%; background: #3d6b66; border: 2px solid #fbfaf6; box-shadow: 0 0 0 1.5px #3d6b66;
+}
+.tl-event.warn::before   { background: #b8860b; box-shadow: 0 0 0 1.5px #b8860b; }
+.tl-event.danger::before { background: #a3441e; box-shadow: 0 0 0 1.5px #a3441e; }
+.tl-event.done::before   { background: #4f7942; box-shadow: 0 0 0 1.5px #4f7942; }
+.tl-event .tl-card { background: #fbfaf6; border: 1px solid #d8d3c2; border-radius: 4px; padding: 8px 16px; }
+.tl-event.warn .tl-card   { border-left: 3px solid #b8860b; }
+.tl-event.danger .tl-card { border-left: 3px solid #a3441e; }
+.tl-event.done .tl-card   { border-left: 3px solid #4f7942; }
+.tl-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tl-head .tl-step {
+  font-family: 'Courier New', Consolas, monospace; font-size: 0.68rem; color: #8a8272;
+  border: 1px solid #c9c3ae; border-radius: 2px; padding: 0 6px; background: #f2efe4; flex-shrink: 0;
+}
+.tl-head .tl-title { font-weight: 700; color: #2f4f4f; font-size: 0.92rem; }
+.tl-desc { font-size: 0.86rem; color: #2b2b2b; margin-top: 4px; line-height: 1.7; }
+.tl-desc code { background: #eef0eb; padding: 1px 6px; border-radius: 3px; color: #a3441e; font-size: 0.85em; }
+
+.stage-grid { display: flex; gap: 20px; margin: 20px 0 24px; flex-wrap: wrap; }
+.stage-card {
+  flex: 1; min-width: 280px; background: #fbfaf6; border: 1px solid #c9c3ae; border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;
+}
+.stage-card .stage-head { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #2f4f4f; color: #fbfaf6; }
+.stage-card .stage-head .stage-tag {
+  font-family: 'Courier New', Consolas, monospace; font-size: 0.7rem; letter-spacing: 1px;
+  border: 1px solid rgba(255,255,255,0.6); border-radius: 2px; padding: 1px 6px; opacity: 0.9;
+}
+.stage-card .stage-head .stage-name { font-weight: 700; font-size: 0.95rem; letter-spacing: 1px; }
+.stage-card .stage-head .stage-loc { font-size: 0.7rem; opacity: 0.75; margin-left: auto; font-family: 'Courier New', Consolas, monospace; }
+.stage-card ol { margin: 0; padding: 14px 20px 16px 34px; list-style: none; counter-reset: stage-step; }
+.stage-card ol li {
+  counter-increment: stage-step; position: relative; padding: 6px 0 6px 6px;
+  border-bottom: 1px dashed #d8d3c2; font-size: 0.88rem; color: #2b2b2b; line-height: 1.7;
+}
+.stage-card ol li:last-child { border-bottom: none; }
+.stage-card ol li::before {
+  content: counter(stage-step); position: absolute; left: -26px; top: 6px;
+  width: 18px; height: 18px; border-radius: 50%; background: #3d6b66; color: #fff;
+  font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.stage-card ol li code { background: #eef0eb; padding: 1px 6px; border-radius: 3px; color: #a3441e; font-size: 0.85em; }
+
+.plan-card { background: #fbfaf6; border: 1px solid #c9c3ae; border-radius: 4px; margin: 22px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
+.plan-card .plan-head { display: flex; align-items: center; gap: 12px; padding: 12px 18px; background: #2f4f4f; color: #fbfaf6; }
+.plan-card .plan-num {
+  font-family: 'Courier New', Consolas, monospace; font-weight: 700; font-size: 0.85rem;
+  border: 1px solid rgba(255,255,255,0.6); border-radius: 50%; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.plan-card .plan-title { font-weight: 700; font-size: 0.98rem; letter-spacing: 1px; }
+.plan-card .plan-priority { font-size: 0.68rem; letter-spacing: 1px; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; margin-left: auto; }
+.plan-priority.high { background: #a3441e; color: #fff; }
+.plan-priority.mid  { background: #b8860b; color: #fff; }
+.plan-priority.low  { background: #6b8e6b; color: #fff; }
+.plan-card .plan-body { padding: 16px 20px 18px; }
+.plan-card .plan-body > p:first-child { margin-top: 0; }
+.plan-card .plan-body pre { margin: 12px 0 0; }
+.plan-card .plan-body code { color: #a3441e; }
+
+.flow-banner {
+  display: flex; align-items: center; gap: 12px;
+  background: #f2efe4; border-left: 4px solid #3d6b66;
+  padding: 10px 18px; margin: 30px 0 16px; border-radius: 2px;
+}
+.flow-banner .flow-num {
+  font-family: 'Courier New', 'Consolas', monospace; font-weight: 700; font-size: 0.82rem;
+  color: #a3441e; border: 1px solid #a3441e; border-radius: 50%;
+  width: 26px; height: 26px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; background: #fbfaf6;
+}
+.flow-banner .flow-text { line-height: 1.5; }
+.flow-banner .flow-title { font-weight: 700; color: #2f4f4f; letter-spacing: 1px; font-size: 0.98rem; }
+.flow-banner .flow-desc { font-size: 0.78rem; color: #8a8272; letter-spacing: 0.5px; margin-top: 1px; }
+
+.flow-note {
+  background: #fbfaf6; border: 1px dashed #c9c3ae; border-left: 4px solid #b8860b;
+  padding: 10px 18px; margin: 14px 0 20px; border-radius: 2px;
+  font-size: 0.92rem; color: #4a4636; line-height: 1.8;
+}
+.flow-note code { background: #eef0eb; padding: 1px 6px; border-radius: 3px; color: #a3441e; }
+.flow-note.danger { background: #fbf1ee; border-color: #e0b8ab; border-left-color: #a3441e; color: #7a2e1f; }
+.flow-note.danger code { background: #f3ded7; color: #8c2f1a; }
+
+.flow-table-wrap { margin: 12px 0 24px; border: 1px solid #c9c3ae; border-radius: 2px; overflow: hidden; display: inline-block; max-width: 100%; }
+.flow-table-wrap table { width: auto; border-collapse: collapse; font-size: 0.86rem; margin: 0 !important; }
+.flow-table-wrap th { background: #2f4f4f; color: #fbfaf6; padding: 9px 12px; text-align: left; font-weight: 600; letter-spacing: 0.5px; }
+.flow-table-wrap td { padding: 9px 12px; border-top: 1px solid #e3ddc9; vertical-align: top; color: #2b2b2b; }
+.flow-table-wrap tr:nth-child(even) td { background: #f7f5ec; }
+.flow-table-wrap td code, .flow-table-wrap th code { background: #eef0eb; padding: 1px 6px; border-radius: 3px; color: #a3441e; font-size: 0.85em; }
+</style>
+
+<div class="medchart-wrap">
+<div class="medchart">
+<div class="medchart-top">
+<div class="medchart-cross"></div>
+<div class="medchart-title">案例標題 01<small>ENGLISH SUBTITLE</small></div>
+</div>
+<div class="medchart-idbar">
+<div class="medchart-idbox"><div class="k">識別欄位一 LABEL</div><div class="v">值</div></div>
+<div class="medchart-idbox"><div class="k">識別欄位二 LABEL</div><div class="v">值</div></div>
+<div class="medchart-idbox"><div class="k">關鍵字 KEYWORD</div><div class="v">一句話摘要</div></div>
+</div>
+<div class="medchart-field">
+<div class="k">欄位標籤一 LABEL</div>
+<div class="v">內容，程式碼/專有名詞用 <code>code</code> 包起來</div>
+</div>
+<div class="medchart-field">
+<div class="k">過程記錄 LABEL</div>
+<div class="v">
+<ol>
+<li>步驟一...</li>
+<li>步驟二...</li>
+</ol>
+</div>
+</div>
+<div class="medchart-stamp">結論標記：一句話總結</div>
+</div>
+</div>
+
+<div class="case-timeline">
+<div class="tl-event">
+<div class="tl-card">
+<div class="tl-head"><span class="tl-step">STEP 1</span><span class="tl-title">事件標題</span></div>
+<div class="tl-desc">事件描述，術語用 <code>code</code> 包起來</div>
+</div>
+</div>
+<div class="tl-event warn">
+<div class="tl-card">
+<div class="tl-head"><span class="tl-step">STEP 2</span><span class="tl-title">警示事件</span></div>
+<div class="tl-desc">描述</div>
+</div>
+</div>
+<div class="tl-event danger">
+<div class="tl-card">
+<div class="tl-head"><span class="tl-title">危險/根因事件</span></div>
+<div class="tl-desc">描述</div>
+</div>
+</div>
+<div class="tl-event done">
+<div class="tl-card">
+<div class="tl-head"><span class="tl-title">結案事件</span></div>
+<div class="tl-desc">描述</div>
+</div>
+</div>
+</div>
+
+<div class="stage-grid">
+<div class="stage-card">
+<div class="stage-head">
+<span class="stage-tag">STAGE 1</span>
+<span class="stage-name">階段名稱</span>
+<span class="stage-loc">MethodName · L行號範圍</span>
+</div>
+<ol>
+<li>步驟描述，術語用 <code>code</code> 包起來</li>
+<li>步驟描述</li>
+</ol>
+</div>
+</div>
+
+<div class="plan-card">
+<div class="plan-head">
+<div class="plan-num">1</div>
+<div class="plan-title">方案標題</div>
+<span class="plan-priority high">優先度：高</span>
+</div>
+<div class="plan-body">
+<p>方案內文說明。</p>
+</div>
+</div>
+
+<div class="flow-banner">
+<div class="flow-num">1</div>
+<div class="flow-text">
+<div class="flow-title">圖表區段標題</div>
+<div class="flow-desc">副標說明這張圖涵蓋哪個範圍</div>
+</div>
+</div>
+
+<div class="flow-note">
+💡 一般提示，說明圖表要點（白話描述分支意義，不要用節點代號）。
+</div>
+
+<div class="flow-note danger">
+⚠ 需要特別注意的問題點或根因說明。
+</div>

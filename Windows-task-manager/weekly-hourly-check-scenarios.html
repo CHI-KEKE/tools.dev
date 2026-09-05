@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>類型 A（Weekly）× 每30分鐘巡檢一次 · 情境圖解</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#c4b5fd; background:rgba(196,181,253,.12); border:1px solid rgba(196,181,253,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 26px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:720px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--purple-soft); color:var(--purple); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:9px 11px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+
+  /* Timeline */
+  .timeline-box {
+    background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:28px 24px 40px; margin:18px 0; position:relative;
+  }
+  .timeline-title { font-size:13px; font-weight:700; color:#334155; margin-bottom:26px; }
+  .track { position:relative; height:56px; margin:0 10px; border-top:3px solid #cbd5e1; }
+  .tick { position:absolute; top:-3px; width:2px; height:9px; background:#cbd5e1; }
+  .tick-label { position:absolute; top:12px; transform:translateX(-50%); font-size:10.5px; color:#94a3b8; white-space:nowrap; }
+  .hour-tick { position:absolute; top:-3px; width:2px; height:9px; background:#94a3b8; }
+
+  .check-mark {
+    position:absolute; top:-9px; transform:translateX(-50%); text-align:center;
+  }
+  .check-mark .diamond {
+    width:14px; height:14px; background:#94a3b8; transform:rotate(45deg); margin:0 auto; border:2px solid #fff;
+  }
+  .check-mark.hit .diamond { background: var(--accent); }
+  .check-mark .clabel { font-size:10px; color:#64748b; margin-top:6px; white-space:nowrap; }
+
+  .event-dot {
+    position:absolute; top:-16px; transform:translateX(-50%); text-align:center;
+  }
+  .event-dot .dot {
+    width:26px; height:26px; border-radius:50%; color:#fff; display:flex;
+    align-items:center; justify-content:center; font-size:12px; font-weight:700; margin:0 auto; border:3px solid #fff;
+  }
+  .event-dot .dot.ok { background:var(--ok); }
+  .event-dot .dot.danger { background:var(--danger); }
+  .event-dot .dot.warn { background:var(--warn); }
+  .event-dot .dot.purple { background:var(--purple); }
+  .event-dot .label { font-size:11px; font-weight:700; color:#334155; margin-top:4px; white-space:nowrap; }
+
+  .delay-bracket {
+    position:absolute; top:34px; height:0; border-top:2px dashed var(--danger);
+  }
+  .delay-bracket .dtext {
+    position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:11px; font-weight:700; color:var(--danger); white-space:nowrap;
+  }
+
+  .legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:16px; font-size:12.5px; color:#334155; }
+  .legend .item { display:flex; align-items:center; gap:6px; }
+  .legend .dot { width:14px; height:14px; border-radius:50%; display:inline-block; }
+  .legend .diamond-mini { width:11px; height:11px; display:inline-block; transform:rotate(45deg); }
+
+  footer { text-align:center; color:var(--muted); font-size:12.5px; margin-top:36px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">類型 A · Weekly Trigger</span>
+  <h1>「每 30 分鐘巡檢一次」下，Weekly 任務的各種情境</h1>
+  <p>目前採用的最終設定：<code>IntervalMinutes = 30</code>、<code>ToleranceMinutes = 30</code>、<code>LookbackMinutes = 90</code>，
+    判斷邏輯採用「以 Trigger 時間為中心」的接受窗 + 時間閘門模型。以「每週二 2:30 PM」這個 Weekly Trigger 為例，
+    逐一檢視：正常結案、漏排告警、延遲但成功、跨週邊界、多個 Weekly 任務併存等情境。</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">1</span>基本設定回顧</h2>
+    <table>
+      <tr><th>參數</th><th>設定值</th><th>說明</th></tr>
+      <tr><td><code>IntervalMinutes</code></td><td>30</td><td>每 30 分鐘巡檢一次（例如 2:00, 2:30, 3:00…）</td></tr>
+      <tr><td><code>ToleranceMinutes</code></td><td>30</td><td>Trigger 時間前後 30 分鐘內都算合理範圍；也決定「最晚容許時刻」= Trigger + 30分</td></tr>
+      <tr><td><code>LookbackMinutes</code></td><td>90</td><td>每次巡檢用 <code>GetRunTimes(now-90分, now)</code> 抓候選時間點。90 分鐘故意大於 Interval(30分)，讓相鄰巡檢視窗重疊 60 分鐘，並滿足 <code>Lookback ≥ Tolerance + Interval = 60</code> 的安全公式（見第8節），留有 30 分鐘餘裕</td></tr>
+    </table>
+    <div class="note">
+      <strong>每次巡檢的核心演算法（每一筆候選 Trigger 時間點 T 都套用）：</strong>
+      <pre style="margin-top:10px;">for T in GetRunTimes(now - 90分, now):
+    if (task, T) 已經 resolved: continue          // 已下過結論，跳過
+
+    history = GetHistory(taskPath, T - 30分, T + 30分) // 先鎖定任務(taskPath)，再鎖定以 T 為中心的接受窗
+
+    if history 有找到成功或失敗紀錄:
+        下結論（成功 → 結案 / 失敗 → 告警）並標記 resolved   // 有證據，不用等閘門
+    else if now >= T + 30分:                       // 閘門已開，且仍查無紀錄
+        判定「漏排」，發出告警，並標記 resolved
+    else:
+        continue                                   // 閘門未開、也還查無紀錄 → 略過，下一輪再看</pre>
+      重點：<strong>只要查到 History 紀錄（成功或失敗），可以立刻下結論，不需要等時間閘門</strong>；時間閘門只用來守住「查無紀錄時，要等多久才能確定是漏排」，避免任務還沒到期就被誤判。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>情境 1：正常執行 —— 準時觸發成功</h2>
+    <p class="sub">Trigger：每週二 2:30 PM。任務準時在 2:30 PM 執行成功。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">週二 2:00 PM ── 2:30 PM(觸發) ── 3:00 PM（每 30 分鐘巡檢：2:00 / 2:30 / 3:00）</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:00</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">2:30</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:00</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot ok">✓</div>
+          <div class="label">2:30 PM<br>準時觸發並成功</div>
+        </div>
+        <div class="check-mark hit" style="left:95%;">
+          <div class="diamond"></div>
+          <div class="clabel">3:00 巡檢<br>GetHistory 查到成功紀錄</div>
+        </div>
+      </div>
+    </div>
+    <table>
+      <tr><th>情況</th><th>説明</th><th>發現延遲</th></tr>
+      <tr><td>最佳情況</td><td>2:30 巡檢當下，Event Log 剛好已經寫入成功紀錄，同一次巡檢就查到 → 立刻結案，不用等閘門</td><td>接近 0 分鐘</td></tr>
+      <tr><td>一般情況</td><td>2:30 巡檢當下，成功紀錄還沒寫入（任務剛開始跑），這次查不到；等到 3:00 巡檢再查一次 <code>GetHistory(taskPath, 2:00,3:00)</code> 就能查到</td><td>約 30 分鐘</td></tr>
+    </table>
+    <div class="note ok">
+      <strong>結論：</strong>只要能查到成功紀錄，任何一次巡檢查到就立刻結案，完全不需要等時間閘門。「發現延遲」只影響「多久之後系統知道它成功了」，不影響告警正確性。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>情境 2：漏排 —— 該執行卻沒執行</h2>
+    <p class="sub">Trigger：每週二 2:30 PM。當天機器休眠 / 服務未啟動，2:30 PM 完全沒有觸發紀錄。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">週二 2:00 PM ── 2:30 PM(應觸發) ── 3:00 PM（閘門 = 2:30+30 = 3:00）</div>
+      <div class="track" style="height:70px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:00</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">2:30</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:00</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot danger">✕</div>
+          <div class="label">2:30 PM<br>應觸發但無紀錄</div>
+        </div>
+        <div class="event-dot" style="left:52%; top:26px;">
+          <div class="dot" style="background:#94a3b8;">?</div>
+          <div class="label" style="color:#64748b;">2:30 巡檢<br>閘門未開(2:30&lt;3:00)<br>查無紀錄 → 略過</div>
+        </div>
+        <div class="check-mark hit" style="left:95%;">
+          <div class="diamond"></div>
+          <div class="clabel" style="color:var(--danger); font-weight:700;">3:00 巡檢<br>閘門已開(3:00≥3:00)<br>⚠ 查無紀錄→告警</div>
+        </div>
+      </div>
+    </div>
+    <div class="note danger">
+      <strong>判斷邏輯：</strong>2:30 巡檢時，<code>GetRunTimes(1:00,2:30)</code> 抓到候選 <code>T=2:30</code>；<code>GetHistory(taskPath, 2:00,3:00)</code> 查無紀錄；
+      閘門 <code>now(2:30) ≥ T+Tolerance(3:00)</code> 不成立 → 略過。
+      到了 3:00 巡檢，<code>GetRunTimes(1:30,3:00)</code> 再次抓到同一筆 T=2:30；<code>GetHistory</code> 仍查無紀錄；
+      這次閘門 <code>now(3:00) ≥ 3:00</code> 成立 → 判定漏排、發出告警，並標記 <code>(task, 2:30)</code> 為 resolved。
+    </div>
+    <div class="note warn">
+      <strong>去重機制：</strong>下一次 3:30 巡檢時，<code>GetRunTimes(2:00,3:30)</code> 視窗仍然涵蓋 2:30 這筆，但因為已經標記 resolved，直接跳過，不會重複告警，直到下週二 2:30 才會產生新的 key。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>情境 3：延遲執行但仍成功 —— 先查到紀錄就不用等閘門</h2>
+    <p class="sub">Trigger：每週二 2:30 PM。因為機器忙碌（例如剛從睡眠喚醒），任務延後到 2:42 PM 才真正開始執行並成功。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">週二 2:00 PM ── 2:30(理論) ── 2:42(實際成功) ── 3:00 PM</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:00</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">2:30</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:00</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot warn">◔</div>
+          <div class="label">2:30 PM<br>理論應觸發</div>
+        </div>
+        <div class="event-dot" style="left:63%;">
+          <div class="dot ok">✓</div>
+          <div class="label">2:42 PM<br>實際執行成功</div>
+        </div>
+        <div class="delay-bracket" style="left:52%; width:11%;">
+          <div class="dtext">12分</div>
+        </div>
+        <div class="check-mark hit" style="left:95%;">
+          <div class="diamond"></div>
+          <div class="clabel">3:00 巡檢<br>找到 2:42 執行紀錄</div>
+        </div>
+      </div>
+    </div>
+    <div class="note ok">
+      <strong>判斷邏輯：</strong>2:30 巡檢時，<code>GetHistory(taskPath, 2:00,3:00)</code> 查詢當下 2:42 這件事還沒發生，查無紀錄；閘門 <code>2:30 ≥ 3:00</code> 也不成立 → 略過。
+      到了 3:00 巡檢，<code>GetHistory(taskPath, 2:00,3:00)</code> 這次查到 2:42 PM 有一筆成功執行紀錄（<code>LastTaskResult == 0</code>），落在 <code>[2:30−30分, 2:30+30分]</code> 接受窗內 → 立刻結案，<strong>完全不需要等閘門</strong>，也不告警。
+    </div>
+    <div class="note">
+      關鍵是判斷順序：<strong>先查 History 有沒有對應執行紀錄，查到就直接結案</strong>；只有查無紀錄時，才需要靠時間閘門決定「現在能不能判定漏排」。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span>情境 4：跨週邊界 —— 巡檢時間點接近午夜 / 週日</h2>
+    <p class="sub">Trigger：每週日 11:30 PM。巡檢在週日 23:00、23:30、週一 00:00 分別執行時，要能正確算出「這週」而非「上週」的應觸發時間。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">週日 23:00 ── 23:30(觸發) ── 週一 00:00 ── 週一 00:30</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">週日 23:00</div>
+        <div class="hour-tick" style="left:36%;"></div><div class="tick-label" style="left:36%;">週日 23:30</div>
+        <div class="hour-tick" style="left:67%;"></div><div class="tick-label" style="left:67%;">週一 00:00</div>
+        <div class="hour-tick" style="left:97%;"></div><div class="tick-label" style="left:97%;">週一 00:30</div>
+
+        <div class="event-dot" style="left:36%;">
+          <div class="dot ok">✓</div>
+          <div class="label">週日 23:30<br>準時觸發成功</div>
+        </div>
+        <div class="check-mark" style="left:5%;">
+          <div class="diamond"></div>
+          <div class="clabel">23:00 巡檢<br>GetRunTimes(21:30,23:00)<br>視窗內無結果</div>
+        </div>
+        <div class="check-mark hit" style="left:67%;">
+          <div class="diamond"></div>
+          <div class="clabel">週一 00:00 巡檢<br>GetRunTimes(22:30,00:00)<br>正確抓到週日23:30這筆</div>
+        </div>
+      </div>
+    </div>
+    <div class="note warn">
+      <strong>容易誤判的地方：</strong>如果每次查詢用「日曆週」切割區間（例如固定抓「本週一 00:00 到現在」再從結果裡挑最後一筆），
+      在週一 00:00 剛跨過去的瞬間，程式邏輯上「這週」跟「上週」的判斷容易出錯，導致週日 23:30 這筆被誤判成上週的資料而漏算，或被跨週重複計算兩次。
+    </div>
+    <div class="note ok">
+      <strong>正確做法：</strong>不要用「日曆週」或固定回顧區間去切，永遠用<strong>以現在時間為終點、往前推 90 分鐘的滑動窄視窗</strong> —— <code>GetRunTimes(now-90分, now)</code>。
+      因為視窗是跟著「現在時間」走，不是跟著日曆的週一/週日切，所以不管巡檢當下是週日 23:00 還是跨過午夜到週一 00:00，
+      只要視窗本身連續銜接、且視窗長度(90分) ≥ 安全公式要求，週日 23:30 這筆必然剛好落在某一次巡檢的視窗內，不會漏抓，重複抓到也會被 resolved 去重擋掉。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span>情境 5：多個 Weekly 任務同時存在 —— 各自獨立判斷</h2>
+    <p class="sub">任務 X：每週二 2:30 PM ｜ 任務 Y：每週四 9:00 AM ｜ 任務 Z：每週日 11:30 PM ── 全部用同一組「每 30 分鐘巡檢」處理</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">本週：週一 ── 週二 ── 週三 ── 週四 ── 週五 ── 週六 ── 週日</div>
+      <div class="track">
+        <div class="hour-tick" style="left:2%;"></div><div class="tick-label" style="left:2%;">週一</div>
+        <div class="hour-tick" style="left:98%;"></div><div class="tick-label" style="left:98%;">週日</div>
+
+        <div class="event-dot" style="left:24%;">
+          <div class="dot ok">✓</div>
+          <div class="label">任務X<br>週二2:30PM</div>
+        </div>
+        <div class="event-dot" style="left:50%;">
+          <div class="dot danger">✕</div>
+          <div class="label">任務Y<br>週四9:00AM<br>漏排</div>
+        </div>
+        <div class="event-dot" style="left:88%;">
+          <div class="dot warn">◔</div>
+          <div class="label">任務Z<br>週日11:30PM<br>延遲執行</div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:var(--ok);"></span> 任務X：準時執行，查到成功紀錄立刻結案</div>
+      <div class="item"><span class="dot" style="background:var(--danger);"></span> 任務Y：查無紀錄，等閘門開了才告警</div>
+      <div class="item"><span class="dot" style="background:var(--warn);"></span> 任務Z：延遲但查到成功紀錄，不用等閘門也不告警</div>
+    </div>
+    <div class="note">
+      <strong>重點：</strong>「每 30 分鐘巡檢一次」是同一個 Worker 排程，但巡檢邏輯是<strong>對每一個任務、每一筆候選 Trigger 時間各自套用同一套演算法（查History→查無才看閘門）</strong>，
+      彼此互不影響。任務 X／Y／Z 各自在自己的觸發時間點附近被判斷，不需要監控排程去遷就任何一個任務的時間，也不會因為同一巡檢週期內有多個任務而互相干擾。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">7</span>小結：目前設定對 Weekly 類型的影響</h2>
+    <table>
+      <tr><th>面向</th><th>目前設定（30/30/90）</th><th>更密集巡檢（例如10~15分鐘）</th></tr>
+      <tr><td>發現成功執行的延遲</td><td>最快幾乎即時，最慢約 30 分鐘（下一輪巡檢查到紀錄）</td><td>最快幾乎即時，最慢約 10~15 分鐘</td></tr>
+      <tr><td>確認漏排的延遲</td><td>閘門開啟時間 = Trigger+30分；因剛好與 Interval 對齊，通常在閘門開啟的第一次巡檢就會確認，約 30 分鐘</td><td>閘門開啟後很快就會被下一輪巡檢確認，約 10~15 分鐘</td></tr>
+      <tr><td>對 Weekly 任務是否足夠</td><td>足夠。一週才觸發 1 次，30 分鐘的確認延遲影響很小</td><td>更即時，但對 Weekly 這種低頻任務其實過度密集</td></tr>
+      <tr><td>系統資源消耗</td><td>低（每 30 分鐘才跑一次 GetRunTimes/GetHistory）</td><td>較高（同樣邏輯跑更多次）</td></tr>
+      <tr><td>安全性要求</td><td><code>LookbackMinutes(90) ≥ Tolerance(30) + Interval(30) = 60</code>，有 30 分鐘餘裕（見第8節）</td><td>相同公式，但因 Interval 變小，所需 Lookback 也可以跟著變小</td></tr>
+    </table>
+    <div class="note ok">
+      <strong>結論：</strong>目前 <code>Interval=30 / Tolerance=30 / Lookback=90</code> 這組設定，配合「先查History、查無才看閘門」的判斷順序，
+      能穩定判斷 Weekly 任務的成功、失敗、漏排三種結果，且不受巡檢時機影響。若日後要監控類型 C（高頻重複型，如每5分鐘一次）的任務，
+      這組偏低頻的巡檢間隔可能就太粗，需要依任務類型分層設計巡檢頻率。
+    </div>
+  </section>
+
+
+  <section>
+    <h2><span class="num">8</span>模型修正：Lookback ≠ Interval，判斷改用「以 Trigger 為中心」</h2>
+    <p class="sub">討論 <code>ToleranceMinutes = 30</code>、<code>IntervalMinutes = 30</code> 這組設定時發現的邊界問題，修正後的正確模型如下。</p>
+
+    <h3 style="font-size:14.5px; margin:22px 0 8px;">8.1　抓取範圍（Lookback）刻意大於巡檢間隔（Interval），製造重疊冗餘</h3>
+    <div class="timeline-box">
+      <div class="timeline-title">每 30 分鐘巡檢一次，但每次往前抓 90 分鐘 —— 相鄰兩次巡檢視窗重疊 60 分鐘</div>
+      <div class="track" style="height:78px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">1:00</div>
+        <div class="hour-tick" style="left:28%;"></div><div class="tick-label" style="left:28%;">1:30</div>
+        <div class="hour-tick" style="left:51%;"></div><div class="tick-label" style="left:51%;">2:00</div>
+        <div class="hour-tick" style="left:74%;"></div><div class="tick-label" style="left:74%;">2:30</div>
+        <div class="hour-tick" style="left:97%;"></div><div class="tick-label" style="left:97%;">3:00</div>
+
+        <div class="event-dot" style="left:74%;">
+          <div class="dot purple">T</div>
+          <div class="label">2:30 PM<br>Trigger 理論觸發</div>
+        </div>
+
+        <!-- overlap bar for 2:30 check window (1:00~2:30, 90min lookback) -->
+        <div class="delay-bracket" style="left:5%; width:69%; top:52px; border-color:var(--accent);">
+          <div class="dtext" style="color:var(--accent);">2:30巡檢視窗：GetRunTimes(1:00,2:30) → 抓到 T</div>
+        </div>
+        <!-- overlap bar for 3:00 check window (1:30~3:00, 90min lookback) -->
+        <div class="delay-bracket" style="left:28%; width:69%; top:66px; border-color:var(--warn);">
+          <div class="dtext" style="color:var(--warn);">3:00巡檢視窗：GetRunTimes(1:30,3:00) → 也抓到 T</div>
+        </div>
+      </div>
+    </div>
+    <div class="note ok">
+      <strong>設計用意：</strong>Lookback（90分鐘）故意比 Interval（30分鐘）長很多，讓相鄰兩次巡檢的視窗互相重疊達 60 分鐘。
+      即使某一次巡檢因程式重啟、機器忙碌而delay或整輪漏跑，甚至連續兩輪都delay，下一次巡檢的視窗仍然涵蓋得到，不會真的漏掉這個 Trigger。
+      同一筆 Trigger 會被多次視窗重複抓到，這是預期內的行為，交給 <code>_alertedKeys</code> 去重即可，不影響判斷正確性。
+    </div>
+
+    <h3 style="font-size:14.5px; margin:26px 0 8px;">8.2　判斷「有沒有跑」：以 Trigger 時間為中心的接受窗，而非「現在時間 - Trigger 時間」</h3>
+    <div class="timeline-box">
+      <div class="timeline-title">Tolerance = 30 分鐘 → 接受窗 = [Trigger − 30分, Trigger + 30分]</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:00</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">2:30</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:00</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot purple">T</div>
+          <div class="label">2:30 PM<br>Trigger 時間</div>
+        </div>
+        <div class="delay-bracket" style="left:5%; width:90%; top:34px;">
+          <div class="dtext">GetHistory 查詢區間：2:00 ~ 3:00（以 T 為中心 ±30分）</div>
+        </div>
+      </div>
+    </div>
+    <table>
+      <tr><th>比較方式</th><th>問題</th></tr>
+      <tr><td><s>現在(巡檢時間) − Trigger時間 &gt; Tolerance</s>（舊模型）</td><td>結果會因為巡檢當下是幾點而不同：3:00查是30分，3:15查是45分，同一個漏排案例算出不同時間差，容易卡在邊界因為剛好等於 Tolerance 而誤判</td></tr>
+      <tr><td><strong>GetHistory(taskPath, Trigger − Tolerance, Trigger + Tolerance)</strong>（修正模型）</td><td>只跟 Trigger 時間與 Tolerance 有關，跟巡檢當下時間點無關；查得到紀錄就是「有跑」，查不到才是「漏排」，判斷結果穩定不受巡檢時機影響</td></tr>
+    </table>
+
+    <h3 style="font-size:14.5px; margin:26px 0 8px;">8.3　什麼時候才能「下結論」：時間閘門 + 歷史查詢，兩步驟分工</h3>
+
+    <div class="timeline-box">
+      <div class="timeline-title">實際案例：Trigger = 2:50 PM，Interval = 30 分鐘，Tolerance = 30 分鐘（閘門 = 2:50+30 = 3:20 才開）</div>
+      <div class="track" style="height:86px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:30</div>
+        <div class="hour-tick" style="left:37%;"></div><div class="tick-label" style="left:37%;">2:50</div>
+        <div class="hour-tick" style="left:51%;"></div><div class="tick-label" style="left:51%;">3:00</div>
+        <div class="hour-tick" style="left:73%;"></div><div class="tick-label" style="left:73%;">3:20</div>
+        <div class="hour-tick" style="left:97%;"></div><div class="tick-label" style="left:97%;">3:30</div>
+
+        <div class="event-dot" style="left:37%;">
+          <div class="dot purple">T</div>
+          <div class="label">2:50 PM<br>Trigger 理論觸發</div>
+        </div>
+
+        <!-- 3:00 check: candidate found but gate not open -> SKIP -->
+        <div class="check-mark" style="left:51%; top:-30px;">
+          <div class="diamond" style="background:#94a3b8;"></div>
+        </div>
+        <div class="event-dot" style="left:51%; top:8px;">
+          <div class="dot" style="background:#94a3b8;">?</div>
+          <div class="label" style="color:#64748b;">3:00 巡檢<br>候選被撈到<br>但 3:00 &lt; 3:20（閘門未開）<br><strong>→ 略過，不下結論</strong></div>
+        </div>
+
+        <!-- gate line at 3:20 -->
+        <div class="delay-bracket" style="left:73%; width:0; top:-14px; height:70px; border-top:none; border-left:2px dashed var(--danger);">
+          <div class="dtext" style="top:-18px; left:0; transform:translateX(-50%); color:var(--danger);">閘門打開 3:20</div>
+        </div>
+
+        <!-- 3:30 check: gate open -> resolve -->
+        <div class="event-dot" style="left:97%;">
+          <div class="dot ok">✓</div>
+          <div class="label">3:30 巡檢<br>3:30 ≥ 3:20（閘門已開）<br><strong>→ 查 GetHistory 下結論</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:#94a3b8;"></span> 候選被撈到，但閘門未開 → 這一輪不查 History、不告警，單純略過</div>
+      <div class="item"><span class="dot" style="background:var(--ok);"></span> 閘門已開 → 這一輪才真正查 History 並下結論（成功／失敗／漏排三選一）</div>
+    </div>
+
+    <div class="note">
+      <strong>Step 1 － 時間閘門（何時可以下結論）：</strong>
+      <code>現在時間 ≥ Trigger時間 + ToleranceMinutes</code> 成立後，才代表已經到了「最晚容許時刻」，可以開始下結論；
+      如果現在時間還沒到這個界線，代表任務可能還在合理範圍內、還沒真正到期，不該急著判定漏排（此時應略過，等下一輪巡檢再看）。
+    </div>
+    <div class="note ok">
+      <strong>Step 2 － 歷史查詢（結論是什麼）：</strong>
+      時間閘門通過後，才呼叫 <code>GetHistory(taskPath, Trigger − Tolerance, Trigger + Tolerance)</code>：
+      查到成功紀錄 → 結案；查到失敗紀錄 → 失敗告警；完全查無紀錄 → 漏排告警。
+    </div>
+    <div class="note warn">
+      <strong>套用到 Interval = 30 分鐘、Tolerance = 30 分鐘的情境：</strong>
+      2:30 PM 觸發後，時間閘門要等到 <strong>3:00 PM</strong>（2:30+30分）才會打開；因此 3:00 PM 這次巡檢是第一個「有資格下結論」的巡檢點，
+      不會出現「還沒到期卻被誤判漏排」的狀況，也不會因為巡檢時機不同而算出不同的時間差 —— 這組 30/30 設定在這個修正後的模型下是可行且穩定的。
+    </div>
+
+    <h3 style="font-size:14.5px; margin:26px 0 8px;">8.4　安全公式：Lookback 必須 ≥ Tolerance + Interval，而非只是 Lookback &gt; Tolerance</h3>
+    <div class="note warn">
+      <strong>為什麼要多加一個 Interval？</strong> 因為巡檢不是連續發生的，而是每隔 <code>Interval</code> 分鐘才執行一次。
+      最差情況下，「閘門剛好打開（現在 ≥ Trigger + Tolerance）」的那一刻，會卡在兩次巡檢中間，要等到<strong>下一次巡檢</strong>才真正被檢查到 —— 這會再拖上將近一個 <code>Interval</code> 的時間。
+      所以要保證這筆 Trigger 在「閘門打開、可以下結論」的那次巡檢裡，仍然還落在 Lookback 視窗內，安全公式必須是：
+    </div>
+    <pre>Lookback ≥ Tolerance + Interval
+
+範例（本文情境）：Interval = 30 分鐘，Tolerance = 30 分鐘
+　→ 需要 Lookback ≥ 60 分鐘（臨界值）
+　→ 已採用 Lookback = 90 分鐘 → 高於臨界值 60 分鐘，多出 30 分鐘安全餘裕</pre>
+    <div class="note danger">
+      <strong>臨界值的風險（若沿用 60 分鐘）：</strong>剛好等於臨界值時，任何微小的時間誤差（例如程式啟動延遲、系統時間漂移、巡檢本身執行耗時）都可能讓這筆 Trigger 在閘門打開前就先滑出視窗，導致<strong>永遠不會被下結論、直接消失在系統裡</strong>，是最危險的組態方式。改用 90 分鐘後，即使巡檢延遲、漂移，也還有 30 分鐘的緩衝空間可以吸收。
+    </div>
+
+    <h3 style="font-size:14.5px; margin:26px 0 8px;">8.5　修正方向的取捨：拉長 Lookback vs 縮短 Interval</h3>
+    <table>
+      <tr><th>方向</th><th>好處</th><th>代價 / 風險</th></tr>
+      <tr>
+        <td><strong>拉長 Lookback（已採用：90分鐘）</strong></td>
+        <td>增加安全邊界，不需更動 <code>Interval</code>／<code>Tolerance</code> 這類會影響業務容錯行為的參數</td>
+        <td>同一筆 Trigger 會在更多輪巡檢中被重新撈到（候選次數變多），但只要有 <code>resolved</code> 去重機制，查到已處理過就直接跳過，<strong>不會造成重複告警</strong>，只是多一點點輕量的查表判斷</td>
+      </tr>
+      <tr>
+        <td>縮短 Interval</td>
+        <td>巡檢更頻繁，離散誤差變小，理論上可以用更小的 Lookback</td>
+        <td>系統資源消耗直接變高（<code>GetRunTimes</code>/<code>GetHistory</code> 呼叫次數變多）；若巡檢邏輯耗時較長，可能出現上一輪還沒跑完、下一輪就開始的重疊執行，需要額外加鎖處理</td>
+      </tr>
+    </table>
+    <div class="note ok">
+      <strong>已採用設定：</strong><code>IntervalMinutes = 30</code>、<code>ToleranceMinutes = 30</code>、<code>LookbackMinutes = 90</code>。
+      相較於臨界值 60 分鐘，多保留 30 分鐘餘裕，應付機器忙碌、程式延遲啟動等意外狀況；同時系統須確保做好「以 <code>任務名稱 + Trigger時間</code> 為 key」的 resolved 去重機制，這樣拉長 Lookback 不會產生任何重複告警的副作用。
+    </div>
+  </section>
+
+</div>
+
+<footer>Windows Task Scheduler 監控設計 · 類型 A（Weekly）× 每30分鐘巡檢情境圖解</footer>
+
+</body>
+</html>

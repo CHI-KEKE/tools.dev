@@ -1,0 +1,12 @@
+name: MYQA - frontend
+variables:
+  - name: base-url
+    value: https://91app-live.qa1.my.91dev.tw
+  - name: Cookie
+    value: _fbp=fb.1.1768012631882.200133521726464270; _clck=1o0wrd8%5E2%5Eg2u%5E0%5E2210; SL_C_23361dd035530_SID={"61a79bbd82d029bef2eb0eebfe201ecae641c22f":{"sessionId":"nZBMqm8InsnJIYWrS-k2t","visitorId":"pj1lGNjRLcFQS4ZFS71a8"}}; _uetvid=334805604f1f11efa3c3c1ff964e00ff; __gads=ID=ff122ef4cb483dc5:T=1768874824:RT=1770633156:S=ALNI_Mbtv0ca8CkUnpg4nbsqWaLoLse33w; __gpi=UID=000011e828e48cd4:T=1768874824:RT=1770633156:S=ALNI_Ma_diubMbt99jKuBiEf0ROAi6AUvg; __eoi=ID=1bbdb658465f4d0b:T=1768874824:RT=1770633156:S=AA-AfjagpdbiWwlKdHREADAYClIT; _ga_PXC7ENYBGM=GS2.1.s1770633156$o3$g1$t1770633745$j32$l0$h0; _ga_P9SKT1T0T2=GS2.2.s1772682217$o51$g0$t1772682217$j60$l0$h0; _ga=GA1.1.1153032814.1768012217; _ga_2WFJBS7B20=GS2.1.s1773286730$o108$g1$t1773287262$j36$l0$h0; Livebuy.Sid=4bf051914b254e03b3a2481dd53ab519; .AspNetCore.Livebuy.Cookie=CfDJ8C0snKEvjKVGoNerWD9-hNb0v56wXsx1s3Kp2E9dub-Sc8oKWTkPd69s0FzbFX_aryjobBVCS28Ogi8W9jtHSmaphItbyVIc0Tr90TlqSeqhBHQeFloiN6GZBRJjg7ywUPIauu5RFve8xAhgztUHOluo97j6B_3vPDnR1p1z_v1zsd4EHPukQz3_ZU2A_BIVHs5y7UJtdiDQRpeVJAysBR_sQTA6gZyUibKkhZfX0avQnAM25reMDMs8oK9tjI-lVSIMl7LlEp9VhnTugzUNHFLgTvQxjlZnwWtmLoh_5Yl6oQA4bkytCyu1UHF-F-nlmLM8oQN7C8IntCjzGn-jKB3WnJEJCQf52AMq1JRa3CVGJtgr_MJpRjwpZ-84FwNTM0IpXMT8jxNFa87qxWWLq6-yL4hIdmnKw256AYuXHdYOMuuDYy0gFbW99puXIoHvKk-9-8Fth7KxvMuNzHicNp7p8YEGVS6vyDY1CNRnEbNYtnP3VIyGKwcL2vxQu5pXtecSjanpL7cXu4f_HW3S7EqUB1IXcgKEUJ-qIhB7xpiZYf_Mu7efK_P_Dsigza8KyLlCaWjDEWUV6sXzvcGKfdPJa3vs71XoVmonmLYhpHqJ
+  - name: wss-url
+    value: wss://i2pb93ji55.execute-api.ap-southeast-1.amazonaws.com/91applive
+  - name: k8s-public-url
+    value: https://91app-live-io.qa1.my.91dev.tw
+  - name: shopId
+    value: "4"

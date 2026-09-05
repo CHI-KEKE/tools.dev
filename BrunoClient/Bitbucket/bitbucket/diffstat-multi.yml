@@ -1,0 +1,24 @@
+info:
+  name: diffstat-multi
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: https://api.bitbucket.org/2.0/repositories/allenlin0000/nineyi.databases/diffstat/allenlin0000/nineyi.databases:a7fa86de79a7%0Dbd8d7c283710?from_pullrequest_id=2&topic=true
+  params:
+    - name: from_pullrequest_id
+      value: "2"
+      type: query
+    - name: topic
+      value: "true"
+      type: query
+  auth:
+    type: bearer
+    token: ATCTT3xFfGN0EzhP-LXJWr0chclLp-o11i5RGxnjiXKVemmb6GIeAxkJpjb9V9akwi-istQboujNPcJiG2ZSOBVgSCl8h0KHPZygSoHvyQNNTvtwrRlQBC_h-qrvSEsMuy2u9UTgtOHN2DZu6A2UPVDhoOGjOsK3Q7kv-x2c1dUT_ZRI6eSz_k0=0E2229E0
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,32 @@
+opencollection: 1.0.0
+
+info:
+  name: Facebook
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: base-url
+      value: https://graph.facebook.com/v24.0
+    - name: pageId
+      value: "169441722919446"
+    - name: page-access-token
+      value: EAFkxo0ukTpUBQ7L6hZBV5ZCFnwjNz06M6jEm7mYnZBcDFl7aRiX2XQgZAIMaO8tWeRSHaMmX1D9Q9vOSUJhjtEgWuQVuutRM1levDSZBIZAuVbK6U3yHgh45bxwJcBF9yXikd74XWP6v1ZB555ndK6LUw8YRGy99YuiuKNSepEcGCQLE2hJ8MnwB5ywp7s5ijcpBrz3YD8ZD
+    - name: vedio-id
+      value: "122224591610110098"
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

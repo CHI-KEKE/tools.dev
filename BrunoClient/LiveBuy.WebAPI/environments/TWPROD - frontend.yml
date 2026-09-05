@@ -1,0 +1,10 @@
+name: TWPROD - frontend
+variables:
+  - name: wss-url
+    value: wss://7vdmu8rl5l.execute-api.ap-northeast-1.amazonaws.com/91applive
+  - name: base-url
+    value: ""
+  - name: shopId
+    value: "8"
+  - name: k8s-public-url
+    value: https://91app-live.91app.io

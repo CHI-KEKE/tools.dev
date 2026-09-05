@@ -1,0 +1,36 @@
+opencollection: 1.0.0
+
+info:
+  name: slack
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: base-url
+      value: https://hooks.slack.com
+    - name: workspace-id
+      value: T042K9K0H
+    - name: source-id
+      value: B01FH3C8W6R
+    - name: secret
+      value: zehhA0rrm72maKPcayClsa3w
+
+docs:
+  content: 
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

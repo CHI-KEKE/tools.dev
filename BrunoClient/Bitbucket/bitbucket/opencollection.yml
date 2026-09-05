@@ -1,0 +1,33 @@
+opencollection: 1.0.0
+
+info:
+  name: bitbucket
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  auth:
+    type: bearer
+    token: ""
+  variables:
+    - name: base-url
+      value: https://api.bitbucket.org
+    - name: mweb_token
+      value: ATCTT3xFfGN0hJxofQKHSzMZN7crKUZxAOroh06906KIoUuSb4MCz272uhxUGqt7n3bobqCwodyw8_amL0NMoHyjoRHNpSfIJKDjp7LYyGAeBK0fyE-E0ZcI85oD1UDVvW_ifRnxOf6MrYKvQDf7eAlVlpqvaGKqpQ6A4JPPiVZqyP9NHqTUY5k=BA0CE2A7
+    - name: databases_token
+      value: ATCTT3xFfGN0EzhP-LXJWr0chclLp-o11i5RGxnjiXKVemmb6GIeAxkJpjb9V9akwi-istQboujNPcJiG2ZSOBVgSCl8h0KHPZygSoHvyQNNTvtwrRlQBC_h-qrvSEsMuy2u9UTgtOHN2DZu6A2UPVDhoOGjOsK3Q7kv-x2c1dUT_ZRI6eSz_k0=0E2229E0
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

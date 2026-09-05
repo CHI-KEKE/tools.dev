@@ -1,0 +1,30 @@
+info:
+  name: fixed-query-for-salepages
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/api/fixed-salepage-collections/{{collectionId}}:query-for-salepages"
+  headers:
+    - name: N1-TRACE-ID
+      value: "{{traceId}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "selection": "item-id-only",
+        "pagination": {
+          "pageIndex": 0,
+          "pageSize": 300
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

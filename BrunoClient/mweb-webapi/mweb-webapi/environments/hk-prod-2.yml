@@ -1,0 +1,5 @@
+name: hk-prod-2
+color: "#CE4F3B"
+variables:
+  - name: base-url
+    value: https://shop2.91app.hk

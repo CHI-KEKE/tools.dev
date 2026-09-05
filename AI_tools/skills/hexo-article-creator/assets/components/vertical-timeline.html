@@ -1,0 +1,67 @@
+<!--
+元件：垂直時間軸卡片
+用途：呈現一連串隨時間演進的事件（案例回溯、故障排查時序）
+配色語意：色點依事件性質分級 → 一般(墨綠) / 警示(琥珀) / 危險(鏽紅) / 結案(綠色)
+取代 mermaid `timeline` 語法（原生 timeline 排版擠壓、可讀性差）
+-->
+
+<style>
+.case-timeline { position: relative; margin: 20px 0 30px; padding-left: 36px; }
+.case-timeline::before {
+  content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px; width: 2px;
+  background: repeating-linear-gradient(180deg, #b9c9c6 0 8px, transparent 8px 16px);
+}
+.tl-event { position: relative; margin-bottom: 18px; }
+.tl-event:last-child { margin-bottom: 0; }
+.tl-event::before {
+  content: ''; position: absolute; left: -31px; top: 3px; width: 12px; height: 12px;
+  border-radius: 50%; background: #3d6b66; border: 2px solid #fbfaf6; box-shadow: 0 0 0 1.5px #3d6b66;
+}
+.tl-event.warn::before   { background: #b8860b; box-shadow: 0 0 0 1.5px #b8860b; }
+.tl-event.danger::before { background: #a3441e; box-shadow: 0 0 0 1.5px #a3441e; }
+.tl-event.done::before   { background: #4f7942; box-shadow: 0 0 0 1.5px #4f7942; }
+.tl-event .tl-card { background: #fbfaf6; border: 1px solid #d8d3c2; border-radius: 4px; padding: 8px 16px; }
+.tl-event.warn .tl-card   { border-left: 3px solid #b8860b; }
+.tl-event.danger .tl-card { border-left: 3px solid #a3441e; }
+.tl-event.done .tl-card   { border-left: 3px solid #4f7942; }
+.tl-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tl-head .tl-step {
+  font-family: 'Courier New', Consolas, monospace; font-size: 0.68rem; color: #8a8272;
+  border: 1px solid #c9c3ae; border-radius: 2px; padding: 0 6px; background: #f2efe4; flex-shrink: 0;
+}
+.tl-head .tl-title { font-weight: 700; color: #2f4f4f; font-size: 0.92rem; }
+.tl-desc { font-size: 0.86rem; color: #2b2b2b; margin-top: 4px; line-height: 1.7; }
+.tl-desc code { background: #eef0eb; padding: 1px 6px; border-radius: 3px; color: #a3441e; font-size: 0.85em; }
+</style>
+
+<div class="case-timeline">
+
+<div class="tl-event">
+<div class="tl-card">
+<div class="tl-head"><span class="tl-step">STEP 1</span><span class="tl-title">事件標題</span></div>
+<div class="tl-desc">事件描述，術語用 <code>code</code> 包起來</div>
+</div>
+</div>
+
+<div class="tl-event warn">
+<div class="tl-card">
+<div class="tl-head"><span class="tl-step">STEP 2</span><span class="tl-title">警示事件</span></div>
+<div class="tl-desc">描述</div>
+</div>
+</div>
+
+<div class="tl-event danger">
+<div class="tl-card">
+<div class="tl-head"><span class="tl-title">危险/根因事件（無 STEP 編號時可省略 tl-step）</span></div>
+<div class="tl-desc">描述</div>
+</div>
+</div>
+
+<div class="tl-event done">
+<div class="tl-card">
+<div class="tl-head"><span class="tl-title">結案事件</span></div>
+<div class="tl-desc">描述</div>
+</div>
+</div>
+
+</div>

@@ -1,0 +1,30 @@
+info:
+  name: get-template
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{template-base-url}}/api/Templates/{{template-name}}/-1"
+  auth: inherit
+
+runtime:
+  variables:
+    - name: template-name
+      value: MWeb_Registration_VerifyCode_Template
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## 忘記密碼
+
+  MWeb_Registration_VerifyCode_Template
+
+
+  ## 退款
+
+  Transaction_RefundFinish_Template

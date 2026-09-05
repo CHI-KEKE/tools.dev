@@ -1,0 +1,64 @@
+info:
+  name: create-board
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/1/boards/?name=NewNew {{boardNumber}}&key={{key}}&token={{token}}"
+  params:
+    - name: name
+      value: NewNew {{boardNumber}}
+      type: query
+    - name: key
+      value: "{{key}}"
+      type: query
+    - name: token
+      value: "{{token}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## pre
+
+  let boardNumber = pm.collectionVariables.get('boardNumber');
+  if(isNaN(boardNumber))
+  {
+      boardNumber = 0;
+  }
+
+  boardNumber++;
+
+  pm.collectionVariables.set('boardNumber',boardNumber);
+
+
+  ## post
+
+  pm.test("Status code is 200", function () {
+      pm.response.to.have.status(200);
+  });
+
+  let response = pm.response.json();
+
+  pm.test("Board is crearted", () => {
+      // pm.expect(response.name).to.eql('NewNew');
+      pm.expect(response.closed).to.be.false;
+  })
+
+  pm.test("Board is private", () => {
+      pm.expect(response.prefs.permissionLevel).to.eql('private');
+  })
+
+  pm.test("Calendar is disabled", () =>{
+      const calendarView = response.prefs.switcherViews.find(view => view.viewType === 'Calendar');
+      pm.expect(calendarView).to.be.an('object');
+      pm.expect(calendarView.enabled).to.be.false;
+  })
+
+  pm.collectionVariables.set('boardId',response.id);

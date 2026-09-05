@@ -1,0 +1,4 @@
+name: MYQA
+variables:
+  - name: base-url
+    value: https://promotion-api-internal.qa1.my.91dev.tw

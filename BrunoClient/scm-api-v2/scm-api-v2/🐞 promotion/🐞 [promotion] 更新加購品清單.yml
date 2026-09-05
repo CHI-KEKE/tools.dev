@@ -1,0 +1,44 @@
+info:
+  name: 🐞 [promotion] 更新加購品清單
+  type: http
+  seq: 24
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdateCartExtraPurchaseSalepages?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+         "ShopId": 10230,
+         "PromotionId": 40575,
+         "IsAddHistory": false,
+         "CartExtraPurchaseConditionList": [
+           {
+             "ActionType": "Add",
+             "ReachPiece": 0,
+             "ReachPrice": 1,
+             "SalepageId": 1557573,
+             "SaleProductSKUId": 2169001,
+             "CartExtraPurchasePrice": 2,
+             "Sort": 1
+           }
+         ]
+       }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

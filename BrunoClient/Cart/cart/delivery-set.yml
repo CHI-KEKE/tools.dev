@@ -1,0 +1,44 @@
+info:
+  name: delivery-set
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/api/Checkout/delivery-set"
+  body:
+    type: json
+    data: |-
+      {
+        "PayUniqueKey": "df0bc119-6849-4ad7-b119-f5cfa05402cc",
+        "CheckoutShippingType": {
+          "ShippingProfileTypeDef": "Home",
+          "ShippingAreaId": 1,
+          "DeliveryTypeIdList": [27914]
+        },
+        "Receiver": {
+          "FullName": "哈哈哈哈哈77777哈哈哈哈哈77777哈哈哈哈哈77777哈哈哈哈哈6666",
+          "CellPhone": "0975013108",
+          "CountryCode": "886",
+          "ZipCode": "115",
+          "AddressDetail": "八德路四段768巷5號6樓",
+          "City": "台北市",
+          "State": "",
+          "District": "南港區",
+          "Country": null,
+          "CountryEnglishName": "Taiwan",
+          "ShippingAreaId": 1,
+          "StoreId": null,
+          "StoreName": null,
+          "Floor": null,
+          "FullAddress": null,
+          "Note": null
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

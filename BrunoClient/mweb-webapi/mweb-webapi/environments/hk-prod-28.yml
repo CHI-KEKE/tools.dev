@@ -1,0 +1,7 @@
+name: hk-prod-28
+color: "#CE4F3B"
+variables:
+  - name: base-url
+    value: https://eshop.cuapp.com
+  - name: shopId
+    value: "28"

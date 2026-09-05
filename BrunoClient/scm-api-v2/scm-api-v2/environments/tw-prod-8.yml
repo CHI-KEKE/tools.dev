@@ -1,0 +1,21 @@
+name: tw-prod-8
+color: "#346AB2"
+variables:
+  - name: base-url
+    value: https://api.91mai.com/scm/V2
+  - name: token
+    value: "54361439"
+  - name: timestamp
+    value: ""
+  - name: saltKey
+    value: d6b55cf9
+  - name: apiKey
+    value: 770555d7-1806-4ee8-9452-7762bc80ef7d
+  - name: shopId
+    value: "8"
+  - name: signature
+    value: ""
+  - name: userName
+    value: "54361439"
+  - name: userId
+    value: "1218"

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linter 靜態規則盤點 — 2026-06-30</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    h1 { font-size: 1.8rem; color: #58a6ff; margin-bottom: .25rem; }
+    .meta { color: #8b949e; font-size: .875rem; margin-bottom: 2rem; }
+
+    .summary-bar {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .badge {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: .5rem 1rem;
+      font-size: .875rem;
+    }
+    .badge span { font-size: 1.4rem; font-weight: 700; display: block; }
+    .badge.blue span  { color: #58a6ff; }
+    .badge.green span { color: #3fb950; }
+    .badge.yellow span{ color: #d29922; }
+    .badge.red span   { color: #f85149; }
+    .badge.purple span{ color: #bc8cff; }
+
+    section { margin-bottom: 2.5rem; }
+    h2 {
+      font-size: 1.1rem;
+      color: #f0f6fc;
+      border-left: 3px solid;
+      padding-left: .75rem;
+      margin-bottom: 1rem;
+    }
+    h2.sql    { border-color: #d29922; }
+    h2.config { border-color: #58a6ff; }
+    h2.sec    { border-color: #f85149; }
+    h2.arch   { border-color: #3fb950; }
+    h2.file   { border-color: #79c0ff; }
+    h2.fe     { border-color: #e3b341; }
+    h2.pr     { border-color: #bc8cff; }
+    h2.util   { border-color: #8b949e; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+    thead th {
+      background: #161b22;
+      color: #8b949e;
+      font-weight: 600;
+      text-align: left;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid #30363d;
+    }
+    tbody tr { border-bottom: 1px solid #21262d; }
+    tbody tr:hover { background: #161b22; }
+    td { padding: .45rem .75rem; vertical-align: top; }
+
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: .8rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      padding: .1em .35em;
+      color: #79c0ff;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: .7rem;
+      border-radius: 4px;
+      padding: .1em .4em;
+      margin-right: .2em;
+      font-weight: 600;
+    }
+    .tag.bb  { background: #0d419d; color: #79c0ff; }
+    .tag.gl  { background: #6e2b8b; color: #e3b341; }
+    .tag.all { background: #1f2d1a; color: #3fb950; }
+
+    .note {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-size: .875rem;
+      color: #8b949e;
+      margin-top: 2rem;
+    }
+    .note strong { color: #c9d1d9; }
+  </style>
+</head>
+<body>
+
+<h1>🔍 Linter 非 AI 靜態規則盤點</h1>
+<p class="meta">建立日期：2026-06-30 ｜ 來源：<code>C:\91APP\linter\src\NineYi.Linter.Bitbucket\RepoRules\</code></p>
+
+<div class="summary-bar">
+  <div class="badge blue"><span>48</span>靜態規則總數</div>
+  <div class="badge yellow"><span>16</span>SQL / Database</div>
+  <div class="badge blue"><span>5</span>設定檔 / Config</div>
+  <div class="badge red"><span>3</span>資安</div>
+  <div class="badge green"><span>7</span>架構設計</div>
+  <div class="badge blue"><span>5</span>檔案結構</div>
+  <div class="badge yellow"><span>4</span>前端/翻譯</div>
+  <div class="badge purple"><span>4</span>PR/Branch</div>
+  <div class="badge"><span>4</span>通用工具</div>
+</div>
+
+<!-- SQL -->
+<section>
+  <h2 class="sql">🗄️ SQL / Database（16 條）</h2>
+  <table>
+    <thead><tr><th>規則名稱</th><th>適用 Repo</th><th>檢查內容</th><th>平台</th></tr></thead>
+    <tbody>
+      <tr><td><code>NineYiDatabasesSPCheckNoSqlInjectionRule</code></td><td>NineYi.Databases</td><td>SP 內 SQL Injection 風險偵測</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPDropTempTableRule</code></td><td>NineYi.Databases</td><td>SP 是否有 DROP 暫存表</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPIsolationSetNoCountRule</code></td><td>NineYi.Databases</td><td>SP 開頭是否有 <code>SET NOCOUNT ON</code> / isolation 設定</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPJoinRule</code></td><td>NineYi.Databases</td><td>JOIN 寫法規範檢查</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPNeedTableSchemaRule</code></td><td>NineYi.Databases</td><td>表名是否加 schema（如 <code>dbo.TableName</code>）</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPNoEditNoteRule</code></td><td>NineYi.Databases</td><td>是否殘留 VSTS 編輯註記</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPNoLinkedServerQueryRule</code></td><td>NineYi.Databases / DB.Operation</td><td>禁止查詢 Linked Server</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPNoNegativeQueryRule</code></td><td>NineYi.Databases / DB.Operation</td><td>禁止使用負向查詢</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPNoShopIdConditionRule</code></td><td>NineYi.Databases</td><td>SP 不可出現 ShopId 條件</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPSalesOrderSqlPlanRule</code></td><td>NineYi.Databases</td><td>SalesOrder 熱表查詢 / SQL Plan 問題</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPSelectWithNoLock</code></td><td>NineYi.Databases</td><td>SELECT / JOIN 是否加 <code>NOLOCK</code></td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPStringAggRule</code></td><td>NineYi.Databases</td><td>禁止使用 <code>STRING_AGG</code></td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPTempVariableRule</code></td><td>NineYi.Databases</td><td>暫存變數用法規範</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesSPUpdateCommandRule</code></td><td>NineYi.Databases / DB.Operation</td><td>UPDATE 寫法規範</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDatabasesImportantTableRule</code></td><td>DB.Operation</td><td>重要表異動警示</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>PullRequestCommitsInSameFilesRule</code></td><td>NineYi.Databases</td><td>PR commits 是否集中在同類檔案</td><td><span class="tag bb">BB</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Config -->
+<section>
+  <h2 class="config">⚙️ 設定檔 / Config（5 條）</h2>
+  <table>
+    <thead><tr><th>規則名稱</th><th>適用 Repo</th><th>檢查內容</th><th>平台</th></tr></thead>
+    <tbody>
+      <tr><td><code>AppSettingConfigurationKeyValueRule</code></td><td>mweb / Sms / ERP / Scm</td><td>appsettings key value 更新規範</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>AppSettingsPrefixRule</code></td><td>mweb / Sms / ERP / Scm / Configuration</td><td>設定 key prefix 規範</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiConfigurationKeyRule</code></td><td>NineYi.Configuration</td><td>key 是否符合 schema</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiConfigurationTransformRule</code></td><td>—</td><td>transform 檔 Insert 類型變更偵測</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>EnsureAppSettingAddedRule</code></td><td>NMQV2 / Sms</td><td>變更時是否補齊 appsettings</td><td><span class="tag bb">BB</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Security -->
+<section>
+  <h2 class="sec">🔐 資安 / 安全性（3 條）</h2>
+  <table>
+    <thead><tr><th>規則名稱</th><th>適用 Repo</th><th>檢查內容</th><th>平台</th></tr></thead>
+    <tbody>
+      <tr><td><code>UserInputXssCheckRule</code></td><td>NineYi.Sms</td><td>使用者輸入是否有 XSS 防護</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>UpdateServiceAndControllerShouldCheckSecurityRule</code></td><td>Sms / mweb</td><td>Service / Controller 是否做安全檢查</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>CrossDbContextJoinRule</code></td><td>多 repo</td><td>跨 DbContext LINQ join 偵測</td><td><span class="tag bb">BB</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Architecture -->
+<section>
+  <h2 class="arch">🏗️ 架構 / 設計規範（7 條）</h2>
+  <table>
+    <thead><tr><th>規則名稱</th><th>適用 Repo</th><th>檢查內容</th><th>平台</th></tr></thead>
+    <tbody>
+      <tr><td><code>DenpendencyInjectionRule</code></td><td>多 repo</td><td>DI 註冊是否符合專案規範</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>SaveChangeUseResolveDBContextRule</code></td><td>mweb</td><td>SaveChanges 改用 ResolveDBContext</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiNMQAvoidAutoMapperRule</code></td><td>NMQ 系列</td><td>禁止使用 AutoMapper</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiSmsDARule</code></td><td>NineYi.Sms</td><td>DA 層方法命名 / 簽章規範</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiSmsAuditLogRule</code></td><td>Sms / ERPV2</td><td>public method 是否有 AuditLog 規範</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>FilePathAttributeRule</code></td><td>NineYi.Sms</td><td>FilePath attribute 規範</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>PathCombineRule</code></td><td>mweb</td><td>路徑組合必須使用 <code>Path.Combine</code></td><td><span class="tag bb">BB</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- File Structure -->
+<section>
+  <h2 class="file">📁 檔案 / 專案結構（5 條）</h2>
+  <table>
+    <thead><tr><th>規則名稱</th><th>適用 Repo</th><th>檢查內容</th><th>平台</th></tr></thead>
+    <tbody>
+      <tr><td><code>AddOrDeleteFileRule</code></td><td>mweb / Sms / ERP / Scm</td><td>新增/刪除檔案與 csproj 一致性</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>SyncToV1FileRule</code></td><td>mweb</td><td>V2/V1 同步檔案檢查</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>TypeLiteNet4ttRule</code></td><td>mweb / Sms</td><td>TypeLite <code>.tt</code> 產物同步</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>LayoutActivityRule</code></td><td>mweb</td><td>Layout Activity 相關檔案變更偵測</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>LayoutSnapshotRule</code></td><td>mweb</td><td>Layout Snapshot 相關檔案變更偵測</td><td><span class="tag bb">BB</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Frontend -->
+<section>
+  <h2 class="fe">🌐 前端 / 翻譯（4 條）</h2>
+  <table>
+    <thead><tr><th>規則名稱</th><th>適用 Repo</th><th>檢查內容</th><th>平台</th></tr></thead>
+    <tbody>
+      <tr><td><code>TranslationStringFormatRule</code></td><td>Sms / ScmV2 / MallAndApi</td><td>翻譯字串格式是否正確</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>LanguageToolBackendRule</code></td><td>mweb / Sms</td><td><code>.cshtml</code> 後端文案拼寫檢查</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>LanguageToolFrontendRule</code></td><td>mweb / Sms</td><td><code>.cshtml</code> 前端文案拼寫檢查</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiWebStoreOutputCacheRule</code></td><td>mweb</td><td>OutputCache 使用規範</td><td><span class="tag bb">BB</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- PR/Branch -->
+<section>
+  <h2 class="pr">🔀 PR / Branch 流程（4 條）</h2>
+  <table>
+    <thead><tr><th>規則名稱</th><th>適用 Repo</th><th>檢查內容</th><th>平台</th></tr></thead>
+    <tbody>
+      <tr><td><code>PullRequestToMasterShowPromptRule</code></td><td>Sms / mweb</td><td>PR 目標為 master 時顯示警告提示</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>ShouldNotContainCertainBranchMergeRule</code></td><td>多 repo</td><td>PR 不可包含特定 branch 的 merge commit</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>FeatureToggleRule</code></td><td>* (全 repo)</td><td>FeatureToggle 變更規範</td><td><span class="tag gl">GL</span></td></tr>
+      <tr><td><code>RedisPrefixChangeRule</code></td><td>* (全 repo)</td><td>Redis prefix 變更偵測</td><td><span class="tag gl">GL</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Util -->
+<section>
+  <h2 class="util">🔧 通用工具（4 條）</h2>
+  <table>
+    <thead><tr><th>規則名稱</th><th>適用 Repo</th><th>檢查內容</th><th>平台</th></tr></thead>
+    <tbody>
+      <tr><td><code>RegexCheckRule</code></td><td>* (全 repo)</td><td>從 <code>RegexRuleFile.json</code> 動態載入 regex，通用 pattern 偵測</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiSmsTemplateUrlRule</code></td><td>NineYi.Sms</td><td>Template URL 變更偵測</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiWebStoreControllerParameterAboutStringRule</code></td><td>mweb</td><td>Controller string 參數風險偵測</td><td><span class="tag bb">BB</span></td></tr>
+      <tr><td><code>NineYiDataBaseOperationRule</code></td><td>DB.Operation</td><td>DB operation 路徑/檔案規範</td><td><span class="tag bb">BB</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="note">
+  <strong>📌 平台說明</strong><br>
+  <span style="background:#0d419d;color:#79c0ff;padding:.1em .4em;border-radius:4px;font-size:.75rem;font-weight:600;">BB</span> Bitbucket（透過 CI pipeline 觸發 Console App）&nbsp;
+  <span style="background:#6e2b8b;color:#e3b341;padding:.1em .4em;border-radius:4px;font-size:.75rem;font-weight:600;">GL</span> GitLab<br><br>
+  <strong>⚠️ 注意</strong>：以上 48 條靜態規則目前僅存在於 Linter CLI 工具，<strong>AI Code Review V2 站台尚無對應實作</strong>。
+  V2 目前只有 AI（Dify）規則。若需要移植，SQL 規則群（16 條）因完全不依賴 AI 且邏輯自包含，優先度最高。
+</div>
+
+</body>
+</html>

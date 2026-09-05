@@ -1,0 +1,55 @@
+
+### Local
+#@host = http://api.dev.91dev.tw/scm/V2
+
+### HKQA
+# @host = https://api.qa1.hk.91dev.tw/scm/V2
+
+### QA
+# @host = https://api.qa.91dev.tw/scm/V2
+
+### MYQA
+#@host = https://api.qa1.my.91dev.tw/scm/V2
+
+
+## MYProd
+
+@host = https://api2.91app.com.my/scm/V2
+
+###Prod
+# @host = https://api.91app.hk/scm/V2
+
+
+### 83 token : 012846828, timestamp : 1765471362, sig : 8503bdd1dde7fadecfe02547ae68b31e7966f2cebd1140430b6259f8ed4e697f4decf37d7cb62745eb521f09cb9c26c78efc94369275089ee33758a0b6a8ac9f
+# @Token = 012846828
+# @Timestamp = 1765478549
+# @Signature = 6dece6680968f4d4b7d21b2161bdd192875d446d03b3839659e20f42f37b8754d2d4ff45d614d0a695685c8788d55190132b73d3a03b79abbb80b41e38aaa938
+# @shopId = 83
+
+### MY Prod
+@Token = 45961234
+@Timestamp = 1767895055
+@Signature = 7a0b9c3d07d414d3d3419f93db19065ad4ef487adb876fd301fe54a8a77332833999dc03b4223151cdfd588e6a49e5150c0633fdb8a9a94868f9a7d13000ae09
+@shopId = 200017
+
+
+
+### 店員幫手註冊
+
+POST {{host}}/Location/UpdateCrmMemberInfo?t={{Token}}&ts={{Timestamp}}&s={{Signature}} HTTP/1.1
+content-type: application/json
+
+{
+  "data": "{\"ShopId\":83,\"CellPhone\":\"+6598505280\",\"RegisterSourceType\":\"Web\",\"RegisterDevice\":\"Chrome\",\"AppVersion\":\"1.2.3\",\"LocationId\":12,\"LocationEmployeeId\":345,\"MemberId\":123,\"CountryCode\":\"65\",\"CountryProfileId\":35,\"IsNotSendSmsAfterRegister\":false,\"IsUseRandomPassword\":true,\"RegisteredDateTime\":\"2025-12-11T16:20:00\",\"VipMemberId\":123,\"IsOpen\":false}"
+}
+
+
+POST {{host}}/Location/RegisterMember?t={{Token}}&ts={{Timestamp}}&s={{Signature}} HTTP/1.1
+content-type: application/json
+
+{
+  "data": "{\"ShopId\":83,\"CellPhone\":\"+6598505280\",\"RegisterSourceType\":\"Web\",\"RegisterDevice\":\"Chrome\",\"AppVersion\":\"1.2.3\",\"LocationId\":12,\"LocationEmployeeId\":345,\"MemberId\":123,\"CountryCode\":\"65\",\"CountryProfileId\":35,\"IsNotSendSmsAfterRegister\":false,\"IsUseRandomPassword\":true,\"RegisteredDateTime\":\"2025-12-11T16:20:00\",\"VipMemberId\":123,\"IsOpen\":false}"
+}
+
+
+

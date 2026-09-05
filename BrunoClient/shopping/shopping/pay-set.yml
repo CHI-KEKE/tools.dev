@@ -1,0 +1,29 @@
+info:
+  name: pay-set
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{base-url}}/api/Checkout/pay-set"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |
+      {
+        "checkoutUniqueKey": "630da897-ae72-4c3e-a9bf-1406ef66b54a",
+        "CheckoutPayType": {
+          "StatisticsTypeDef": "CreditCardOnce"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,22 @@
+info:
+  name: get-live-video-detail
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{base-url}}/{{vedio-id}}?fields=id,title,description,status,live_views,peak_live_views,broadcast_start_time,embed_html,permalink_url,video{id,post_id,views}&access_token={{page-access-token}}"
+  params:
+    - name: fields
+      value: id,title,description,status,live_views,peak_live_views,broadcast_start_time,embed_html,permalink_url,video{id,post_id,views}
+      type: query
+    - name: access_token
+      value: "{{page-access-token}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

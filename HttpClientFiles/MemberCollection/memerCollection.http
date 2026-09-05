@@ -1,0 +1,39 @@
+
+#QA
+@host=https://memberservice-api-internal.qa.91dev.tw/
+#@host=https://memberservice-api-internal.qa1.hk.91dev.tw/
+
+
+#Prod
+#@host=https://memberservice-api-internal.hk.91app.io/
+
+@market=HK
+@shopId=12
+@memberId=6878728
+
+### query
+GET {{host}}api/v2/member-collections/query?page-size=10&page-index=1&member-collection-name=CurrentBirthdayMonth&member-collection-seqno=0&type=system
+Content-Type: application/json
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-service-cert: PromotionService
+ny-user-id: rest-client
+ny-api-scopes: member_collection.operation:read
+
+### match
+POST {{host}}api/v2/member-collections/match
+Content-Type: application/json
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-service-cert: PromotionService
+ny-user-id: rest-client
+ny-api-scopes: member_collection.operation:read
+
+{
+   "bundleIds":[
+      "MemberId#{{memberId}}"
+   ],
+   "collectionIds":[
+      "13a41a0d-21e3-417f-935d-ebdc83c07c22"
+   ]
+}

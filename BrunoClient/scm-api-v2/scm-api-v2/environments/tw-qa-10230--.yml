@@ -1,0 +1,20 @@
+name: tw-qa-10230--
+variables:
+  - name: base-url
+    value: http://api.qa9.91dev.tw/SCM/V2
+  - name: token
+    value: "85932145"
+  - name: timestamp
+    value: ""
+  - name: saltKey
+    value: 7d7d4add
+  - name: apiKey
+    value: 071311bf-c8ff-45a4-b907-c3887a31e1d6
+  - name: shopId
+    value: "2"
+  - name: signature
+    value: ""
+  - name: userId
+    value: "91273"
+  - name: userName
+    value: "123456782"

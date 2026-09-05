@@ -1,0 +1,25 @@
+info:
+  name: refund-query
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/RefundQuery/TwoCTwoP"
+  body:
+    type: json
+    data: |-
+      {
+         "request_id": "{{$guid}}",
+         "transaction_id": "{{TG}}",
+         "currency": "HKD",
+         "extend_info": { 
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

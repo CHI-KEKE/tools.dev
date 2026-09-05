@@ -1,0 +1,4 @@
+name: standard-prod
+variables:
+  - name: x-secret
+    value: 

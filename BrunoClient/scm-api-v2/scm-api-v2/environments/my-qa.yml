@@ -1,0 +1,17 @@
+name: my-qa
+color: "#2E8A54"
+variables:
+  - name: base-url
+    value: http://api.qa1.my.91dev.tw/scm/V2
+  - name: token
+    value: "012846828"
+  - name: timestamp
+    value: "1774374913"
+  - name: saltKey
+    value: be84da03
+  - name: apiKey
+    value: 1815fe08-7258-4e6a-b2a0-ed9743450e93
+  - name: shopId
+    value: "83"
+  - name: signature
+    value: 1de7fca195c4d9eec3e27b31daca5b3eaf1d33e3321cde365b3164d2a5d8c8388ab85b41215aa814ecb2947f327aad8855acd6167e6349195eb88fc8c37fa67c

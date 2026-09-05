@@ -1,0 +1,6 @@
+name: local
+variables:
+  - name: base-url
+    value: https://shop2.shop.dev.91dev.tw
+  - name: shopId
+    value: "2"

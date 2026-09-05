@@ -1,0 +1,33 @@
+info:
+  name: query-payment-list
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/QueryPaymentList/CreditCardOnce_Stripe"
+  body:
+    type: json
+    data: |-
+      {
+         "country":"{{country-code}}",
+         "request_id":"RestClient",
+         "transactions_info": [
+            {
+               "transaction_id": "{{transactionId}}"
+            },
+            {
+               "transaction_id": "pi_1HCakaH2kMNVxbrhj81NXtob"
+            }
+         ],
+         "extend_info":{
+            "stripe_account":"{{acct}}"
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

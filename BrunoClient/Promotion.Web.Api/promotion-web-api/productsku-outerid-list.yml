@@ -1,0 +1,33 @@
+info:
+  name: productsku-outerid-list
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/productsku-outerid-list"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "Id": 7703,
+          "ShopId": 2,
+          "IsPaginated":true,
+          "Take":500,
+          "Skip":0
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,15 @@
+info:
+  name: get-module
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{base-url}}/api/v3/modules/5c2dc52cbaffe60001430fac"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

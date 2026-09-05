@@ -1,0 +1,39 @@
+info:
+  name: create-to-do-list
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/1/lists?name=TODO&idBoard={{boardNumber}}&key={{key}}&token={{token}}"
+  params:
+    - name: name
+      value: TODO
+      type: query
+    - name: idBoard
+      value: "{{boardNumber}}"
+      type: query
+    - name: key
+      value: "{{key}}"
+      type: query
+    - name: token
+      value: "{{token}}"
+      type: query
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        pm.test("Status code is 200", function () {
+            pm.response.to.have.status(200);
+        });
+
+        let response = pm.response.json();
+        pm.collectionVariables.set('ToDoListId',response.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

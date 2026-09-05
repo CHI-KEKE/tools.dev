@@ -1,0 +1,29 @@
+info:
+  name: slack-simple-pr
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/v1/Ops/SlackSimple"
+  headers:
+    - name: x-api-key
+      value: "{{api-key}}"
+  body:
+    type: json
+    data: |-
+      {
+          "slack_channel": "rd-sg-slacktest",
+          "message": "<!here> from <@allenlin>\n\n*docs: 前端 Document 整合 — 移除非必要文件並整合散落技術文件*\n`copilot/doc-integration-and-optimization` => `main`\nhttps://github.com/91appit/nine1.live.buy/pull/1204",
+          "broadcast": true,
+          "username":"PR",
+          "icon": ":atom_symbol:",
+        "level":"Info"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

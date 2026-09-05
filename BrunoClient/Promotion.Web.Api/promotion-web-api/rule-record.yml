@@ -1,0 +1,30 @@
+info:
+  name: rule-record
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/rule-record"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "PromotionEngineId": 8449,
+          "Time": "2026-03-25"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

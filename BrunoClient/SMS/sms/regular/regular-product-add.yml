@@ -1,0 +1,44 @@
+info:
+  name: regular-product-add
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/RegularProduct/Create"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+        "shopId":73,
+          "title": "[allen測]ssxdd",
+          "salepageId": "67250",
+          "planDateBegin": "2028-09-12T16:00:00",
+          "planDateEnd": "2028-09-13T00:00:00",
+          "shipPeriodList": [3],
+          "shippingCountMode": "Fixed",
+          "shipLimitCount": 2,
+          "allowOneTimePurchase": false,
+          "isGiftEnabled": true,
+          "regularProductPromotionRules": [
+              {
+                  "type": "Gift",
+                  "triggerMode": "Interval",
+                  "interval": 2,
+                  "outOfStockAction": "Proceed",
+                  "regularProductPromotionGiftItemList": [
+                      { "giftTypeId": 62849, "qty": 1 }
+                  ]
+              }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,4 @@
+name: HKQA
+variables:
+  - name: template-base-url
+    value: http://notification-template-api-internal.qa1.hk.91dev.tw

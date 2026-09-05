@@ -1,0 +1,421 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Arch-Dev3",
+  "classifications": [
+    "Web",
+    "C#",
+    "N1Template"
+  ],
+  "identity": "Nine1.ThreeTierCustomWebApiTemplate",
+  "name": "N1.ThreeTierCustomWebApiTemplate",
+  "shortName": "dotnet.webapi.custom",
+  "sourceName": "SampleProject",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sources": [
+    {
+      "condition": "isFlatStruct",
+      "include": [
+        ".dockerignore",
+        ".gitattributes",
+        ".gitignore",
+        ".gitlab-ci.yml",
+        ".n1spec.yaml",
+        ".gitlab-ci.yaml",
+        "nine1-devops-*.json",
+        "Dockerfile",
+        "README.md",
+        "Taskfile.yml",
+        "charts/**/*",
+        "config/**/*",
+        "pipeline/**/*",
+        "src/*"
+      ],
+      "exclude": [
+        "**/set-project-structure.props"
+      ]
+    },
+    {
+      "condition": "isFlatStruct",
+      "source": "src",
+      "include": [
+        "Nine1.Sample.Project.BL.BE/**",
+        "Nine1.Sample.Project.BL.Services/**",
+        "Nine1.Sample.Project.BL.Services.Test/**",
+        "Nine1.Sample.Project.Common.Utils/**",
+        "Nine1.Sample.Project.DA.DB/**",
+        "Nine1.Sample.Project.DA.Repositories/**",
+        "Nine1.Sample.Project.Web.Api/**",
+        "Nine1.Sample.Project.Web.Api.sln",
+        "Nine1.Sample.Project.Web.Api.code-workspace",
+        "nuget.config"
+      ],
+      "exclude": [
+        "**/ForDeveloping-*"
+      ],
+      "target": "./src"
+    },
+    {
+      "condition": "isModuleStruct",
+      "include": [
+        ".dockerignore",
+        ".gitattributes",
+        ".gitignore",
+        ".gitlab-ci.yml",
+        ".n1spec.yaml",
+        ".gitlab-ci.yaml",
+        "nine1-devops-*.json",
+        "Dockerfile",
+        "README.md",
+        "Taskfile.yml",
+        "config/**/*",
+        "charts/**/*",
+        "pipeline/**/*",
+        "src/*"
+      ],
+      "exclude": [
+        "**/set-project-structure.props"
+      ]
+    },
+    {
+      "condition": "isModuleStruct",
+      "source": "src",
+      "include": [
+        "Nine1.Sample.Project.BL.BE/**",
+        "Nine1.Sample.Project.BL.Services/**"
+      ],
+      "exclude": [
+        "**/ForDeveloping-*"
+      ],
+      "target": "./src/BusinessLogic"
+    },
+    {
+      "condition": "isModuleStruct",
+      "source": "src",
+      "include": [
+        "Nine1.Sample.Project.BL.Services.Test/**"
+      ],
+      "target": "./src/Test"
+    },
+    {
+      "condition": "isModuleStruct",
+      "source": "src",
+      "include": [
+        "Nine1.Sample.Project.Common.Utils/**"
+      ],
+      "target": "./src/Common"
+    },
+    {
+      "condition": "isModuleStruct",
+      "source": "src",
+      "include": [
+        "Nine1.Sample.Project.DA.DB/**",
+        "Nine1.Sample.Project.DA.Repositories/**"
+      ],
+      "exclude": [
+        "**/ForDeveloping-*"
+      ],
+      "target": "./src/DataAccess"
+    },
+    {
+      "condition": "isModuleStruct",
+      "source": "src",
+      "include": [
+        "Nine1.Sample.Project.Web.Api/**"
+      ],
+      "exclude": [
+        "**/ForDeveloping-*"
+      ],
+      "target": "./src/Web"
+    },
+    {
+      "condition": "isModuleStruct",
+      "source": "src",
+      "include": [
+        "Nine1.Sample.Project.Web.Api.sln",
+        "Nine1.Sample.Project.Web.Api.code-workspace",
+        "nuget.config"
+      ],
+      "exclude": [
+        "**/ForDeveloping-*"
+      ],
+      "target": "./src"
+    },
+    {
+      "condition": "isModuleStruct",
+      "source": "src",
+      "include": [
+        "Nine1.Sample.Project.Web.Api/Properties/launchSettings.json"
+      ],
+      "exclude": [
+        "**/ForDeveloping-*"
+      ],
+      "target": "./src/Web"
+    }
+  ],
+  "symbols": {
+    "struct": {
+      "type": "parameter",
+      "datatype": "choice",
+      "description": "Sets ThreeTier DotNet Api Template's Struct",
+      "defaultValue": "module",
+      "displayName": "Struct",
+      "choices": [
+        {
+          "choice": "module",
+          "description": "收攏式架構"
+        },
+        {
+          "choice": "flat",
+          "description": "攤平式架構"
+        }
+      ]
+    },
+    "isFlatStruct": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^flat$",
+        "source": "struct"
+      }
+    },
+    "isModuleStruct": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^module$",
+        "source": "struct"
+      }
+    },
+    "databaseSecret": {
+        "type": "parameter",
+        "datatype": "choice",
+        "description": "Use database secret settings?",
+        "defaultValue": "none",
+        "displayName": "database-secrets",
+        "choices": [
+            {
+                "choice": "none",
+                "description": "None (Default)"
+            },
+            {
+                "choice": "postgresql",
+                "description": "PostgreSQL"
+            },
+            {
+                "choice": "mssql",
+                "description": "MSSQL"
+            }
+        ]
+    },
+    "isDatabaseSecretNone": {
+        "type": "generated",
+        "generator": "regexMatch",
+        "datatype": "bool",
+        "parameters": {
+            "pattern": "^none$",
+            "source": "databaseSecret"
+        }
+    },
+    "isDatabaseSecretPostgresql": {
+        "type": "generated",
+        "generator": "regexMatch",
+        "datatype": "bool",
+        "parameters": {
+            "pattern": "^postgresql$",
+            "source": "databaseSecret"
+        }
+    },
+    "isDatabaseSecretMssql": {
+        "type": "generated",
+        "generator": "regexMatch",
+        "datatype": "bool",
+        "parameters": {
+            "pattern": "^mssql$",
+            "source": "databaseSecret"
+        }
+    },
+    "INITIAL_DATE": {
+      "type": "generated",
+      "generator": "now",
+      "parameters": {
+        "format": "yyyy/MM/dd"
+      },
+      "replaces": "{{INITIAL_DATE}}"
+    },
+    "PREFIX": {
+      "type": "parameter",
+      "defaultValue": "Nine1"
+    },
+    "PREFIX_W_LOWER": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "PREFIX",
+        "toLower": true
+      }
+    },
+    "ORIGIN_NAME_W_LOWER": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "name",
+        "toLower": true
+      },
+      "fileRename": "sample-project",
+      "replaces": "sample-project"
+    },
+    "ORIGIN_NAME_W_UPPER": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "TITLE_TRANS",
+      "fileRename": "Sample-Project",
+      "replaces": "Sample-Project"
+    },
+    "FQDN_TRANS_WORDS": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "FQDN_TRANS"
+    },
+    "SNAKE_TRANS_WORDS": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "SNAKE_TRANS"
+    },
+    "SNAKE_NAME_W_UPPER": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "SNAKE_TRANS_WORDS",
+        "toLower": false
+      },
+      "fileRename": "SAMPLE_PROJECT",
+      "replaces": "SAMPLE_PROJECT"
+    },
+    "N1_ID": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "ref",
+            "value": "PREFIX_W_LOWER"
+          },
+          {
+            "type": "const",
+            "value": "-"
+          },
+          {
+            "type": "ref",
+            "value": "ORIGIN_NAME_W_LOWER"
+          }
+        ]
+      },
+      "fileRename": "nine1-sample-project",
+      "replaces": "nine1-sample-project"
+    },
+    "N1_FQDN_SUFFIX": {
+      "type": "derived",
+      "valueSource": "FQDN_TRANS_WORDS",
+      "valueTransform": "TITLE_TRANS",
+      "fileRename": "Sample.Project",
+      "replaces": "Sample.Project"
+    },
+    "N1_FQDN": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "ref",
+            "value": "PREFIX"
+          },
+          {
+            "type": "const",
+            "value": "."
+          },
+          {
+            "type": "ref",
+            "value": "N1_FQDN_SUFFIX"
+          }
+        ]
+      },
+      "fileRename": "Nine1.Sample.Project",
+      "replaces": "Nine1.Sample.Project"
+    },
+    "N1_FQDN_W_LOWER": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "N1_FQDN",
+        "toLower": true
+      },
+      "fileRename": "nine1.sample.project",
+      "replaces": "nine1.sample.project"
+    },
+    "N1_FQDN_W_UPPER": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "N1_FQDN",
+        "toLower": false
+      },
+      "fileRename": "NINE1.SAMPLE.PROJECT",
+      "replaces": "NINE1.SAMPLE.PROJECT"
+    },
+    "CAMEL_CASE": {
+      "type": "derived",
+      "valueSource": "N1_FQDN_SUFFIX",
+      "valueTransform": "CAMEL_TRANS",
+      "fileRename": "SampleProject",
+      "replaces": "SampleProject"
+    },
+    "N1_CAMEL_CASE": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "const",
+            "value": "Nine1"
+          },
+          {
+            "type": "const",
+            "value": "."
+          },
+          {
+            "type": "ref",
+            "value": "CAMEL_CASE"
+          }
+        ]
+      },
+      "fileRename": "Nine1.SampleProject",
+      "replaces": "Nine1.SampleProject"
+    }
+  },
+  "forms": {
+    "FQDN_TRANS": {
+      "identifier": "replace",
+      "pattern": "-",
+      "replacement": "."
+    },
+    "SNAKE_TRANS": {
+      "identifier": "replace",
+      "pattern": "-",
+      "replacement": "_"
+    },
+    "CAMEL_TRANS": {
+      "identifier": "replace",
+      "pattern": "\\.",
+      "replacement": ""
+    },
+    "TITLE_TRANS": {
+      "identifier": "titleCase"
+    }
+  }
+}

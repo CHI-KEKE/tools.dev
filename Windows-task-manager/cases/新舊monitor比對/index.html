@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心跳型排程告警去重機制：新舊 Monitor 比對</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --panel:#121a2b;
+    --panel-2:#0f1626;
+    --border:#233047;
+    --text:#e7edf7;
+    --muted:#93a1bd;
+    --old:#ef5b5b;
+    --old-bg:rgba(239,91,91,0.10);
+    --old-border:rgba(239,91,91,0.35);
+    --new:#33c9a3;
+    --new-bg:rgba(51,201,163,0.10);
+    --new-border:rgba(51,201,163,0.35);
+    --accent:#5b8cff;
+    --accent-bg:rgba(91,140,255,0.12);
+    --warn:#ffb24a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background:radial-gradient(1200px 600px at 10% -10%, #16223a 0%, var(--bg) 60%);
+    color:var(--text);
+    line-height:1.7;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 100px;}
+  header.hero{
+    text-align:center;
+    margin-bottom:56px;
+  }
+  .tag{
+    display:inline-block;
+    padding:6px 16px;
+    border-radius:999px;
+    background:var(--accent-bg);
+    border:1px solid rgba(91,140,255,0.4);
+    color:#a9c1ff;
+    font-size:13px;
+    letter-spacing:0.5px;
+    margin-bottom:18px;
+  }
+  h1{
+    font-size:clamp(26px,4vw,38px);
+    margin:0 0 14px;
+    background:linear-gradient(90deg,#fff,#a9c1ff);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .sub{color:var(--muted);max-width:760px;margin:0 auto;font-size:15px;}
+  .case-chip{
+    display:inline-flex;align-items:center;gap:8px;
+    margin-top:22px;padding:10px 18px;border-radius:12px;
+    background:var(--panel);border:1px solid var(--border);
+    font-size:14px;color:var(--muted);
+  }
+  .case-chip b{color:var(--text);}
+  section{margin-bottom:64px;}
+  h2{
+    font-size:22px;margin:0 0 6px;
+    display:flex;align-items:center;gap:10px;
+  }
+  h2 .num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:30px;height:30px;border-radius:8px;
+    background:var(--accent-bg);border:1px solid rgba(91,140,255,0.4);
+    color:#a9c1ff;font-size:14px;font-weight:700;
+  }
+  .section-desc{color:var(--muted);font-size:14px;margin:0 0 26px;max-width:820px;}
+
+  /* Compare columns */
+  .compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+  }
+  @media (max-width:820px){.compare{grid-template-columns:1fr;}}
+  .card{
+    border-radius:16px;
+    padding:22px 22px 24px;
+    border:1px solid var(--border);
+    background:var(--panel);
+    position:relative;
+    overflow:hidden;
+  }
+  .card.old{border-color:var(--old-border);background:linear-gradient(180deg,var(--old-bg),var(--panel) 55%);}
+  .card.new{border-color:var(--new-border);background:linear-gradient(180deg,var(--new-bg),var(--panel) 55%);}
+  .card .label{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;font-weight:700;letter-spacing:0.5px;
+    padding:5px 12px;border-radius:999px;margin-bottom:14px;
+  }
+  .card.old .label{background:rgba(239,91,91,0.18);color:#ffb0b0;border:1px solid var(--old-border);}
+  .card.new .label{background:rgba(51,201,163,0.18);color:#8ff0d9;border:1px solid var(--new-border);}
+  .card .dot{width:8px;height:8px;border-radius:50%;}
+  .card.old .dot{background:var(--old);}
+  .card.new .dot{background:var(--new);}
+  .card h3{margin:0 0 10px;font-size:17px;}
+  .card p.desc{color:var(--muted);font-size:13.5px;margin:0 0 16px;}
+  code.k{
+    display:block;background:#060b16;border:1px solid var(--border);
+    border-radius:10px;padding:12px 14px;font-family:Consolas,"SF Mono",Menlo,monospace;
+    font-size:13px;color:#d8e2f5;margin-bottom:14px;overflow-x:auto;white-space:pre;
+  }
+  .card ul{margin:0;padding-left:20px;font-size:13.5px;color:var(--text);}
+  .card ul li{margin-bottom:6px;}
+  .card ul li b{color:#fff;}
+
+  /* Timeline */
+  .timeline-block{
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    padding:26px 26px 20px;
+  }
+  .tl-title{font-size:14px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+  .tl-title.old{color:#ffb0b0;}
+  .tl-title.new{color:#8ff0d9;}
+  .tl{
+    position:relative;
+    padding-left:2px;
+    margin-bottom:8px;
+  }
+  .tl-line{
+    position:absolute;left:19px;top:6px;bottom:6px;width:2px;
+    background:linear-gradient(180deg, var(--border), transparent);
+  }
+  .tl-item{
+    position:relative;
+    display:grid;
+    grid-template-columns:40px 110px 1fr;
+    gap:14px;
+    align-items:start;
+    padding:10px 0;
+  }
+  .tl-node{
+    width:14px;height:14px;border-radius:50%;
+    margin-left:13px;margin-top:4px;
+    border:3px solid var(--panel);
+    z-index:1;
+  }
+  .tl-node.gray{background:#3a4666;}
+  .tl-node.alert-old{background:var(--old);box-shadow:0 0 0 4px rgba(239,91,91,0.25);}
+  .tl-node.alert-new{background:var(--new);box-shadow:0 0 0 4px rgba(51,201,163,0.25);}
+  .tl-node.silence{background:#5c4530;}
+  .tl-time{color:var(--muted);font-size:12.5px;font-family:Consolas,monospace;padding-top:2px;}
+  .tl-content{font-size:13.5px;}
+  .tl-content .badge{
+    display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;margin-right:8px;
+    vertical-align:middle;
+  }
+  .badge.fire{background:rgba(239,91,91,0.2);color:#ffb0b0;border:1px solid var(--old-border);}
+  .badge.fire-new{background:rgba(51,201,163,0.2);color:#8ff0d9;border:1px solid var(--new-border);}
+  .badge.mute{background:rgba(255,178,74,0.15);color:var(--warn);border:1px solid rgba(255,178,74,0.35);}
+  .badge.ok{background:rgba(147,161,189,0.15);color:var(--muted);border:1px solid var(--border);}
+  .gap-callout{
+    margin:6px 0 18px 68px;
+    padding:10px 14px;border-radius:10px;
+    background:rgba(255,178,74,0.08);border:1px dashed rgba(255,178,74,0.4);
+    color:var(--warn);font-size:13px;
+  }
+  .gap-callout.good{
+    background:rgba(51,201,163,0.08);border-color:rgba(51,201,163,0.4);color:#8ff0d9;
+  }
+
+  /* Key diagram */
+  .key-diagram{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 4px;
+  }
+  .key-part{
+    background:#060b16;border:1px solid var(--border);border-radius:8px;
+    padding:6px 12px;font-family:Consolas,monospace;font-size:12.5px;color:#d8e2f5;
+  }
+  .key-part.hot{border-color:rgba(239,91,91,0.5);color:#ffb0b0;background:rgba(239,91,91,0.08);}
+  .key-plus{color:var(--muted);font-size:13px;}
+
+  /* Config table */
+  table{
+    width:100%;border-collapse:collapse;
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+    font-size:13.5px;
+  }
+  thead th{
+    background:var(--panel-2);text-align:left;padding:12px 16px;
+    font-size:12.5px;color:var(--muted);letter-spacing:0.4px;border-bottom:1px solid var(--border);
+  }
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(255,255,255,0.02);}
+  td.mono{font-family:Consolas,monospace;color:#a9c1ff;}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:700;}
+  .pill.old{background:rgba(239,91,91,0.18);color:#ffb0b0;}
+  .pill.new{background:rgba(51,201,163,0.18);color:#8ff0d9;}
+
+  /* Summary cards */
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media (max-width:900px){.summary-grid{grid-template-columns:1fr;}}
+  .stat{
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;
+  }
+  .stat .n{font-size:26px;font-weight:800;margin-bottom:4px;}
+  .stat .n.old{color:var(--old);}
+  .stat .n.new{color:var(--new);}
+  .stat .t{font-size:13px;color:var(--muted);}
+
+  footer{
+    text-align:center;color:var(--muted);font-size:12.5px;margin-top:60px;
+    border-top:1px solid var(--border);padding-top:24px;
+  }
+  .flow-steps{display:flex;flex-direction:column;gap:4px;}
+  .flow-step{display:flex;flex-direction:column;gap:8px;}
+  .flow-badge{
+    align-self:flex-start;
+    background:var(--panel-2);border:1px solid var(--border);
+    padding:8px 16px;border-radius:10px;font-size:13.5px;font-weight:700;color:var(--text);
+  }
+  .flow-badge.s2{border-color:rgba(255,178,74,0.4);}
+  .flow-badge.s3{border-color:rgba(91,140,255,0.4);}
+  .flow-badge.s4{border-color:rgba(51,201,163,0.4);}
+  .flow-arrow{color:var(--muted);font-size:16px;padding-left:14px;}
+  .flow-branch{
+    display:flex;flex-direction:column;gap:6px;
+    margin-left:20px;padding-left:16px;border-left:2px dashed var(--border);
+  }
+  .flow-leaf{
+    font-size:13px;padding:8px 14px;border-radius:8px;
+    background:var(--panel-2);border:1px solid var(--border);
+  }
+  .flow-leaf.yes{color:#8ff0d9;border-color:var(--new-border);background:var(--new-bg);}
+  .flow-leaf.no{color:var(--muted);}
+  .flow-leaf.no2{color:#ffb0b0;border-color:var(--old-border);background:var(--old-bg);}
+  .flow-leaf.yes2{color:var(--muted);}
+  .flow-leaf.yes3{color:var(--warn);border-color:rgba(255,178,74,0.4);background:rgba(255,178,74,0.08);}
+  .flow-leaf.no3{color:var(--muted);}
+
+  .flow-note{
+    margin-top:18px;padding:14px 18px;border-radius:12px;
+    background:var(--accent-bg);border:1px solid rgba(91,140,255,0.35);
+    font-size:13.5px;color:#cfe0ff;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="tag">WindowsTaskManager.Monitor · 排程監控機制</span>
+    <h1>心跳型排程「只跳一次告警」問題<br>新舊 Monitor 去重機制比對</h1>
+    <p class="sub">
+      心跳型任務（Type C）長時間卡死時，舊機制因為去重 Key 綁死在不會變動的 <code>LastRunTime</code>，
+      導致告警只會在第一次觸發，之後最長要靜默 48 小時才會再提醒一次。
+      新機制針對心跳型任務獨立出「持續性提醒間隔」，讓異常持續多久，就每隔固定時間持續提醒，不再被長期忽略。
+    </p>
+    <div class="case-chip">
+      🔎 實際案例：<b>\ETL_Service\Referrer_Promotion_Expire_SalePage_Close</b>（任務 253）— 2026/07/24 卡死事件
+    </div>
+  </header>
+
+  <!-- 1. 問題總覽 -->
+  <section>
+    <h2><span class="num">1</span> 問題總覽</h2>
+    <p class="section-desc">維運觀察到：某心跳型排程實際上已經停止執行超過 8 小時，但 Slack 只在最一開始跳過一次告警，之後就完全安靜，導致問題被忽略。</p>
+    <div class="summary-grid">
+      <div class="stat">
+        <div class="n old">1 次</div>
+        <div class="t">舊機制：8 小時內只告警 1 次（05:55），09:55 gap 已達 484 分鐘仍未再告警</div>
+      </div>
+      <div class="stat">
+        <div class="n old">48 hr</div>
+        <div class="t">舊去重 Key 保留時間 <code>KeyRetentionHours</code>，套用在所有告警類型，心跳型也共用</div>
+      </div>
+      <div class="stat">
+        <div class="n new">120 min</div>
+        <div class="t">新機制：心跳型獨立參數 <code>HeartbeatAlertRepeatIntervalMinutes</code>，異常持續就每 2 小時重新提醒</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 根本原因 -->
+  <section>
+    <h2><span class="num">2</span> 根本原因：去重 Key 綁錯了會變動的欄位</h2>
+    <p class="section-desc">
+      舊機制不分任務類型，一律用同一組 <code>_alertedKeys</code> 做去重。心跳型任務的 <code>ExpectedRunTime</code> 帶的是
+      <code>plan.LastRunTime</code>；但任務一旦真的卡死，<code>LastRunTime</code> 就永遠停在同一個時間點不會前進 —— 
+      這代表 Key 永遠相同，去重邏輯會把「持續中的同一事故」誤判成「已經處理過、不用再提醒」。
+    </p>
+    <div class="compare">
+      <div class="card old">
+        <span class="label"><span class="dot"></span>舊機制</span>
+        <h3>Key 含固定不變的 LastRunTime</h3>
+        <p class="desc">卡死任務的 LastRunTime 不會前進，Key 永遠一樣 → 保留期內永遠被去重擋下。</p>
+        <div class="key-diagram">
+          <span class="key-part">TaskPath</span><span class="key-plus">+</span>
+          <span class="key-part">AlertType</span><span class="key-plus">+</span>
+          <span class="key-part hot">ExpectedRunTime = LastRunTime（卡死後不變）</span>
+        </div>
+        <code class="k">key = "\ETL_Service\Referrer_Promotion_Expire_SalePage_Close|HeartbeatStopped|2026-07-24T01:51:11"
+// 05:55、09:55、13:55... 全部算出同一組 key
+// → 48hr 內只有第一次會真的送出 Slack</code>
+        <ul>
+          <li><b>成因誤判</b>：一開始以為是 Lookback 視窗 overlap，其實心跳型每輪只是「當下狀態快照比較」，本質上沒有 overlap 問題。</li>
+          <li><b>真正原因</b>：把「防洗版」去重邏輯，套用在「狀態持續惡化但 Key 不變」的心跳場景。</li>
+          <li><b>後果</b>：問題持續 8 小時、24 小時、甚至 47 小時，維運都收不到第二次提醒。</li>
+        </ul>
+      </div>
+      <div class="card new">
+        <span class="label"><span class="dot"></span>新機制</span>
+        <h3>Key 拿掉 ExpectedRunTime，改用「距上次發送」判斷</h3>
+        <p class="desc">心跳型改用獨立 Key（不含時間戳），配合「距上次發送是否已超過提醒間隔」重新決定要不要再送。</p>
+        <div class="key-diagram">
+          <span class="key-part">TaskPath</span><span class="key-plus">+</span>
+          <span class="key-part">AlertType</span>
+        </div>
+        <code class="k">key = "\ETL_Service\Referrer_Promotion_Expire_SalePage_Close|HeartbeatStopped"
+
+if (now - lastSentAt >= HeartbeatAlertRepeatIntervalMinutes /*120分*/)
+{
+    // 異常仍持續 → 重新發送提醒
+}
+// 任務恢復正常 → ClearHeartbeatAlertState 立即清掉這個 key</code>
+        <ul>
+          <li><b>持續提醒</b>：只要 gap 仍超過閾值，每隔 120 分鐘（可調）就會重新發送一次告警。</li>
+          <li><b>恢復即清除</b>：任務一旦恢復正常，狀態立刻清除，下次再異常會馬上重新提醒，不受殘留時間戳影響。</li>
+          <li><b>參數脫鉤</b>：<code>HeartbeatAlertRepeatIntervalMinutes</code> 與單次事件型的 <code>KeyRetentionHours</code>（48hr）完全分開，互不影響。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 時間軸情境重現 -->
+  <section>
+    <h2><span class="num">3</span> 情境重現：同一起事故，舊 vs 新的告警節奏</h2>
+    <p class="section-desc">
+      以 07/24 實際 log 為基礎模擬：<code>Referrer_Promotion_Expire_SalePage_Close</code> 最後一次執行時間停在 <b>01:51:11</b> 後就不再前進，
+      巡檢週期 30 分鐘 / 心跳 Gap 閾值約 10~20 分鐘。
+    </p>
+
+    <div class="compare">
+      <div class="timeline-block">
+        <div class="tl-title old">🔴 舊機制（Key 含 LastRunTime，KeyRetentionHours=48hr）</div>
+        <div class="tl">
+          <div class="tl-line"></div>
+          <div class="tl-item"><div class="tl-node gray"></div><div class="tl-time">01:51</div><div class="tl-content"><span class="badge ok">正常</span>最後一次成功執行，LastRunTime 定格於此</div></div>
+          <div class="tl-item"><div class="tl-node alert-old"></div><div class="tl-time">05:55</div><div class="tl-content"><span class="badge fire">🔔 告警</span>gap ≈ 244 分鐘，首次判定心跳停止，Slack 發出通知，key 寫入 <code>_alertedKeys</code></div></div>
+          <div class="tl-item"><div class="tl-node silence"></div><div class="tl-time">09:55</div><div class="tl-content"><span class="badge mute">🔇 靜默</span>gap 已達 <b>484 分鐘</b>（8 小時），但同一個 key 仍在 48hr 保留期內 → <b>不發送</b></div></div>
+          <div class="tl-item"><div class="tl-node silence"></div><div class="tl-time">13:55 ~ 17:55</div><div class="tl-content"><span class="badge mute">🔇 靜默</span>gap 持續累加，維運完全沒有第二次提醒，只能靠人工翻 log 才發現</div></div>
+          <div class="tl-item"><div class="tl-node alert-old"></div><div class="tl-time">05:55（隔日）</div><div class="tl-content"><span class="badge fire">🔔 告警</span>整整等到 48 小時保留期過期，才會再收到一次一模一樣的告警</div></div>
+        </div>
+        <div class="gap-callout">⚠️ 8 小時的異常空窗完全沒有第二次提醒，靠人工翻 log 才發現任務已死。</div>
+      </div>
+
+      <div class="timeline-block">
+        <div class="tl-title new">🟢 新機制（Key 不含時間戳，HeartbeatAlertRepeatIntervalMinutes=120min）</div>
+        <div class="tl">
+          <div class="tl-line"></div>
+          <div class="tl-item"><div class="tl-node gray"></div><div class="tl-time">01:51</div><div class="tl-content"><span class="badge ok">正常</span>最後一次成功執行，LastRunTime 定格於此</div></div>
+          <div class="tl-item"><div class="tl-node alert-new"></div><div class="tl-time">05:55</div><div class="tl-content"><span class="badge fire-new">🔔 告警 #1</span>gap ≈ 244 分鐘，首次判定心跳停止，Slack 發出通知，記錄 <code>lastSentAt = 05:55</code></div></div>
+          <div class="tl-item"><div class="tl-node alert-new"></div><div class="tl-time">07:55</div><div class="tl-content"><span class="badge fire-new">🔔 告警 #2</span>距上次發送已滿 120 分鐘且異常仍在 → 重新提醒</div></div>
+          <div class="tl-item"><div class="tl-node alert-new"></div><div class="tl-time">09:55</div><div class="tl-content"><span class="badge fire-new">🔔 告警 #3</span>gap ≈ 484 分鐘，再滿 120 分鐘 → 再次提醒，維運不會漏掉</div></div>
+          <div class="tl-item"><div class="tl-node alert-new"></div><div class="tl-time">11:55 起</div><div class="tl-content"><span class="badge fire-new">🔔 每 2hr</span>持續每 120 分鐘重新提醒，直到任務恢復正常</div></div>
+        </div>
+        <div class="gap-callout good">✅ 異常持續多久，就每 2 小時重新提醒一次，維運不會被 48 小時空窗蓋掉。</div>
+      </div>
+    </div>
+
+    <div class="flow-note">
+      💡 若任務中途恢復正常（例如手動重跑成功），新機制會立刻呼叫 <code>ClearHeartbeatAlertState</code> 清掉該任務的提醒狀態；
+      下次若再度發生異常，會被視為「全新事故」立即重新提醒，不會被前一次事故殘留的時間戳誤擋。
+    </div>
+  </section>
+
+  <!-- 4. 參數對照表 -->
+  <section>
+    <h2><span class="num">4</span> 參數設計對照表</h2>
+    <p class="section-desc">程式碼位置：<code>WindowsTaskManager.Monitor/Options/MonitorOptions.cs</code>、<code>Workers/TaskMonitorWorker.cs</code></p>
+    <table>
+      <thead>
+        <tr><th>面向</th><th>舊機制</th><th>新機制</th><th>說明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>心跳型去重 Key</td>
+          <td class="mono">TaskPath|AlertType|<u>LastRunTime</u></td>
+          <td class="mono">TaskPath|AlertType</td>
+          <td>拿掉不會變動的時間戳，改用「距上次發送」判斷是否重新提醒</td>
+        </tr>
+        <tr>
+          <td>去重保留時間</td>
+          <td><span class="pill old">共用 48hr</span> <code>KeyRetentionHours</code></td>
+          <td><span class="pill new">獨立 120min</span> <code>HeartbeatAlertRepeatIntervalMinutes</code></td>
+          <td>單次事件型仍用 48hr 當安全網；心跳型持續性提醒與其脫鉤</td>
+        </tr>
+        <tr>
+          <td>持續異常時的提醒頻率</td>
+          <td>第一次之後，最長需等 48 小時</td>
+          <td>每 120 分鐘重新提醒一次（可調）</td>
+          <td>大幅縮短「靜默空窗」，避免長期異常被忽略</td>
+        </tr>
+        <tr>
+          <td>恢復正常後的狀態</td>
+          <td>殘留舊時間戳，可能誤擋下次告警</td>
+          <td><code>ClearHeartbeatAlertState</code> 主動清除</td>
+          <td>下次再異常會立即重新提醒，不受本次事故影響</td>
+        </tr>
+        <tr>
+          <td>單次事件型（Type A/B/D）</td>
+          <td><code>_resolvedKeys</code> 處理 Lookback 視窗 overlap</td>
+          <td>維持不變</td>
+          <td>此類任務本質上「候選時間不會重複」，原設計本身沒問題，未調整</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5. 判定異常 vs 提醒間隔 -->
+  <section>
+    <h2><span class="num">5</span> 容易混淆的兩件事：「判定異常」跟「提醒間隔」是分開的</h2>
+    <p class="section-desc">
+      這兩個時間概念很容易被誤以為是同一個設定，實際上分屬兩套獨立機制、互不影響。
+      即使任務自身心跳頻率不同（例如每 3 小時才心跳一次），也只有「判定異常」的門檻會跟著自動換算，
+      「持續提醒」的節奏維持全域固定。
+    </p>
+
+    <div class="compare">
+      <div class="card" style="border-color:var(--border);background:var(--panel-2);">
+        <span class="label" style="background:rgba(91,140,255,0.18);color:#a9c1ff;border:1px solid rgba(91,140,255,0.4);"><span class="dot" style="background:var(--accent);"></span>① 第一次判定異常</span>
+        <h3>依據 GapThreshold（+ 30 分鐘巡檢週期），跟 120min 完全無關</h3>
+        <p class="desc">每輪巡檢都算一次 <code>gap = now - LastRunTime</code>，只要 gap 超過該任務自身換算出的 <code>GapThreshold</code>，當輪就立刻判定異常並發送第一次告警。</p>
+        <code class="k">GapThreshold = max(GapThresholdMinutes=10, RepetitionInterval × HeartbeatGapMultiplier=2.0)
+
+// 例：任務自身心跳頻率 3hr(180分) → GapThreshold = max(10, 180×2) = 360分鐘(6hr)
+// 巡檢週期 30 分鐘一輪 → 6hr 一到，最近一輪巡檢就會判定異常，立即發送第 1 次告警
+// 這裡的「間隔」是巡檢週期抓到的時間點，不是 120min</code>
+      </div>
+      <div class="card" style="border-color:var(--border);background:var(--panel-2);">
+        <span class="label" style="background:rgba(255,178,74,0.18);color:var(--warn);border:1px solid rgba(255,178,74,0.4);"><span class="dot" style="background:var(--warn);"></span>② 第一次告警之後</span>
+        <h3>每輪巡檢都重新檢查「是否恢復」+「是否已滿提醒間隔」</h3>
+        <p class="desc">第二次起，每輪巡檢都會重新評估兩個條件，兩者共同決定要不要再發一次告警。</p>
+        <code class="k">每輪巡檢時：
+  若 gap &lt;= GapThreshold（已恢復)
+      → ClearHeartbeatAlertState，不發告警
+      → 下次再異常視為「全新事故」，回到①重新判定
+  否則（尚未恢復)：
+      若 now - lastSentAt &lt; 120分鐘（HeartbeatAlertRepeatIntervalMinutes)
+          → 跳過本輪，安靜等待
+      若 now - lastSentAt &gt;= 120分鐘
+          → 重新發送告警，更新 lastSentAt = now</code>
+      </div>
+    </div>
+
+    <div class="timeline-block" style="margin-top:20px;">
+      <div class="tl-title" style="color:#a9c1ff;">🧭 決策流程圖（每一輪巡檢都會走一次）</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-badge s1">30 分鐘巡檢一次</div>
+          <div class="flow-arrow">→</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-badge s2">gap ≤ GapThreshold？</div>
+          <div class="flow-branch">
+            <div class="flow-leaf yes">是 → 恢復正常，清除提醒狀態，不發告警</div>
+            <div class="flow-leaf no">否 → 往下一步</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-badge s3">是否已發過第一次告警？</div>
+          <div class="flow-branch">
+            <div class="flow-leaf no2">否 → 第一次判定異常，立即發送告警 #1</div>
+            <div class="flow-leaf yes2">是 → 往下一步</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-badge s4">距上次發送 ≥ 120 分鐘？</div>
+          <div class="flow-branch">
+            <div class="flow-leaf yes3">是 → 重新發送告警，更新 lastSentAt</div>
+            <div class="flow-leaf no3">否 → 本輪安靜，等下一輪再檢查</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-note" style="margin-top:20px;">
+      💡 <b>結論</b>：「判定異常的門檻」（GapThreshold）會依任務自身心跳頻率自動換算（頻率越低，門檻越寬鬆）；
+      但「異常持續期間要多久提醒一次」（HeartbeatAlertRepeatIntervalMinutes）目前是<b>全域固定值</b>，
+      不會因為任務本身心跳頻率不同而跟著縮放。也就是說一個 3 小時心跳一次的任務，一旦真的壞掉判定異常後，
+      還是會用跟 10 分鐘心跳任務一樣的 120 分鐘節奏被重複提醒——這是刻意的設計取捨（事故發生後統一提醒節奏，避免被忽略），
+      但若未來想要「提醒節奏也依任務頻率縮放」，目前尚未支援，需要額外調整。
+    </div>
+  </section>
+
+  <footer>
+    根據 session 討論（2026-07-24）與目前 TaskMonitorWorker.cs 原始碼整理製作 · WindowsTaskManager.Monitor
+  </footer>
+
+</div>
+</body>
+</html>

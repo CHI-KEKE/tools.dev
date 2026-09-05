@@ -1,0 +1,34 @@
+info:
+  name: pay
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/Pay/TwoCTwoP/{{TG}}"
+  body:
+    type: json
+    data: |-
+      {  
+         "country":"{{country-code}}",
+         "request_id":"{{$guid}}",
+         "device": "Mobile",
+         "tg_code": "{{TG}}",
+         "amount": 1000.00,
+         "currency": "{{currency-code}}",
+         "extend_info":{
+            "description": "{{TG}}",
+       //     "customerToken":["24102310433350485273","24102310433350485273"],
+       //     "paymentChannel":["CC","IPP","ALIPAY"],
+       //     "tokenize":true,
+       //     "installmentPeriodFilter":[6,12],
+            "frontendReturnUrl": "{{frontendReturnUrl}}"
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

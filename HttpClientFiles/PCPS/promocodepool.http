@@ -1,0 +1,255 @@
+### 促購機制活動限額 API 測試
+### 完整測試流程：建立活動 → 分發代碼 → 兌換測試 → 退貨測試
+
+
+### ModeType 決定「碼從哪裡來」；
+### DispatchType 決定「碼怎麼被拿」!!
+
+# 環境變數設定
+# @baseUrl=http://promocodepool-api.qa1.hk.91dev.tw
+#@baseUrl=http://promocodepool-api.qa1.my.91dev.tw
+
+
+@baseUrl =http://promocodepool-api.91app.io
+@market=TW
+@shopId=37868
+@sourceType=PromotionReward
+@ny_user_id=rest_client
+@testUserId=32905
+@testUserId2=user2
+@tw37868Group=8EeOwI0bNEC-8PzaFVvwjA
+@tw37868CodeId=552c7d
+@tw37868Label=TG260108GA008K
+@tw37868ReceiverId=95262655
+
+
+###############################################
+### 第一階段：建立活動群組（每用戶限制3次）
+###############################################
+
+
+### 1. 建立限制群組 - 每個用戶最多兌換2次
+POST {{baseUrl}}/api/groups
+Content-Type: application/json
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+
+{
+  "modeType": "Functional",
+  "dispatchType": "Random",
+  "pattern": "GUID6",
+  "limitRuleSettings": [
+    {
+      "actionType": "Redeem",
+      "limitTarget": 2,
+      "limitRules": [
+        {
+          "quota": 2
+        }
+      ]
+    }
+  ],
+  "canRedeemDirectly": true,
+  "since": "2025-08-14T20:00:00Z",
+  "until": "2025-12-31T23:59:59Z"
+}
+
+#groupId
+
+### 2. 啟用群組
+@groupId=MSS3BR6MHEGcboxhNoF3gw
+# 請將 {{groupId}} 替換為步驟1回傳的群組ID
+PATCH {{baseUrl}}/api/groups/{{groupId}}/enable
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+
+# true
+
+
+### 3. 查詢群組資訊確認設定
+GET {{baseUrl}}/api/groups/{{tw37868Group}}
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+
+### 4. 更新 Group
+PUT {{baseUrl}}/api/groups/{{groupId}}
+Content-Type: application/json
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+{
+  "modeType": "Functional",
+  "dispatchType": "Random",
+  "pattern": "GUID6",
+  "limitRuleSettings": [
+    {
+      "actionType": "Redeem",
+      "limitTarget": 3,
+      "limitRules": [
+        {
+          "quota": 3
+        }
+      ]
+    }
+  ],
+  "canRedeemDirectly": true,
+  "since": "2025-08-13T21:00:00",
+  "until": "2025-12-31T23:59:59Z"
+}
+
+###############################################
+### 第三階段：兌換測試（模擬付款成功）
+###############################################
+
+
+### 4. 分發第1個代碼給用戶 user001
+POST {{baseUrl}}/api/groups/{{groupId}}/dispatch-and-redeem
+Content-Type: application/json
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+ny-idempotency-key: dispatch-{{testUserId}}-001-{{$guid}}
+
+
+{
+  "receiverId": "{{testUserId}}",
+  "tags": [],
+  "labels": ["TG250814DDD"]
+}
+
+
+### 4. 分發第1個代碼給用戶 user001
+POST {{baseUrl}}/api/groups/{{groupId}}/dispatch-and-redeem
+Content-Type: application/json
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+ny-idempotency-key: dispatch-{{testUserId}}-001-{{$guid}}
+
+
+{
+  "receiverId": "{{testUserId}}",
+  "tags": [],
+  "labels": ["TG250814FFFF"]
+}
+
+
+
+### 8. 查詢用戶的所有代碼
+
+GET {{baseUrl}}/api/codes/get-by-receiver?ReceiverId={{tw37868ReceiverId}}&Start=2025-11-01T00:00:00Z&End=2027-01-24T23:59:59Z&Limit=10
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{tw37868ReceiverId}}
+
+
+
+### 8.2 分發第1個代碼給用戶 user002
+POST {{baseUrl}}/api/groups/{{groupId}}/dispatch-and-redeem
+Content-Type: application/json
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+ny-idempotency-key: dispatch-{{testUserId2}}-001-{{$guid}}
+
+
+{
+  "receiverId": "{{testUserId2}}",
+  "tags": [],
+  "labels": ["TG04"]
+}
+
+
+###
+@label=MG250919Q00002
+@groupId=MSS3BR6MHEGcboxhNoF3gw
+### 9. 根據標籤查詢代碼
+GET {{baseUrl}}/api/codes/get-by-label?GroupId={{tw37868Group}}&Label={{tw37868Label}}&Limit=10
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+
+### 12. 查詢用戶限額狀況（應該顯示已用完 3/3）
+
+@memberId=95262655
+GET {{baseUrl}}/api/groups/{{tw37868Group}}/limit-quotas?ActionType=Redeem&ReceiverId={{memberId}}
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+
+###############################################
+### 第四階段：退貨測試（釋放配額）
+###############################################
+### 27. 測試同時取消分發和兌換
+@codeId=0f7a9e
+# 請將 {codeId} 替換為要處理的代碼ID
+POST {{baseUrl}}/api/codes/{{codeId}}/reverse-redeemed-and-dispatched
+Content-Type: application/json
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{testUserId}}
+ny-idempotency-key: reverse-all-{{testUserId}}-{{$guid}}
+
+
+{
+  "groupId": "{{groupId}}",
+  "receiverId": "{{testUserId}}"
+}
+
+
+###############################################
+### 第六階段：管理和監控 API
+###############################################
+
+
+### 20. 查詢群組統計數據
+GET {{baseUrl}}/api/groups/{{tw37868Group}}/metrics
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+
+### 21. 查詢特定代碼狀態
+# 請將 {{codeId1}} 替換為要查詢的代碼ID
+GET {{baseUrl}}/api/groups/{{tw37868Group}}/codes/{{tw37868CodeId}}
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+
+### 23. 批量查詢多個群組
+GET {{baseUrl}}/api/groups/batch-get?GroupIds={{tw37868Group}}
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}
+
+
+### 24. 批量查詢多個群組的統計
+GET {{baseUrl}}/api/groups/batch-get-metrics?GroupIds={{tw37868Group}}
+ny-market: {{market}}
+ny-shop-id: {{shopId}}
+ny-source-type: {{sourceType}}
+ny-user-id: {{ny_user_id}}

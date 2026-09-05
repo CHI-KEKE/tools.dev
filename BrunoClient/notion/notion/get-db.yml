@@ -1,0 +1,15 @@
+info:
+  name: get-db
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{base-url}}/databases/{{db-id}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

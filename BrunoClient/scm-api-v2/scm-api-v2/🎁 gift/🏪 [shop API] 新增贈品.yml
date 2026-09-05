@@ -1,0 +1,51 @@
+info:
+  name: 🏪 [shop API] 新增贈品
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/scm/V2/Gift/Create?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "ShopId": 2,
+          "GiftTypeDef": "PromotionFreeGift",
+          "ShortContent": "贈品特色",
+          "Title": "202411贈品名稱",
+          "OuterId": "RX-78",
+          "StockQty": 500,
+          "SafetyStockQty": 30,
+          "TemperatureTypeDef": "Normal",
+          "ShippingTypes": [
+              260
+          ],
+          "PayTypes": [
+              "CreditCardOnce_Cybersource",
+              "QFPay",
+              "GooglePay",
+              "ApplePay"
+          ],
+          "Length": 10,
+          "Width": 10,
+          "Height": 10,
+          "Weight": 100
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

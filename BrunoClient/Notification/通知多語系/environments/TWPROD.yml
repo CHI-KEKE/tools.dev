@@ -1,0 +1,4 @@
+name: TWPROD
+variables:
+  - name: template-base-url
+    value: http://notification-template-api-internal.91app.io

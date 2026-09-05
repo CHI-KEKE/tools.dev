@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "Heartbeat": {
+      "commandName": "Project",
+      "commandLineArgs": "-j Heartbeat",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "N1_MARKET": "Local",
+        "N1_ENVIRONMENT": "Dev",
+        "N1_LOCAL_MODE": "True"
+      }
+    },
+    "RepeatMessage": {
+      "commandName": "Project",
+      "commandLineArgs": "-j RepeatMessage",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "N1_MARKET": "Local",
+        "N1_ENVIRONMENT": "Dev",
+        "N1_LOCAL_MODE": "True"
+      }
+    }
+  }
+}

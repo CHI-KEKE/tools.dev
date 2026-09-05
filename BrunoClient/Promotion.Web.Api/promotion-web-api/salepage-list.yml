@@ -1,0 +1,31 @@
+info:
+  name: salepage-list
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/salepage-list"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "Id": 7652,
+          "ShopId": 2,
+          "Tag":null
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

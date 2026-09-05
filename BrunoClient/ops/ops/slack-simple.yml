@@ -1,0 +1,35 @@
+info:
+  name: slack-simple
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/v1/Ops/SlackSimple"
+  headers:
+    - name: x-api-key
+      value: "{{api-key}}"
+  body:
+    type: json
+    data: |-
+      {
+          "slack_channel": "rd-sg-slacktest",
+          "message": "<!subteam^SJGSP4PFW|oversea_brd>\n 📚 訂單 Timeout 後消費者付款成功",
+          "attachments": {
+          "Environment": "QA",
+          "Team": "oversea_brd"
+          },
+          "service": "CyberSource Payment",
+          "role": "API",
+          "level": "Warning",
+          "broadcast": true,
+          "username":"[HK Payment Alert]",
+          "icon": ":atom_symbol:"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

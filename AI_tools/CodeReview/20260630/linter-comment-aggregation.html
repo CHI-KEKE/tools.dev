@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Linter 留言聚合機制說明</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --text: #e2e8f0;
+    --text-muted: #8892a4;
+    --orange: #F5A623;
+    --purple: #7B68EE;
+    --blue: #4A90D9;
+    --green: #5BA85B;
+    --red: #D9534F;
+    --gray: #555;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 0 0 80px;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1d27 0%, #22263a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 44px 40px 32px;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--blue);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .hero h1 { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .hero p { color: var(--text-muted); font-size: 14px; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 32px; }
+
+  .section { margin-top: 48px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    background: var(--purple); color: #fff;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+  .section-title { font-size: 18px; font-weight: 700; color: #fff; }
+  .section-sub { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+
+  /* Conclusion cards */
+  .conclusion-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .conclusion-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .conclusion-card .q { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+  .conclusion-card .a { font-size: 15px; font-weight: 600; color: #fff; }
+  .conclusion-card .a.no  { color: var(--red); }
+  .conclusion-card .a.yes { color: var(--green); }
+  .conclusion-card .a.neutral { color: var(--orange); }
+
+  /* Diagram */
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 20px;
+    overflow-x: auto;
+  }
+  .diagram-card .mermaid { min-width: 580px; }
+
+  /* Cache path cards */
+  .path-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .path-grid { grid-template-columns: 1fr; } }
+  .path-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .path-card .path-label {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .path-card.old .path-label { background: var(--gray); color: #fff; }
+  .path-card.new .path-label { background: var(--purple); color: #fff; }
+  .path-card h3 { font-size: 15px; color: #fff; margin-bottom: 8px; }
+  .path-card p { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+
+  /* Bucket table */
+  .bucket-table { margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--surface2); }
+  th {
+    padding: 10px 14px; text-align: left;
+    font-weight: 600; color: var(--text-muted);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* Bitbucket note */
+  .info-box {
+    background: #1e2235;
+    border: 1px solid var(--blue);
+    border-left: 4px solid var(--blue);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .info-box strong { color: var(--blue); }
+
+  /* Compare table */
+  .compare-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 12px; font-weight: 600;
+  }
+  .badge-green  { background: #1a3a2a; color: #5BA85B; border: 1px solid #5BA85B; }
+  .badge-red    { background: #3a1a1a; color: #D9534F; border: 1px solid #D9534F; }
+  .badge-gray   { background: #1e2235; color: #8892a4; border: 1px solid #555; }
+
+  .footer {
+    margin-top: 64px; padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted); font-size: 13px; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-tag">2026-06-30</div>
+    <h1>Linter 留言聚合機制說明</h1>
+    <p>多個 Bot × 多個檔案，最終在 PR 留下幾則留言？</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 核心結論 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-title">核心結論</div>
+        <div class="section-sub">四個關鍵問題的直接答案</div>
+      </div>
+    </div>
+    <div class="conclusion-grid">
+      <div class="conclusion-card">
+        <div class="q">一個檔案一則留言？</div>
+        <div class="a no">❌ 否</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">所有檔案的結果混入同一個 priority bucket，不分開發文</p>
+      </div>
+      <div class="conclusion-card">
+        <div class="q">一個 Bot 一則留言？</div>
+        <div class="a no">❌ 否</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">6 個 Bot 的結果全部合併進 High / Medium / Low 桶</p>
+      </div>
+      <div class="conclusion-card">
+        <div class="q">最終幾則留言？</div>
+        <div class="a neutral">最多 4 則</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">有幾個 priority 就幾則，所有 Bot × 所有檔案全聚合</p>
+      </div>
+      <div class="conclusion-card">
+        <div class="q">PR 層級 or Inline？</div>
+        <div class="a no">PR 層級</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">不是貼在 diff 特定行旁邊，是一般的 PR comment</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 聚合流程圖 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <div class="section-title">聚合流程圖</div>
+        <div class="section-sub">6 個 Bot 跑完後如何合流成最多 4 則留言</div>
+      </div>
+    </div>
+    <div class="diagram-card">
+      <div class="mermaid">
+flowchart TD
+    subgraph RULES["多個 Bot 跑完（例如 .cs 檔跑 6 個 Rule）"]
+        R1["StandardBackend\n檔案A有問題🔴 檔案B沒問題"]
+        R2["CodeMentorPro\n檔案A有問題🟡"]
+        R3["InfoSecurity\n沒問題"]
+        R4["Exception\n檔案C有問題🔴"]
+        R5["Performance\n沒問題"]
+        R6["CustomRuleBackend\n沒問題"]
+    end
+
+    subgraph CACHE["_priority_issues cache（共用一個桶）"]
+        H["🔴 High bucket\nStandardBackend結果 + Exception結果"]
+        M["🟡 Medium bucket\nCodeMentorPro結果"]
+        S["✔️ checkSuccessRules\nInfoSecurity / Performance / CustomRuleBackend"]
+    end
+
+    subgraph POST["最終發文 Program.cs 末段"]
+        P1["POST 🔴 AI Code Review 高優先（1則）"]
+        P2["POST 🟡 AI Code Review 中優先（1則）"]
+        P3["POST ✅ 通過項目（1則，若有 pending_issues）"]
+    end
+
+    R1 -->|"🔴寫入"| H
+    R2 -->|"🟡寫入"| M
+    R3 -->|"✔️寫入"| S
+    R4 -->|"🔴寫入"| H
+    R5 -->|"✔️寫入"| S
+    R6 -->|"✔️寫入"| S
+
+    H --> P1
+    M --> P2
+    S --> P3
+
+    style R1 fill:#7B68EE,color:#fff
+    style R2 fill:#7B68EE,color:#fff
+    style R3 fill:#7B68EE,color:#fff
+    style R4 fill:#7B68EE,color:#fff
+    style R5 fill:#7B68EE,color:#fff
+    style R6 fill:#7B68EE,color:#fff
+    style H fill:#D9534F,color:#fff
+    style M fill:#F5A623,color:#fff
+    style S fill:#5BA85B,color:#fff
+    style P1 fill:#D9534F,color:#fff
+    style P2 fill:#F5A623,color:#fff
+    style P3 fill:#5BA85B,color:#fff
+      </div>
+    </div>
+  </div>
+
+  <!-- 兩條 Cache 路徑 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div>
+        <div class="section-title">兩條 Cache 路徑</div>
+        <div class="section-sub">靜態規則 vs AI 規則走不同的 cache key</div>
+      </div>
+    </div>
+    <div class="path-grid">
+      <div class="path-card old">
+        <div class="path-label">路徑 A — 舊機制</div>
+        <h3>_pending_issues</h3>
+        <p>給非 AI 靜態規則使用（CrossDbContextJoinRule、NineYiDatabasesSPJoinRule 等）。所有靜態規則的結果聚合成<strong>一則留言</strong>，標題「# 🤖 Linter 檢查報告」。留言文字可包含 <code>Line 123</code>，但仍是 PR 層級文字，不是真 inline comment。</p>
+      </div>
+      <div class="path-card new">
+        <div class="path-label">路徑 B — 新機制</div>
+        <h3>_priority_issues</h3>
+        <p>給 AI 規則使用，由 <code>PushAiPriorityMessages()</code> 寫入。所有 Bot × 所有檔案依 priority 分桶，有幾個 bucket 有資料就發幾則，最多 4 則。</p>
+        <div class="bucket-table">
+          <table>
+            <thead><tr><th>Bucket</th><th>標題</th></tr></thead>
+            <tbody>
+              <tr><td>🔴 High</td><td><code>AI Code Review - 高優先</code></td></tr>
+              <tr><td>🟡 Medium</td><td><code>AI Code Review - 中優先</code></td></tr>
+              <tr><td>🟢 Low</td><td><code>AI Code Review - 低優先</code></td></tr>
+              <tr><td>🤖 Unknown</td><td><code>AI Code Review</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bitbucket 倒序 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <div class="section-title">Bitbucket 特殊處理：倒序發文</div>
+      </div>
+    </div>
+    <div class="info-box">
+      Bitbucket 留言區<strong>由新到舊顯示</strong>（最新留言在最上面），因此 Linter 倒序發文：<br><br>
+      <strong>發文順序：</strong>Unknown → Low → Medium → High<br>
+      <strong>顯示結果：</strong>High（最上）→ Medium → Low → Unknown（最下）<br><br>
+      GitLab / GitHub 由舊到新顯示，所以正序發（High → Medium → Low → Unknown）。
+    </div>
+  </div>
+
+  <!-- Linter vs V2 對比 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div>
+        <div class="section-title">Linter vs V2 留言機制對比</div>
+      </div>
+    </div>
+    <div class="compare-wrap">
+      <table>
+        <thead>
+          <tr><th>面向</th><th>Linter</th><th>V2</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI 結果分組</td>
+            <td>依 Priority <strong>最多 4 則</strong></td>
+            <td>全部聚合 <strong>1 則</strong></td>
+          </tr>
+          <tr>
+            <td>跨 Bot 聚合</td>
+            <td><span class="badge badge-green">✅ 同 priority bucket 合併</span></td>
+            <td><span class="badge badge-green">✅ 全部合併 + &lt;details&gt; 折疊</span></td>
+          </tr>
+          <tr>
+            <td>跨檔案聚合</td>
+            <td><span class="badge badge-green">✅ 同 priority bucket 合併</span></td>
+            <td><span class="badge badge-green">✅ 全部合併，按 file/rule 分層</span></td>
+          </tr>
+          <tr>
+            <td>是否為 Inline Comment</td>
+            <td><span class="badge badge-red">❌ PR 層級文字留言</span></td>
+            <td><span class="badge badge-red">❌ PR 層級（PostReviewCommentAsync 已寫但未接入）</span></td>
+          </tr>
+          <tr>
+            <td>平台發文差異</td>
+            <td>Bitbucket 倒序，GitLab/GitHub 正序</td>
+            <td>無差異，永遠 1 則</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Linter 留言聚合機制說明 · 2026-06-30 · tools.dev
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      background: '#1a1d27',
+      primaryColor: '#4A90D9',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#2e3250',
+      lineColor: '#8892a4',
+      secondaryColor: '#22263a',
+      tertiaryColor: '#22263a',
+      clusterBkg: '#22263a',
+      clusterBorder: '#2e3250',
+      titleColor: '#e2e8f0',
+    },
+    flowchart: { curve: 'basis', htmlLabels: true }
+  });
+</script>
+</body>
+</html>

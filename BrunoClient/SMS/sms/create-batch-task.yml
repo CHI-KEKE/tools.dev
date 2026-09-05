@@ -1,0 +1,39 @@
+info:
+  name: create-batch-task
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/BatchUpload/CreateBatchTask"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+          "FileName": "test0225.xlsx",
+          "FileGuid": "abc",
+          "BatchUploadType": 171,
+          "NeedAdvancedVerify": false,
+          "ShopId": 2,
+          "ScheduleDateTime": null
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+      "FileName": "badsheetnamesku.xlsx",
+      "FileGuid": "4ab03c51-abf5-44f2-8323-1dd76df201dc",
+      "BatchUploadType": 173,
+      "NeedAdvancedVerify": false,
+      "ShopId": 2,
+      "ScheduleDateTime": null
+  }

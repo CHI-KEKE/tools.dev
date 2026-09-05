@@ -1,0 +1,14 @@
+name: HKQA
+variables:
+  - name: base-url
+    value: https://91app-live.qa1.hk.91dev.tw
+  - name: wss-url
+    value: wss://trm24yg5re.execute-api.ap-southeast-1.amazonaws.com/91applive
+  - name: Cookie
+    value: _ga_2WFJBS7B20=deleted; _fbp=fb.1.1768012631882.200133521726464270; _clck=1o0wrd8%5E2%5Eg2u%5E0%5E2210; SL_C_23361dd035530_SID={"61a79bbd82d029bef2eb0eebfe201ecae641c22f":{"sessionId":"nZBMqm8InsnJIYWrS-k2t","visitorId":"pj1lGNjRLcFQS4ZFS71a8"}}; _uetvid=334805604f1f11efa3c3c1ff964e00ff; __gads=ID=ff122ef4cb483dc5:T=1768874824:RT=1770633156:S=ALNI_Mbtv0ca8CkUnpg4nbsqWaLoLse33w; __gpi=UID=000011e828e48cd4:T=1768874824:RT=1770633156:S=ALNI_Ma_diubMbt99jKuBiEf0ROAi6AUvg; __eoi=ID=1bbdb658465f4d0b:T=1768874824:RT=1770633156:S=AA-AfjagpdbiWwlKdHREADAYClIT; _ga_PXC7ENYBGM=GS2.1.s1770633156$o3$g1$t1770633745$j32$l0$h0; _ga_P9SKT1T0T2=GS2.2.s1772682217$o51$g0$t1772682217$j60$l0$h0; _ga=GA1.1.1153032814.1768012217; _ga_2WFJBS7B20=GS2.1.s1773392817$o113$g1$t1773392826$j51$l0$h0; Livebuy.Sid=0b4687b460e742d398a451a30d747b94; .AspNetCore.Livebuy.Cookie=CfDJ8KHJl4-iKNdGg2FiSHAHFIjhYGvkCtuAkZ9lT7tWMNkpGWODtR40HIPEFo-AjXlODdp9Kpn_tpQpohQnQaD_XvKOvMs9rAQPRazMA13LF4_e5sn4eou8TCoTJaqpH30lAERaJmR4Y3c1oiCktjEJ27vTyEYx87p6Q_WaOQjBMx_gp3nDtbHOm79w3LSuXW_9aTdZdrT5Bfx6JK_XRlAVJckDbAT0x6azIturmYdWL4UwFZVm53yec64P9NH7Dc3Vt48tjvQa6_SxIK8pQQkJ-XeZ0rKUT6xFwLaROxKiVp7ZqUyFiF8PxslezzZeoYgWXUi2IEsNGs9VRZGTjhBCg47_lpRDZdPNwyMe1CQhHRVNY7dWGKv8v2ysB0duueIH8Dd86RMnXGmKDu_oqEtUISYvjna1qpQHm6RX0J5nYA0PkSaMuid-1j8vX6rY258hYDLxbkTJaTyNWkasTB1nNzjV9LwhlbxLu5fFIhfTE0KJ-hk8w-Vylf-g3POcYwYrJy0LawZJsLMXS0ThCJvVCjKOdXijYtHEHYMYB1JxMCSAcwsJPdux7AtVFaWrIg4ftucP0GZHSVOSSTfOBTwh6JMNNxvnVc7c54qns-iGWPfx
+  - name: k8s-public-url
+    value: https://91app-live-io.qa1.hk.91dev.tw
+  - name: liveSessionId
+    value: LS260320L00002
+  - name: shopId
+    value: "2"

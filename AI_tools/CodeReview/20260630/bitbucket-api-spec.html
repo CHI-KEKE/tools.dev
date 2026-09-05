@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitbucket Proxy API Specification</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --panel: #16213e;
+      --text: #e8ecf3;
+      --muted: #a7b1c2;
+      --line: #2b3a55;
+      --accent: #64b5f6;
+      --accent-2: #9ad1ff;
+      --success: #7dd3fc;
+      --code-bg: #0d1326;
+      --table-head: #13203a;
+      --shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 24px;
+      background: linear-gradient(180deg, #121a31 0%, #0f1630 100%);
+      border-right: 1px solid var(--line);
+    }
+    .sidebar h1 { margin: 0 0 10px; font-size: 1.4rem; color: #fff; }
+    .sidebar p { margin: 0 0 20px; color: var(--muted); font-size: 0.95rem; }
+    .meta {
+      background: rgba(100, 181, 246, 0.08);
+      border: 1px solid rgba(100, 181, 246, 0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 22px;
+    }
+    .meta strong { color: var(--accent-2); }
+    .toc { display: flex; flex-direction: column; gap: 8px; }
+    .toc a {
+      color: var(--text);
+      text-decoration: none;
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .toc a:hover {
+      border-color: rgba(100, 181, 246, 0.35);
+      background: rgba(100, 181, 246, 0.08);
+    }
+    .content { padding: 34px 40px 56px; max-width: 1200px; }
+    .hero, .section {
+      background: linear-gradient(180deg, rgba(22, 33, 62, 0.96) 0%, rgba(18, 28, 52, 0.96) 100%);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      padding: 28px 30px;
+    }
+    h2, h3, h4 { margin-top: 0; }
+    h2 {
+      font-size: 1.6rem;
+      color: #ffffff;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    h3 { font-size: 1.15rem; color: var(--accent-2); margin-top: 24px; margin-bottom: 10px; }
+    p, li { color: var(--text); }
+    .endpoint {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(125, 211, 252, 0.12);
+      color: #c8eeff;
+      border: 1px solid rgba(125, 211, 252, 0.26);
+      font-family: Consolas, monospace;
+      margin-bottom: 14px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    code.inline {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: Consolas, monospace;
+      color: #d9f2ff;
+    }
+    pre {
+      margin: 10px 0 18px;
+      background: var(--code-bg);
+      border: 1px solid #22304d;
+      border-radius: 14px;
+      padding: 16px 18px;
+      overflow-x: auto;
+    }
+    pre code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.93rem;
+      line-height: 1.65;
+      white-space: pre;
+      display: block;
+    }
+    .string { color: #c3e88d; }
+    .number { color: #f78c6c; }
+    .boolean { color: #ffcb6b; }
+    .null { color: #ff5370; }
+    .key { color: #82aaff; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th { background: var(--table-head); color: #dff1ff; font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) td { background: rgba(255, 255, 255, 0.02); }
+    .note {
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(100, 181, 246, 0.08);
+      border: 1px solid rgba(100, 181, 246, 0.24);
+    }
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+      .content { padding: 24px 18px 40px; }
+      .hero, .section { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1>Bitbucket Proxy API</h1>
+      <p>AI Code Review V2 代理 Bitbucket API 規格文件</p>
+      <div class="meta">
+        <div><strong>Base URL</strong><br><code class="inline">https://{host}/api/bitbucket</code></div>
+        <div style="margin-top:10px;"><strong>Content-Type</strong><br><code class="inline">application/json</code></div>
+      </div>
+      <nav class="toc">
+        <a href="#overview">API 基本資訊</a>
+        <a href="#common-response">共通 Response 規則</a>
+        <a href="#diff">1. Get PR Diff</a>
+        <a href="#comment">2. Post PR Comment</a>
+        <a href="#diffstat">3. Get DiffStat</a>
+        <a href="#file-content">4. Get File Raw Content</a>
+        <a href="#commits">5. Get Commits</a>
+        <a href="#src-tree">6. Get Repository Source Tree</a>
+        <a href="#notes">注意事項</a>
+      </nav>
+    </aside>
+    <main class="content">
+      <section class="hero" id="overview">
+        <h2>API 基本資訊</h2>
+        <p>本 API 由 <strong>AI Code Review V2</strong> 站台代理呼叫 Bitbucket API，所有請求均由伺服器端自動附帶 Bitbucket Access Token，前端無須自行處理授權。</p>
+        <div class="info-grid">
+          <div class="card"><strong>Base URL</strong><div><code class="inline">https://{host}/api/bitbucket</code></div></div>
+          <div class="card"><strong>Content-Type</strong><div><code class="inline">application/json</code></div></div>
+          <div class="card"><strong>用途</strong><div>統一代理 Bitbucket API，簡化前端整合流程與驗證處理。</div></div>
+        </div>
+      </section>
+      <section class="section" id="common-response">
+        <h2>共通 Response 規則</h2>
+        <h3>成功（200）</h3>
+        <ul>
+          <li>所有 response 都會帶 <code class="inline">traceId</code></li>
+          <li>格式：<code class="inline">bb-{action}-{6碼亂數}</code></li>
+          <li>範例：<code class="inline">bb-diff-a1b2c3</code></li>
+          <li>可用 <code class="inline">traceId</code> 在 server log 查詢完整鏈路</li>
+        </ul>
+        <h3>失敗（500）</h3>
+        <pre><code class="json">{
+  "traceId": "bb-diff-a1b2c3",
+  "error": "錯誤訊息"
+}</code></pre>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>必有</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">traceId</code></td><td>string</td><td>是</td><td>後端產生的請求追蹤 ID</td></tr>
+            <tr><td><code class="inline">error</code></td><td>string</td><td>是</td><td>失敗原因或錯誤訊息</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="section" id="diff">
+        <h2>1. Get PR Diff</h2>
+        <div class="endpoint">POST /api/bitbucket/diff</div>
+        <p>取得 PR 所有異動檔案的 unified diff，且已套用排除清單（不含 migration、auto-generated 等檔案）。</p>
+        <h3>Request Body</h3>
+        <pre><code class="json">{
+  "diffUrl": "https://api.bitbucket.org/2.0/repositories/workspace/repo/diff/...",
+  "repoFullName": "workspace/repo-slug",
+  "prNumber": 1234
+}</code></pre>
+        <h3>Request 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">diffUrl</code></td><td>string</td><td>是</td><td>Bitbucket webhook payload <code class="inline">pullrequest.links.diff.href</code> 的值</td></tr>
+            <tr><td><code class="inline">repoFullName</code></td><td>string</td><td>是</td><td>格式必須為 <code class="inline">workspace/repo-slug</code></td></tr>
+            <tr><td><code class="inline">prNumber</code></td><td>int</td><td>是</td><td>Pull Request 編號</td></tr>
+          </tbody>
+        </table>
+        <h3>Response 200</h3>
+        <pre><code class="json">{
+  "traceId": "bb-diff-a1b2c3",
+  "fileCount": 2,
+  "files": [
+    {
+      "filePath": "WebStore/Backend/Services/FooService.cs",
+      "fileExtension": ".cs",
+      "diff": "diff --git a/...\n@@ -10,5 +12,8 @@\n+新增的程式碼...",
+      "changedLineRanges": [
+        { "start": 12, "end": 19 }
+      ]
+    }
+  ]
+}</code></pre>
+        <h3>Response 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">traceId</code></td><td>string</td><td>請求追蹤 ID</td></tr>
+            <tr><td><code class="inline">fileCount</code></td><td>int</td><td>異動檔案數量（已過濾）</td></tr>
+            <tr><td><code class="inline">files</code></td><td>array</td><td>檔案 diff 結果清單</td></tr>
+            <tr><td><code class="inline">files[].filePath</code></td><td>string</td><td>檔案完整路徑</td></tr>
+            <tr><td><code class="inline">files[].fileExtension</code></td><td>string</td><td>副檔名（含 <code class="inline">.</code>）</td></tr>
+            <tr><td><code class="inline">files[].diff</code></td><td>string</td><td>raw unified diff，可直接送給 Dify AI</td></tr>
+            <tr><td><code class="inline">files[].changedLineRanges</code></td><td>array</td><td>新增行號範圍陣列，元素格式為 <code class="inline">{ start, end }</code>，採 1-based</td></tr>
+            <tr><td><code class="inline">files[].changedLineRanges[].start</code></td><td>int</td><td>變更區段起始行</td></tr>
+            <tr><td><code class="inline">files[].changedLineRanges[].end</code></td><td>int</td><td>變更區段結束行</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="section" id="comment">
+        <h2>2. Post PR Comment</h2>
+        <div class="endpoint">POST /api/bitbucket/comment</div>
+        <p>在指定 PR 貼上一則 PR-level comment（非 inline）。</p>
+        <h3>Request Body</h3>
+        <pre><code class="json">{
+  "repoFullName": "workspace/repo-slug",
+  "prNumber": 1234,
+  "body": "留言內容，支援 Markdown"
+}</code></pre>
+        <h3>Request 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">repoFullName</code></td><td>string</td><td>是</td><td>格式必須為 <code class="inline">workspace/repo-slug</code></td></tr>
+            <tr><td><code class="inline">prNumber</code></td><td>int</td><td>是</td><td>Pull Request 編號</td></tr>
+            <tr><td><code class="inline">body</code></td><td>string</td><td>是</td><td>留言內容，支援 Bitbucket Markdown 格式</td></tr>
+          </tbody>
+        </table>
+        <h3>Response 200</h3>
+        <pre><code class="json">{
+  "traceId": "bb-comment-a1b2c3",
+  "message": "Comment posted successfully"
+}</code></pre>
+        <h3>Response 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">traceId</code></td><td>string</td><td>請求追蹤 ID</td></tr>
+            <tr><td><code class="inline">message</code></td><td>string</td><td>成功訊息</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="section" id="diffstat">
+        <h2>3. Get DiffStat</h2>
+        <div class="endpoint">POST /api/bitbucket/diffstat</div>
+        <p>取得 PR 各檔案的變更統計（新增 / 刪除行數）與每個檔案的 self link。</p>
+        <h3>Request Body</h3>
+        <pre><code class="json">{
+  "repoFullName": "workspace/repo-slug",
+  "prNumber": 1234
+}</code></pre>
+        <h3>Request 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">repoFullName</code></td><td>string</td><td>是</td><td>格式必須為 <code class="inline">workspace/repo-slug</code></td></tr>
+            <tr><td><code class="inline">prNumber</code></td><td>int</td><td>是</td><td>Pull Request 編號</td></tr>
+          </tbody>
+        </table>
+        <h3>Response 200</h3>
+        <pre><code class="json">{
+  "traceId": "bb-diffstat-a1b2c3",
+  "data": {
+    "pagelen": 500,
+    "values": [
+      {
+        "status": "modified",
+        "lines_removed": 2,
+        "lines_added": 5,
+        "old": { "path": "src/Services/FooService.cs" },
+        "new": {
+          "path": "src/Services/FooService.cs",
+          "links": {
+            "self": { "href": "https://api.bitbucket.org/2.0/repositories/.../src/.../..." }
+          }
+        }
+      }
+    ]
+  }
+}</code></pre>
+        <h3>Response 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">traceId</code></td><td>string</td><td>請求追蹤 ID</td></tr>
+            <tr><td><code class="inline">data</code></td><td>object</td><td>Bitbucket 原始 JSON 透傳內容</td></tr>
+            <tr><td><code class="inline">data.pagelen</code></td><td>int</td><td>單頁筆數</td></tr>
+            <tr><td><code class="inline">data.values</code></td><td>array</td><td>各檔案 diff 統計結果</td></tr>
+            <tr><td><code class="inline">data.values[].status</code></td><td>string</td><td>檔案變更狀態，例如 <code class="inline">modified</code>、<code class="inline">added</code>、<code class="inline">removed</code></td></tr>
+            <tr><td><code class="inline">data.values[].lines_removed</code></td><td>int</td><td>刪除行數</td></tr>
+            <tr><td><code class="inline">data.values[].lines_added</code></td><td>int</td><td>新增行數</td></tr>
+            <tr><td><code class="inline">data.values[].old.path</code></td><td>string</td><td>舊檔案路徑</td></tr>
+            <tr><td><code class="inline">data.values[].new.path</code></td><td>string</td><td>新檔案路徑</td></tr>
+            <tr><td><code class="inline">data.values[].new.links.self.href</code></td><td>string</td><td>檔案 self link，可用於取得完整檔案內容</td></tr>
+          </tbody>
+        </table>
+        <div class="note">`data` 為 Bitbucket 原始 JSON 透傳；其中 `new.links.self.href` 可用於後續呼叫 <code class="inline">/api/bitbucket/file-content</code>。</div>
+      </section>
+      <section class="section" id="file-content">
+        <h2>4. Get File Raw Content</h2>
+        <div class="endpoint">POST /api/bitbucket/file-content</div>
+        <p>取得指定 commit 下某個檔案的完整原始內容（非 diff，而是完整程式碼）。</p>
+        <h3>Request Body</h3>
+        <pre><code class="json">{
+  "repoFullName": "workspace/repo-slug",
+  "prNumber": 1234,
+  "headCommitSha": "aae240de1992abc123",
+  "filePath": "WebStore/Backend/Services/FooService.cs"
+}</code></pre>
+        <h3>Request 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">repoFullName</code></td><td>string</td><td>是</td><td>格式必須為 <code class="inline">workspace/repo-slug</code></td></tr>
+            <tr><td><code class="inline">prNumber</code></td><td>int</td><td>是</td><td>僅用於 log tracing</td></tr>
+            <tr><td><code class="inline">headCommitSha</code></td><td>string</td><td>是</td><td>PR HEAD commit SHA，可由 webhook payload <code class="inline">pullrequest.source.commit.hash</code> 取得</td></tr>
+            <tr><td><code class="inline">filePath</code></td><td>string</td><td>是</td><td>檔案完整路徑（相對於 repo 根目錄）</td></tr>
+          </tbody>
+        </table>
+        <h3>Response 200</h3>
+        <pre><code class="json">{
+  "traceId": "bb-file-a1b2c3",
+  "filePath": "WebStore/Backend/Services/FooService.cs",
+  "content": "using System;\n\nnamespace ...\n{\n    // 完整原始程式碼\n}"
+}</code></pre>
+        <h3>Response 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">traceId</code></td><td>string</td><td>請求追蹤 ID</td></tr>
+            <tr><td><code class="inline">filePath</code></td><td>string</td><td>實際取得內容的檔案路徑</td></tr>
+            <tr><td><code class="inline">content</code></td><td>string</td><td>完整原始檔案內容</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="section" id="commits">
+        <h2>5. Get Commits</h2>
+        <div class="endpoint">POST /api/bitbucket/commits</div>
+        <p>取得 PR 的 commit 列表。</p>
+        <h3>Request Body</h3>
+        <pre><code class="json">{
+  "repoFullName": "workspace/repo-slug",
+  "prNumber": 1234
+}</code></pre>
+        <h3>Request 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">repoFullName</code></td><td>string</td><td>是</td><td>格式必須為 <code class="inline">workspace/repo-slug</code></td></tr>
+            <tr><td><code class="inline">prNumber</code></td><td>int</td><td>是</td><td>Pull Request 編號</td></tr>
+          </tbody>
+        </table>
+        <h3>Response 200</h3>
+        <pre><code class="json">{
+  "traceId": "bb-commits-a1b2c3",
+  "data": {
+    "pagelen": 30,
+    "values": [
+      {
+        "hash": "aae240de1992",
+        "message": "fix: stripe payment channel",
+        "date": "2026-07-01T02:30:00+00:00",
+        "author": { "raw": "Allen Lin <allen@example.com>" }
+      }
+    ]
+  }
+}</code></pre>
+        <h3>Response 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">traceId</code></td><td>string</td><td>請求追蹤 ID</td></tr>
+            <tr><td><code class="inline">data</code></td><td>object</td><td>Bitbucket 原始 JSON 透傳內容</td></tr>
+            <tr><td><code class="inline">data.pagelen</code></td><td>int</td><td>單頁筆數</td></tr>
+            <tr><td><code class="inline">data.values</code></td><td>array</td><td>Commit 列表</td></tr>
+            <tr><td><code class="inline">data.values[].hash</code></td><td>string</td><td>Commit SHA</td></tr>
+            <tr><td><code class="inline">data.values[].message</code></td><td>string</td><td>Commit 訊息</td></tr>
+            <tr><td><code class="inline">data.values[].date</code></td><td>string</td><td>Commit 時間（ISO 8601）</td></tr>
+            <tr><td><code class="inline">data.values[].author.raw</code></td><td>string</td><td>作者原始顯示字串</td></tr>
+          </tbody>
+        </table>
+        <div class="note">`values[0].hash` 通常可視為最新 commit SHA，可作為後續取得檔案內容時的輸入來源。</div>
+      </section>
+      <section class="section" id="src-tree">
+        <h2>6. Get Repository Source Tree</h2>
+        <div class="endpoint">POST /api/bitbucket/src-tree</div>
+        <p>取得 Repository 在指定 commit 下的目錄樹（目錄列表）。<strong>注意：</strong><code class="inline">path</code> 必須是目錄路徑；若傳入檔案路徑，<code class="inline">data</code> 會變成該檔案的純文字內容，而非 JSON 結構。</p>
+        <h3>Request Body</h3>
+        <pre><code class="json">{
+  "repoFullName": "workspace/repo-slug",
+  "commitHash": "aae240de1992abc123",
+  "path": "WebStore/Backend/Services"
+}</code></pre>
+        <h3>Request 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">repoFullName</code></td><td>string</td><td>是</td><td>格式必須為 <code class="inline">workspace/repo-slug</code></td></tr>
+            <tr><td><code class="inline">commitHash</code></td><td>string</td><td>是</td><td>Commit SHA</td></tr>
+            <tr><td><code class="inline">path</code></td><td>string</td><td>是</td><td><strong>目錄路徑</strong>；傳入空字串 <code class="inline">""</code> 代表 repo 根目錄</td></tr>
+          </tbody>
+        </table>
+        <h3>Response 200（傳入目錄路徑時）</h3>
+        <pre><code class="json">{
+  "traceId": "bb-srctree-a1b2c3",
+  "data": {
+    "pagelen": 100,
+    "values": [
+      { "type": "commit_file", "path": "WebStore/Backend/Services/FooService.cs" },
+      { "type": "commit_directory", "path": "WebStore/Backend/Services/Stripe" }
+    ]
+  }
+}</code></pre>
+        <h3>Response 欄位說明</h3>
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">traceId</code></td><td>string</td><td>請求追蹤 ID</td></tr>
+            <tr><td><code class="inline">data</code></td><td>object | string</td><td>正常傳目錄時為 JSON；誤傳檔案路徑時可能變成純文字內容</td></tr>
+            <tr><td><code class="inline">data.pagelen</code></td><td>int</td><td>單頁筆數</td></tr>
+            <tr><td><code class="inline">data.values</code></td><td>array</td><td>目錄下的檔案與子目錄清單</td></tr>
+            <tr><td><code class="inline">data.values[].type</code></td><td>string</td><td>類型，例如 <code class="inline">commit_file</code> 或 <code class="inline">commit_directory</code></td></tr>
+            <tr><td><code class="inline">data.values[].path</code></td><td>string</td><td>項目的完整路徑</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="section" id="notes">
+        <h2>注意事項</h2>
+        <ol>
+          <li><strong>traceId</strong>: 每次請求都會產生唯一 ID；若發生問題，請提供 <code class="inline">traceId</code> 給後端查 log。</li>
+          <li><strong>repoFullName 格式</strong>: 必須為 <code class="inline">workspace/repo-slug</code>，例如 <code class="inline">nineyi/nineyi.webstore.mobilewebmall</code>。</li>
+          <li><strong>headCommitSha 來源</strong>: 可從 Bitbucket webhook payload <code class="inline">pullrequest.source.commit.hash</code> 取得，或從 <code class="inline">/api/bitbucket/commits</code> 的 <code class="inline">values[0].hash</code> 取得。</li>
+          <li><strong>diffUrl 來源</strong>: 可從 Bitbucket webhook payload <code class="inline">pullrequest.links.diff.href</code> 取得。</li>
+          <li><strong>src-tree path 限制</strong>: 此端點僅接受目錄路徑；若需取得單一檔案完整內容，請使用 <code class="inline">/api/bitbucket/file-content</code>。</li>
+        </ol>
+      </section>
+    </main>
+  </div>
+  <script>
+    function syntaxHighlight(json) {
+      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'number';
+        if (/^"/.test(match)) {
+          cls = /:$/.test(match) ? 'key' : 'string';
+        } else if (/true|false/.test(match)) {
+          cls = 'boolean';
+        } else if (/null/.test(match)) {
+          cls = 'null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+    document.querySelectorAll('code.json').forEach(function (block) {
+      block.innerHTML = syntaxHighlight(block.textContent);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+info:
+  name: cart-create
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/carts/create"
+  headers:
+    - name: Cookie
+      value: ""
+    - name: N1-CC-USER-NAME
+      value: "2108"
+    - name: N1-ENV
+      value: QA
+    - name: N1-IDEMPOTENCY-KEY
+      value: ""
+    - name: N1-HOST
+      value: ""
+    - name: NY-SHOP-ID
+      value: ""
+  body:
+    type: json
+    data: |
+      {
+        "Shop": {
+          "Id": 32,
+          "Tags": []
+        },
+        "User": {
+          "Id": "2108",
+          "Tags": [
+            "AllUserScope",
+            "CrmShopMemberCard:25",
+            "FirstPurchase"
+          ],
+          "ShopMemberCode": "dSh+XJLqx0nCIIMQjeZDRg=="
+        },
+        "Shipping": {
+          "ShippingProfileTypeDef": "LocationPickup",
+          "CountryProfileId": 1,
+          "LocationId": 0
+        },
+        "Payment": {
+          "PayProfileTypeDef": "CreditCardOnce_Razer",
+          "MultiPayItems": []
+        },
+        "Channel": "Web",
+        "CurrencyDecimalDigits": 2,
+        "SalepageSkuList": [
+          {
+            "SalepageId": 6036,
+            "SkuId": 8030,
+            "Price": 80.00,
+            "Qty": 1,
+            "Flags": [],
+            "OptionalTypeDef": "",
+            "OptionalTypeId": 0,
+            "OuterId": "",
+            "SuggestPrice": 100.00,
+            "CartExtendInfoItemGroup": 0,
+            "CartExtendInfoItemType": "Major",
+            "CartExtendInfos": [],
+            "CartId": 20277
+          }
+        ],
+        "FeeList": [
+          {
+            "Id": 342,
+            "Type": "ShippingFee",
+            "Price": 5.55,
+            "ExtendInfo": {
+              "ShippingProfileTypeDef": "LocationPickup",
+              "IsDomesticWeightPricing": false,
+              "TemperatureTypeDef": "Normal",
+              "ShippingType": "342",
+              "ShippingAreaId": 4,
+              "IsLocal": false
+            }
+          }
+        ],
+        "Promotion": {
+          "SelectedDesignatePaymentPromotionId": 0
+        },
+        "CouponSetting": {
+          "MultipleRedeem": {
+            "Discount": {
+              "IsMultiple": false,
+              "Qty": 1
+            },
+            "Gift": {
+              "IsMultiple": true,
+              "Qty": 9999
+            },
+            "Shipping": {
+              "IsMultiple": false,
+              "Qty": 1
+            }
+          }
+        },
+        "CouponList": [],
+        "Options": {
+          "IsVerbose": false,
+          "IsCouponPreSelect": true
+        },
+        "LoyaltyPoint": {
+          "CheckoutPoint": 0,
+          "CheckoutDiscountPrice": 0,
+          "IsSelected": true,
+          "IsSetDiscountPrice": false,
+          "TotalPoint": 0.0
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

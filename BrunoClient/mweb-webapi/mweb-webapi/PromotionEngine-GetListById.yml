@@ -1,0 +1,28 @@
+info:
+  name: PromotionEngine-GetListById
+  type: http
+  seq: 12
+
+http:
+  method: GET
+  url: "{{base-url}}/webapi/PromotionEngine/GetListById/2?promotionIds=5193&from=module&shopId={{shopId}}&lang=en-US"
+  params:
+    - name: promotionIds
+      value: "5193"
+      type: query
+    - name: from
+      value: module
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+    - name: lang
+      value: en-US
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

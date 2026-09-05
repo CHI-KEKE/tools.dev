@@ -1,0 +1,31 @@
+info:
+  name: rule-get
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/get"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "Id": 40274,
+          "ShopId": {{shopId}}
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+      disabled: true
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

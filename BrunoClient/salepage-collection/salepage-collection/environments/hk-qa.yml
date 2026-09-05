@@ -1,0 +1,12 @@
+name: hk-qa
+variables:
+  - name: base-url
+    value: https://salepage-service-api-internal.qa1.hk.91dev.tw
+  - name: collectionId
+    value: f_371602421048813312
+  - name: shopId
+    value: "2"
+  - name: promotionEngineId
+    value: "6578"
+  - name: dynamic-collectionId
+    value: "123"

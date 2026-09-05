@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskSchedulerSyncToFlowMonitor 程式解析</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-2: #1c2437;
+    --border: #2a3350;
+    --text: #e6ebf5;
+    --muted: #9aa7c2;
+    --accent: #5b9dff;
+    --accent-2: #7cf2c8;
+    --warn: #ff8a5c;
+    --danger: #ff5c7a;
+    --code-bg: #0b0f1a;
+    --shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 10% -10%, #1b2440 0%, var(--bg) 55%), var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", -apple-system, sans-serif;
+    line-height: 1.7;
+  }
+  .container { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header.hero {
+    padding: 48px 36px;
+    background: linear-gradient(135deg, #1a2440 0%, #101627 100%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  header.hero::before {
+    content: "";
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(91,157,255,0.25), transparent 70%);
+    border-radius: 50%;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: rgba(91,157,255,0.15);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(91,157,255,0.35);
+    margin-bottom: 16px;
+  }
+  h1 { font-size: 30px; margin: 0 0 10px; color: #fff; }
+  .subtitle { color: var(--muted); font-size: 16px; max-width: 640px; }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+  }
+  .meta-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .meta-card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .meta-card .value { font-size: 14px; font-weight: 600; color: #fff; word-break: break-all; }
+
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 30px 32px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+  }
+  section h2 {
+    font-size: 20px;
+    color: #fff;
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), #3163c9);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  section h3 { font-size: 16px; color: var(--accent-2); margin: 22px 0 8px; }
+  p { color: #cfd6e8; margin: 8px 0; }
+  ul, ol { color: #cfd6e8; padding-left: 22px; }
+  li { margin: 6px 0; }
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    color: var(--accent-2);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 13px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 13px;
+    color: #d6dcee;
+  }
+  pre code { border: none; padding: 0; background: none; }
+
+  .tree {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    color: #b9c3de;
+  }
+  .tree .dir { color: var(--accent); font-weight: 600; }
+  .tree .comment { color: var(--muted); }
+
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 20px 0;
+  }
+  .flow-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    position: relative;
+    padding-bottom: 26px;
+  }
+  .flow-step:last-child { padding-bottom: 0; }
+  .flow-step::before {
+    content: "";
+    position: absolute;
+    left: 17px;
+    top: 36px;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(var(--border), transparent);
+  }
+  .flow-step:last-child::before { display: none; }
+  .flow-dot {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--panel-2);
+    border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 14px;
+  }
+  .flow-body { flex: 1; background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; }
+  .flow-body h4 { margin: 0 0 6px; font-size: 15px; color: #fff; }
+  .flow-body p { margin: 0; font-size: 14px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    text-align: left;
+  }
+  th { background: var(--panel-2); color: var(--accent-2); font-weight: 600; }
+  td { color: #cfd6e8; }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag.insert { background: rgba(124,242,200,0.15); color: var(--accent-2); border: 1px solid rgba(124,242,200,0.4); }
+  .tag.update { background: rgba(91,157,255,0.15); color: var(--accent); border: 1px solid rgba(91,157,255,0.4); }
+  .tag.delete { background: rgba(255,92,122,0.15); color: var(--danger); border: 1px solid rgba(255,92,122,0.4); }
+
+  .callout {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 18px 0;
+    border: 1px solid;
+  }
+  .callout.warn {
+    background: rgba(255,138,92,0.08);
+    border-color: rgba(255,138,92,0.4);
+  }
+  .callout.warn .title { color: var(--warn); font-weight: 700; margin-bottom: 6px; }
+  .callout.info {
+    background: rgba(91,157,255,0.08);
+    border-color: rgba(91,157,255,0.4);
+  }
+  .callout.info .title { color: var(--accent); font-weight: 700; margin-bottom: 6px; }
+  .callout.danger {
+    background: rgba(255,92,122,0.08);
+    border-color: rgba(255,92,122,0.4);
+  }
+  .callout.danger .title { color: var(--danger); font-weight: 700; margin-bottom: 6px; }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 40px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 700px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    header.hero { padding: 32px 20px; }
+    section { padding: 22px 18px; }
+  }
+
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .toc a {
+    color: var(--accent-2);
+    text-decoration: none;
+    background: rgba(124,242,200,0.08);
+    border: 1px solid rgba(124,242,200,0.3);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    transition: all 0.15s ease;
+  }
+  .toc a:hover { background: rgba(124,242,200,0.18); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <span class="badge">反組譯解析報告</span>
+    <h1>TaskSchedulerSyncToFlowMonitor 程式解析</h1>
+    <p class="subtitle">位於 <code>C:\91APP\Console\transfer_etl_monitor</code>，以 ilspycmd 反組譯 <code>TaskSchedulerSyncToFlowMonitor.exe</code> 後整理而成的逐步行為說明。</p>
+
+    <div class="meta-grid">
+      <div class="meta-card"><div class="label">執行檔</div><div class="value">TaskSchedulerSyncToFlowMonitor.exe</div></div>
+      <div class="meta-card"><div class="label">框架</div><div class="value">.NET Framework 4.6.2</div></div>
+      <div class="meta-card"><div class="label">主要資料庫</div><div class="value">EtlDB / ExceptionLogDB</div></div>
+      <div class="meta-card"><div class="label">通知管道</div><div class="value">Slack Webhook</div></div>
+    </div>
+
+    <div class="toc">
+      <a href="#structure">① 專案結構</a>
+      <a href="#flow">② 主流程</a>
+      <a href="#detail">③ 關鍵邏輯細節</a>
+      <a href="#db">④ 資料庫互動</a>
+      <a href="#grafana">⑤ Grafana / Slack 告警</a>
+      <a href="#risk">⑥ 風險與建議</a>
+      <a href="#summary">⑦ 總結</a>
+    </div>
+  </header>
+
+  <section id="structure">
+    <h2><span class="num">1</span>專案結構</h2>
+    <p>反組譯後可還原出以下命名空間與類別，職責分工清楚：</p>
+    <div class="tree">
+<span class="dir">TaskSchedulerSyncToFlowMonitor</span> (主程式)
+└─ Program.cs <span class="comment">// Main 進入點，整體流程控制</span>
+
+<span class="dir">TaskSchedulerSyncToFlowMonitor.Library</span> (服務層)
+├─ EtlServices.cs <span class="comment">// 讀寫 EtlDB (ShopEtlFlow / EtlFlowMonitor)</span>
+├─ IEtlServices.cs
+└─ WindowsTaskSchedulerService.cs <span class="comment">// 讀寫 ExceptionLogDB (WindowsTaskScheduler*)</span>
+
+<span class="dir">TaskSchedulerSyncToFlowMonitor.Entity</span> (資料物件)
+├─ EtlFlowEntity.cs
+├─ EtlFlowMonitorEntity.cs
+├─ WindowsTaskSchedulerEntity.cs
+├─ WindowsTaskSchedulerActionEntity.cs
+└─ WindowsTaskSchedulerTriggerEntity.cs
+    </div>
+
+    <h3>設定檔重點 (app.config)</h3>
+    <table>
+      <tr><th>Key</th><th>說明</th></tr>
+      <tr><td><code>ServerName</code></td><td>目前執行主機名稱，用來過濾/標記資料，例如 <code>SG-HK-QA1-SCM2</code></td></tr>
+      <tr><td><code>WindowsTaskScheduler.Enable</code></td><td>是否要把 Task Scheduler 完整設定同步回寫資料庫</td></tr>
+      <tr><td><code>Grafana.HealthCheckUrl</code></td><td>Grafana 健康檢查端點</td></tr>
+      <tr><td><code>Slack.WebhookUrl</code></td><td>健康檢查失敗時發送告警的 Slack Webhook</td></tr>
+      <tr><td><code>ETLSqlConn</code></td><td>連線到 <code>EtlDB</code>，維護 ETL Flow 監控資料</td></tr>
+      <tr><td><code>ExceptionLogDBSqlConn</code></td><td>連線到 <code>ExceptionLogDB</code>，記錄 Task Scheduler 明細</td></tr>
+    </table>
+    <div class="callout info">
+      <div class="title">用途定位</div>
+      這是一支「排程巡檢／同步工具」：掃描 Windows 工作排程器（Task Scheduler），把跟 ETL 流程相關的排程資訊同步進監控資料表，並附帶對 Grafana 做健康檢查。
+    </div>
+  </section>
+
+  <section id="flow">
+    <h2><span class="num">2</span>主流程 (Main)</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-dot">1</div>
+        <div class="flow-body">
+          <h4>啟動檢查 CheckAppSetting()</h4>
+          <p>讀取 <code>ServerName</code>、<code>WindowsTaskScheduler.Enable</code>，任一缺漏或格式錯誤就丟出 <code>ApplicationException</code> 直接中止程式。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-dot">2</div>
+        <div class="flow-body">
+          <h4>列舉所有 Windows Task Scheduler 工作</h4>
+          <p>透過 <code>TaskService.FindAllTasks(x =&gt; true)</code> 取得本機所有排程工作，並先查詢 <code>EtlFlowMonitor</code> 現有清單、（可選）查詢 <code>WindowsTaskScheduler</code> 現有有效清單，作為後續比對基準。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-dot">3</div>
+        <div class="flow-body">
+          <h4>逐一處理每個排程工作</h4>
+          <p>對每個 Task：若啟用 WindowsTaskScheduler 同步，先呼叫 <code>DoWindowsTaskScheduler()</code> 存檔詳細設定；接著檢查 <code>IsActive</code> / <code>Enabled</code>，取出 <code>ExecAction.Arguments</code> 並解析出 <code>ShopEtlFlowId</code>。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-dot">4</div>
+        <div class="flow-body">
+          <h4>組裝並 Upsert 監控資料</h4>
+          <p>計算執行頻率 <code>Frequency = NextRunTime - LastRunTime</code>（秒），查出 FlowName，資料合法則新增或更新 <code>EtlFlowMonitor</code> 紀錄。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-dot">5</div>
+        <div class="flow-body">
+          <h4>軟刪除失效的監控項目</h4>
+          <p>比對「原本資料庫已有」與「本次有效更新到」的 FlowId 差集，將不再存在的排程監控紀錄軟刪除（<code>ValidFlag = 0</code>）。</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-dot">6</div>
+        <div class="flow-body">
+          <h4>CheckGrafanaHealth()</h4>
+          <p>對 Grafana 健康檢查端點發送 GET，若非 2xx 或請求失敗，組出 JSON 訊息 POST 到 Slack Webhook 發送告警。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="title">例外處理策略</div>
+      單一 Task 處理失敗只記錄 Error log 並繼續下一筆（不中斷整體流程）；但最外層若出現未預期例外，會記錄 Fatal log 並以 <code>Environment.Exit(1)</code> 結束整支程式。
+    </div>
+  </section>
+
+  <section id="detail">
+    <h2><span class="num">3</span>關鍵邏輯細節</h2>
+
+    <h3>如何從 ExecAction.Arguments 解析出 ShopEtlFlowId</h3>
+    <p>取出排程工作第一個 <code>ExecAction</code> 的 <code>Arguments</code>，以空白切割成陣列後判斷格式：</p>
+    <table>
+      <tr><th>參數格式</th><th>判斷條件</th><th>解析方式</th></tr>
+      <tr>
+        <td><code>--FlowId 123</code></td>
+        <td>第一段包含 <code>--FLOWID</code></td>
+        <td>直接 <code>long.TryParse</code> 第二段當作 FlowId</td>
+      </tr>
+      <tr>
+        <td><code>--FlowName xxx</code></td>
+        <td>第一段包含 <code>--FLOWNAME</code></td>
+        <td>呼叫 <code>GetEtlFlowId()</code> 依名稱查 <code>ShopEtlFlow</code> 表換回 FlowId（找不到或重複則丟例外）</td>
+      </tr>
+      <tr>
+        <td>4 段參數（其他排程包裝格式）</td>
+        <td>參數長度剛好為 4</td>
+        <td>視第 3 段是否為 <code>--FLOW-ID</code>，解析第 4 段為 FlowId</td>
+      </tr>
+      <tr>
+        <td>純數字（舊格式）</td>
+        <td>不符合上述任何 Option 條件</td>
+        <td>第一段直接當數字 FlowId；若有第二段須包含目前 <code>ServerName</code>，否則視為主機不符丟例外</td>
+      </tr>
+    </table>
+
+    <h3>DoWindowsTaskScheduler()：Task Scheduler 詳細設定備份</h3>
+    <p>針對每個排程工作，蒐集下列資訊並整理成實體物件：</p>
+    <ul>
+      <li>Task 基本屬性：名稱、狀態、Enable、IsActive、上次/下次執行時間、上次執行結果、註冊者、註冊時間、說明、執行帳號、資料夾路徑</li>
+      <li>所有 <code>Trigger</code>（Event / Time / Daily / Weekly / Monthly / MonthlyDOW / Registration / Boot / Logon / SessionStateChange / Custom 等 10 種類型皆有對應欄位映射）</li>
+      <li>所有 <code>Action</code>（僅處理 <code>Execute</code> 類型，記錄執行路徑、參數、工作目錄）</li>
+    </ul>
+    <p>比對資料庫中是否已有相同 <code>Name + HostName + FolderPath</code> 的紀錄：無則標記 <span class="tag insert">INSERT</span>，有則標記 <span class="tag update">UPDATE</span>，最後一併交給 <code>WindowsTaskSchedulerService.RecordWindowsTaskSchedulerInformation()</code> 批次寫入。</p>
+  </section>
+
+  <section id="db">
+    <h2><span class="num">4</span>資料庫互動</h2>
+
+    <div class="grid-2">
+      <div>
+        <h3>EtlDB（透過 EtlServices）</h3>
+        <ul>
+          <li><code>GetEtlFlowName / GetEtlFlowId</code> — 查 <code>ShopEtlFlow</code> 表（<code>ValidFlag=1</code>）</li>
+          <li><code>IsMonitorExists</code> — 依 FlowName 檢查 <code>EtlFlowMonitor</code> 是否已存在</li>
+          <li><code>InsertFlowMonitor</code> <span class="tag insert">INSERT</span> — 新增監控紀錄</li>
+          <li><code>UpdateFlowFrequency</code> <span class="tag update">UPDATE</span> — 更新頻率、遞增 <code>UpdatedTimes</code>（0~255 循環）</li>
+          <li><code>DeleteEtlFlowMonitor</code> <span class="tag delete">SOFT DELETE</span> — 設 <code>ValidFlag=0</code></li>
+          <li>皆使用 <b>Dapper + 參數化查詢</b>，無 SQL Injection 疑慮</li>
+        </ul>
+      </div>
+      <div>
+        <h3>ExceptionLogDB（透過 WindowsTaskSchedulerService）</h3>
+        <ul>
+          <li><code>FindValidScheduler</code> — 依主機名稱查現有有效排程清單</li>
+          <li><code>RecordWindowsTaskSchedulerInformation</code> — 用暫存表（<code>#tmpInsertTask</code>、<code>#tmpUpdateTask</code>、<code>#tmpAction</code>、<code>#tmpTigger</code>）批次交易寫入 Task / Action / Trigger 三張表</li>
+          <li>流程：先刪除該 Task 對應的舊 Action/Trigger 明細，再整批重新插入</li>
+          <li>本次執行未再出現的舊排程，會被批次軟刪除（<code>ValidFlag=0</code>）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="grafana">
+    <h2><span class="num">5</span>Grafana 健康檢查與 Slack 告警</h2>
+    <ol>
+      <li>檢查 <code>Grafana.HealthCheckUrl</code> 與 <code>Slack.WebhookUrl</code> 是否皆有設定，缺一則跳過檢查。</li>
+      <li>對健康檢查端點發送 GET（Timeout 5 秒），HTTP 狀態碼落在 200~299 視為正常。</li>
+      <li>若請求例外或狀態碼非 2xx，組出如下 JSON 訊息並 POST 到 Slack Webhook：</li>
+    </ol>
+    <pre><code>{"text": ":sos: *[&lt;ServerName&gt; ETL Monitor]*\nGrafana 服務異常，請立即檢查！\n&lt;HealthCheckUrl&gt;"}</code></pre>
+  </section>
+
+  <section id="risk">
+    <h2><span class="num">6</span>風險與建議</h2>
+    <div class="callout danger">
+      <div class="title">⚠ SQL Injection 風險</div>
+      <p><code>WindowsTaskSchedulerService</code> 在組批次 SQL 時，是用自訂的 <code>SqlString</code> / <code>SqlGuid</code> 手動字串轉義並直接拼接組成 <code>INSERT ... VALUES (...)</code> 的暫存表語法，而非透過 Dapper 參數化。若排程名稱、說明、路徑等來源字串包含特殊字元且轉義不完整，存在 SQL Injection 疑慮，建議改為參數化查詢或 Table-Valued Parameter。</p>
+    </div>
+    <div class="callout warn">
+      <div class="title">其他觀察</div>
+      <ul>
+        <li>連線字串（含帳密）與 Slack Webhook URL 直接寫在 <code>app.config</code> 明碼中，建議搭配金鑰保管機制。</li>
+        <li>ServerName 比對用 <code>text.ToUpper().Contains(_serverName.ToUpper())</code>，屬字串包含比對，若主機名稱是另一主機名稱的子字串可能誤判。</li>
+        <li>Grafana 健康檢查失敗時僅發 Slack 告警，沒有重試或退避機制。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="summary">
+    <h2><span class="num">7</span>總結</h2>
+    <p>
+      <b>TaskSchedulerSyncToFlowMonitor</b> 是一支排程巡檢工具，核心任務有三：
+    </p>
+    <ol>
+      <li>掃描本機 Windows Task Scheduler，把工作執行參數中夾帶的 <code>ShopEtlFlowId</code> 同步進 ETL 監控表（新增／更新頻率／軟刪除失效項目）。</li>
+      <li>（可選）把 Task Scheduler 完整設定（工作、觸發條件、執行動作）備份寫入 <code>ExceptionLogDB</code> 供稽核查詢。</li>
+      <li>對 Grafana 服務做健康檢查，異常時透過 Slack Webhook 即時告警。</li>
+    </ol>
+  </section>
+
+  <footer>由 GitHub Copilot CLI 反組譯並整理 · 來源：C:\91APP\Console\transfer_etl_monitor</footer>
+</div>
+</body>
+</html>

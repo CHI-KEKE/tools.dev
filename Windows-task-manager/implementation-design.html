@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows Task Scheduler 監控設計 · 實作面說明</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#93c5fd; background:rgba(147,197,253,.12); border:1px solid rgba(147,197,253,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 27px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:820px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--accent-soft); color:var(--accent); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  h3 { font-size:15.5px; margin:22px 0 8px; color:#1e293b; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:10px 12px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+  td.center, th.center { text-align:center; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+
+  .arch {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:18px 0;
+  }
+  .arch .box {
+    border:1px solid var(--border); border-radius:12px; padding:16px 14px; background:#f8fafc; font-size:13px;
+  }
+  .arch .box h4 { margin:0 0 8px; font-size:13.5px; color:var(--accent); }
+  .arch .box ul { margin:0; padding-left:18px; color:#475569; }
+  .arch .box li { margin:4px 0; }
+  .arch .arrow { display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:20px; }
+
+  .flow {
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:16px 0; font-size:13px;
+  }
+  .flow .step {
+    background:#f1f5f9; border:1px solid var(--border); border-radius:8px; padding:8px 14px; font-weight:600; color:#334155;
+  }
+  .flow .step.accent { background:var(--accent-soft); color:var(--accent); border-color:#bfdbfe; }
+  .flow .step.ok { background:var(--ok-soft); color:var(--ok); border-color:#bbf7d0; }
+  .flow .step.warn { background:var(--warn-soft); color:var(--warn); border-color:#fde68a; }
+  .flow .step.danger { background:var(--danger-soft); color:var(--danger); border-color:#fecaca; }
+  .flow .sep { color:var(--muted); }
+
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; }
+  .split .col {
+    border:1px solid var(--border); border-radius:12px; padding:16px 18px;
+  }
+  .split .col.purple { background:var(--purple-soft); border-color:#ddd6fe; }
+  .split .col.blue { background:var(--accent-soft); border-color:#bfdbfe; }
+  .split .col h4 { margin:0 0 8px; font-size:14px; }
+
+  .decision-tree { font-size:13.5px; margin:16px 0; }
+  .decision-tree .node {
+    border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin:6px 0; background:#f8fafc;
+  }
+  .decision-tree .node.q { background:#fff; border-style:dashed; font-weight:700; }
+  .decision-tree .node.yes { border-left:4px solid var(--ok); }
+  .decision-tree .node.no { border-left:4px solid var(--danger); }
+  .indent-1 { margin-left:24px; }
+  .indent-2 { margin-left:48px; }
+
+  .file-tag {
+    display:inline-block; font-family:Consolas,monospace; font-size:11.5px; background:#0b1220; color:#e2e8f0;
+    padding:2px 8px; border-radius:5px; margin:2px 4px 2px 0;
+  }
+
+  .legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); margin:8px 0 16px; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .legend i { width:12px; height:12px; border-radius:3px; display:inline-block; }
+
+  footer { text-align:center; color:#94a3b8; font-size:12.5px; margin-top:34px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow">Implementation Design</span>
+    <h1>Windows Task Scheduler 監控 — 實作面設計說明</h1>
+    <p>本文件說明 <code>WindowsTaskManager.Monitor</code> 如何把前面討論的「單次事件模型」與「心跳模型」兩套設計，落地成實際可編譯執行的 .NET 8 Worker Service，並記錄實作過程中因真實 API 限制而做的關鍵取捨。</p>
+  </header>
+
+  <!-- 1. 整體架構 -->
+  <section>
+    <h2><span class="num">1</span>整體架構總覽</h2>
+    <p class="sub">四個核心元件各司其職，資料單向流動：讀取排程 → 產生監控計畫 → 巡檢判斷 → 發送告警</p>
+
+    <div class="arch">
+      <div class="box">
+        <h4>① SchedulerReader</h4>
+        <ul>
+          <li>讀取本機 Task Scheduler</li>
+          <li>對每個任務產出 <code>TaskMonitorPlan</code></li>
+          <li>查詢 Event Log 執行歷史</li>
+        </ul>
+        <div class="file-tag">SchedulerReader.cs</div>
+      </div>
+      <div class="arch arrow">➜</div>
+      <div class="box">
+        <h4>② TaskMonitorWorker</h4>
+        <ul>
+          <li>每 N 分鐘巡檢一輪</li>
+          <li>依 Plan 分流：心跳型 / 單次事件型</li>
+          <li>去重後才發告警</li>
+        </ul>
+        <div class="file-tag">TaskMonitorWorker.cs</div>
+      </div>
+      <div class="arch arrow">➜</div>
+      <div class="box">
+        <h4>③ AlertNotifier</h4>
+        <ul>
+          <li>統一告警輸出介面</li>
+          <li>v1：寫入 Log</li>
+          <li>可擴充 Email / Teams</li>
+        </ul>
+        <div class="file-tag">IAlertNotifier.cs</div>
+      </div>
+    </div>
+    <div class="arch" style="grid-template-columns:1fr;">
+      <div class="box">
+        <h4>設定與模型（貫穿全流程）</h4>
+        <span class="file-tag">MonitorOptions.cs</span>
+        <span class="file-tag">MonitoredTask.cs (TaskMonitorPlan)</span>
+        <span class="file-tag">appsettings.json</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>設計文件 vs 實際實作最大的差異：</strong>原本設計文件設想「逐一走訪每一組 Trigger，各自呼叫 GetRunTimes」，但實測 <code>Microsoft.Win32.TaskScheduler</code> 套件的 <code>GetRunTimes</code> 只存在於已註冊的 <code>Task</code> 物件上（整合該任務「全部」Trigger），無法針對單一 Trigger 單獨計算。因此實作改成「以整個任務為判斷單位」，詳見第 2 節。
+    </div>
+  </section>
+
+  <!-- 2. 核心資料模型與判斷邏輯 -->
+  <section>
+    <h2><span class="num">2</span>核心判斷邏輯：TaskMonitorPlan</h2>
+    <p class="sub"><code>SchedulerReader.GetMonitorPlan()</code> 是整個系統的大腦，決定一個任務要走哪一套監控模型</p>
+
+    <div class="decision-tree">
+      <div class="node q">Q：這個任務的 <code>Definition.Triggers</code> 中，是否「任一組」Trigger 有設定 <code>Repetition.Interval &gt; 0</code>？</div>
+      <div class="node yes indent-1">
+        <strong>是</strong> → 標記 <code>IsHeartbeat = true</code>（心跳型，對應類型 C）<br>
+        直接讀取 <code>task.LastRunTime</code> / <code>task.LastTaskResult</code>，不展開候選時間。
+      </div>
+      <div class="node no indent-1">
+        <strong>否</strong> → <code>IsHeartbeat = false</code>（單次事件型，涵蓋類型 A / B / D）<br>
+        呼叫 <code>task.GetRunTimes(windowStart, windowEnd, 1000)</code>「一次」取得該任務<u>全部</u> Trigger 合併後的候選執行時間清單 <code>CandidateRunTimes</code>。
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>已知簡化 / 限制：</strong>若一個任務「同時」混有心跳型 Trigger 與單次事件型 Trigger（例如一個 Trigger 每天 3AM 觸發、另一個 Trigger 每 5 分鐘重複執行），目前會整個任務被視為「心跳型」監控，單次事件 Trigger 的獨立判斷會被忽略。程式碼中已用 <code>HasMixedTriggerTypes</code> 欄位記錄並輸出 warning log 提示。實務建議：混合情境拆成兩個獨立任務較好維護。
+    </div>
+
+    <h3>TaskMonitorPlan 資料結構</h3>
+    <pre>public class TaskMonitorPlan
+{
+    public string TaskPath { get; set; }
+    public bool IsHeartbeat { get; set; }              // true=心跳型(類型C), false=單次事件型(類型A/B/D)
+    public List&lt;DateTime&gt; CandidateRunTimes { get; set; }  // 僅單次事件型使用
+    public DateTime? LastRunTime { get; set; }          // 僅心跳型使用
+    public int? LastTaskResult { get; set; }            // 僅心跳型使用
+    public bool HasMixedTriggerTypes { get; set; }       // 混合類型警示旗標
+}</pre>
+
+    <div class="note ok">
+      <strong>順帶修正的既有 Bug：</strong>v1 版本原本用 <code>runTimes[^1]</code> 只取 GetRunTimes 回傳陣列的「最後一筆」，等於多 Trigger 任務只會監控最晚的一個時間點。新版直接保留完整清單交給 Worker 逐一比對，自然涵蓋類型 D（Multiple Triggers）不需要額外程式碼。
+    </div>
+  </section>
+
+  <!-- 3. 巡檢流程 -->
+  <section>
+    <h2><span class="num">3</span>TaskMonitorWorker 巡檢流程</h2>
+    <p class="sub">每輪巡檢針對每一個任務，依 Plan 分流進入兩條完全不同的檢查路徑</p>
+
+    <div class="flow">
+      <div class="step accent">PeriodicTimer 每 IntervalMinutes 觸發</div>
+      <span class="sep">→</span>
+      <div class="step">列出所有已啟用任務（排除 Disabled）</div>
+      <span class="sep">→</span>
+      <div class="step">逐一 GetMonitorPlan</div>
+    </div>
+
+    <div class="split">
+      <div class="col purple">
+        <h4>🫀 CheckHeartbeatTask（心跳型 / 類型C）</h4>
+        <p><code>gap = now - plan.LastRunTime</code></p>
+        <ul>
+          <li><code>gap &gt; GapThresholdMinutes</code> → 告警 <strong>HeartbeatStopped</strong>（心跳停止，可能整個排程卡死或已被手動停止）</li>
+          <li><code>LastTaskResult != 0</code> → 告警 <strong>Failed</strong>（有跑但執行結果失敗）</li>
+          <li>兩者互不排斥，可能同時觸發</li>
+        </ul>
+      </div>
+      <div class="col blue">
+        <h4>📅 CheckSingleEventTask（單次事件型 / 類型A/B/D）</h4>
+        <p>逐一走訪 <code>plan.CandidateRunTimes</code> 中落在 Lookback 視窗內的每個 T</p>
+        <ul>
+          <li>Key = <code>(taskPath, T)</code> 已 resolved → 略過（避免重複判斷）</li>
+          <li>查 <code>GetHistory(taskPath, T-tolerance, T+tolerance)</code>：查到 → 依結果碼標記成功/失敗並 resolved</li>
+          <li>查無 且 <code>now &lt; T + ToleranceMinutes</code>（接受窗未關）→ 先略過，下一輪再查</li>
+          <li>查無 且接受窗已關 → 告警 <strong>Missed</strong>（漏排）並標記 resolved</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>去重機制：兩個 HashSet 各司其職</h3>
+    <table>
+      <tr><th>集合</th><th>Key 格式</th><th>用途</th><th>適用模型</th></tr>
+      <tr>
+        <td><code>_resolvedKeys</code></td>
+        <td><code>{TaskPath}|{ExpectedRunTime:O}</code></td>
+        <td>標記某個候選時間「已有結論」（無論成功/失敗/漏排），避免視窗重疊時重複查詢與重複告警</td>
+        <td>僅單次事件型</td>
+      </tr>
+      <tr>
+        <td><code>_alertedKeys</code></td>
+        <td><code>{TaskPath}|{AlertType}|{ExpectedRunTime:O}</code></td>
+        <td>真正發過的告警去重（含 AlertType），避免同一件事重複發送通知</td>
+        <td>兩種模型皆用</td>
+      </tr>
+    </table>
+    <div class="note ok">
+      <strong>已改善（v1.1）：</strong>兩個集合已從 <code>HashSet&lt;string&gt;</code> 改為 <code>Dictionary&lt;string, DateTime&gt;</code>，Value 記錄「寫入時間」。每輪巡檢開始時會呼叫 <code>CleanupExpiredKeys()</code>，清掉超過 <code>KeyRetentionHours</code>（預設 48 小時）未更新的 Key，不再無限增長。詳見下方「清理機制」小節。
+    </div>
+
+    <h3>清理機制：Dictionary + TTL</h3>
+    <p class="sub">解決「只增不減、長期佔用記憶體」的限制，並附帶解決心跳型任務長期停止只告警一次的問題</p>
+    <pre>private readonly Dictionary&lt;string, DateTime&gt; _resolvedKeys = new();
+private readonly Dictionary&lt;string, DateTime&gt; _alertedKeys = new();
+
+private void CleanupExpiredKeys(DateTime now)
+{
+    var retention = TimeSpan.FromHours(_options.KeyRetentionHours);   // 預設 48 小時
+
+    var expiredResolved = _resolvedKeys.Where(kv => now - kv.Value > retention)
+                                        .Select(kv => kv.Key).ToList();
+    foreach (var key in expiredResolved) _resolvedKeys.Remove(key);
+
+    var expiredAlerted = _alertedKeys.Where(kv => now - kv.Value > retention)
+                                      .Select(kv => kv.Key).ToList();
+    foreach (var key in expiredAlerted) _alertedKeys.Remove(key);
+}</pre>
+    <p>在 <code>RunOnce()</code> 開頭、每一輪巡檢都會先呼叫一次 <code>CleanupExpiredKeys(now)</code>，確保集合大小長期維持在「近 48 小時內出現過的 Key」這個有限範圍，不會無限增長。</p>
+
+    <table>
+      <tr><th>設計考量</th><th>說明</th></tr>
+      <tr>
+        <td>為什麼是 48 小時，不是更短？</td>
+        <td>遠大於 <code>LookbackMinutes</code>(90分鐘)對應的視窗，正常情況下不會提早清掉還有效的 Key；即使服務短暫離線後補跑巡檢，48 小時的緩衝也足夠涵蓋。</td>
+      </tr>
+      <tr>
+        <td>單次事件型（A/B/D）清理後有風險嗎？</td>
+        <td>沒有風險。過期的 Key 對應的候選時間 T 早就在 48 小時前被 resolved（成功/失敗/漏排都已確定），清掉後不會被重新查詢，因為未來的 <code>CandidateRunTimes</code> 只會產生新的、未來的 T，不會重算過去的 T。</td>
+      </tr>
+      <tr>
+        <td>心跳型（C）清理後的附帶效果</td>
+        <td><strong>意外的好處</strong>：若心跳長期卡死（<code>LastRunTime</code> 永遠不變），對應的 <code>_alertedKeys</code> 過期 Key 會被清掉 → 下一輪重新計算 gap（仍然超標）→ 重新 <code>RaiseAlert</code> → 等同每 48 小時「重新提醒一次仍在停止中」，不需要額外設計提醒排程，直接用清理機制順便達成。</td>
+      </tr>
+    </table>
+
+    <h3>為什麼需要 _resolvedKeys？具體時間軸範例</h3>
+    <p class="sub">（以下範例聚焦「同一輪次內視窗重疊」的去重情境，與上方 48 小時 TTL 清理是兩個獨立但互補的機制）</p>
+    <p class="sub">情境：類型B任務「每天 3:00 AM 執行」，<code>IntervalMinutes=30</code>、<code>ToleranceMinutes=30</code>、<code>LookbackMinutes=90</code>。核心關鍵是 <strong>LookbackMinutes(90) &gt; IntervalMinutes(30)</strong>，代表同一個候選時間 T 會連續出現在「好幾輪」巡檢的 <code>CandidateRunTimes</code> 清單裡，而不是只出現一次。</p>
+
+    <table>
+      <tr><th>巡檢輪次</th><th>Lookback 視窗</th><th>T=03:00 在窗內？</th><th>resolvedKeys 有這個 Key？</th><th>實際動作</th></tr>
+      <tr>
+        <td>Round1 @02:30</td>
+        <td>[01:00, 02:30]</td>
+        <td class="center">❌ 還沒到</td>
+        <td class="center">—</td>
+        <td>T=03:00 尚未落在視窗內，這輪根本看不到它</td>
+      </tr>
+      <tr>
+        <td>Round2 @03:00</td>
+        <td>[01:30, 03:00]</td>
+        <td class="center">✅</td>
+        <td class="center">否</td>
+        <td>查歷史紀錄 [02:30,03:30]：查無（任務實際 03:05 才跑，此刻還沒發生）。接受窗未關（now=03:00 &lt; 03:30）→ <strong>略過，不標記 resolved</strong>，下一輪再查</td>
+      </tr>
+      <tr>
+        <td>Round3 @03:30</td>
+        <td>[02:00, 03:30]</td>
+        <td class="center">✅</td>
+        <td class="center">否</td>
+        <td>查歷史紀錄：這次查到了（任務 03:05 執行成功）→ 無需告警，<strong>resolvedKeys.Add(key)</strong></td>
+      </tr>
+      <tr>
+        <td>Round4 @04:00</td>
+        <td>[02:30, 04:00]</td>
+        <td class="center">✅（仍在窗內！）</td>
+        <td class="center"><strong>是</strong></td>
+        <td><code>_resolvedKeys.Contains(key)</code> 為 true → <strong>直接 continue，完全不查 GetHistory</strong></td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <strong>重點：</strong>因為 Lookback(90分鐘) 大於 Interval(30分鐘)，同一個 T=03:00 會連續出現在 Round2、Round3、Round4 三輪的候選清單裡（視窗會重疊）。如果沒有 <code>_resolvedKeys</code>，Round4 會對「早就已經查到成功紀錄」的同一個 T 再查一次 Event Log——結果不會變，純粹是白白浪費一次查詢。任務數量一多、Lookback 設得越大，這種重複查詢會被放大好幾倍。<code>_resolvedKeys</code> 就是讓「已經有結論的候選時間」在後續輪次直接跳過，不用再進 <code>GetHistory</code>。
+    </div>
+
+    <div class="note danger">
+      <strong>對應的取捨（trade-off）：</strong>一旦某個 T 被標記為 <code>Missed</code>（漏排）並 resolved，之後就算這個任務「遲到很久才真的手動被跑起來」（例如接受窗已關閉後的 03:50 有人手動觸發執行），Worker 也不會再回頭去查、也不會更新這筆結論——因為 <code>_resolvedKeys</code> 已經把它視為蓋棺論定。這是刻意接受的行為：接受窗關閉代表「已經確定太晚了」，晚到的執行不影響漏排告警已經發出的事實，重點是及時通知，不是事後修正歷史紀錄。
+    </div>
+
+    <h3>常見疑問澄清</h3>
+
+    <p><strong>Q1：修復問題後，這個任務會不會「永遠」被當作 resolved，之後都不再監控？</strong></p>
+    <p>不會。Key 的格式是 <code>{TaskPath}|{ExpectedRunTime:O}</code>，綁定的是「某一個特定的候選時間點 T」，不是整個任務。例如任務是「每天 3:00 AM」：</p>
+    <ul>
+      <li>今天 <code>T=2026-07-09 03:00</code> 被判定漏排 → resolved，key = <code>MyTask|2026-07-09T03:00:00</code></li>
+      <li>修復問題後，明天 <code>T=2026-07-10 03:00</code> 是完全不同的 key，<code>_resolvedKeys</code> 裡沒有這筆，所以明天照樣會被正常巡檢、正常判斷</li>
+    </ul>
+    <p>「永遠 resolved」只發生在<strong>同一個特定時間點事件本身</strong>（不會再回頭更新這一筆的結論），不會擴散影響未來每一天的排程監控。</p>
+
+    <p><strong>Q2：所有四種類型（A/B/C/D）都會用到 <code>_resolvedKeys</code> 嗎？</strong></p>
+    <p><code>_resolvedKeys</code> <strong>只用於單次事件型（類型 A/B/D）</strong>，心跳型（類型 C）完全不會用到它。原因是心跳型沒有離散的候選時間清單，每一輪都是對「當下這個持續狀態」重新計算一次 <code>gap = now − LastRunTime</code>，本質上是 idempotent（重複算、結果一樣），不存在「同一個事件被重複查詢」的問題，自然不需要去重。</p>
+
+    <p><strong>Q3：心跳型（類型 C）沒有 <code>_resolvedKeys</code>，那它的告警會不會被無限重複發送？</strong></p>
+    <p>不會，但要留意跟單次事件型不太一樣的行為。心跳型告警一樣會經過 <code>_alertedKeys</code> 去重，key 是 <code>{TaskPath}|{AlertType}|{LastRunTime:O}</code>，這裡的 <code>LastRunTime</code> 是任務目前記錄的最後執行時間，不是每輪的候選時間：</p>
+    <table>
+      <tr><th>情境</th><th>行為</th></tr>
+      <tr><td>心跳真的停了（<code>LastRunTime</code> 卡住不變）</td><td>第一輪偵測到 <code>HeartbeatStopped</code> 後 key 固定不變 → 之後每輪都被 <code>_alertedKeys</code> 擋掉，<strong>只告警一次</strong>，不會每輪重複通知</td></tr>
+      <tr><td>心跳後來恢復了（<code>LastRunTime</code> 更新到新時間）</td><td>key 隨之改變 → 若之後又停止，會用新 key 重新告警一次</td></tr>
+    </table>
+    <div class="note ok">
+      <strong>已改善（v1.1）：</strong>這個限制已透過上方的 TTL 清理機制解決——若心跳持續停止超過 <code>KeyRetentionHours</code>（預設 48 小時），對應的 <code>_alertedKeys</code> Key 會被清除，下一輪重新計算 gap 仍超標即會重新觸發告警。等同「停止期間每隔 48 小時重新提醒一次」，不需要額外設計提醒排程，直接用清理機制順便達成。
+    </div>
+
+    <h3>_resolvedKeys 與 _alertedKeys 的記錄時機差異</h3>
+    <p>兩個集合雖然都是「去重用的 Dictionary」，但「什麼情況下會記進去」完全不同，容易混淆：</p>
+    <table>
+      <tr><th>集合</th><th>任務正常成功執行時，會記錄嗎？</th><th>任務失敗 / 漏排 / 心跳停止時，會記錄嗎？</th><th>本質</th></tr>
+      <tr>
+        <td><code>_resolvedKeys</code></td>
+        <td>✅ 會記（<code>matched.IsSuccess == true</code> 時仍會 <code>Add(key)</code>，只是不觸發告警）</td>
+        <td>✅ 會記</td>
+        <td>只代表「這件事已經查過、有明確答案了」，跟是不是問題無關，重點是避免重複查詢 <code>GetHistory</code></td>
+      </tr>
+      <tr>
+        <td><code>_alertedKeys</code></td>
+        <td>❌ 不會記（成功不會呼叫 <code>RaiseAlert</code>，自然沒有東西可去重）</td>
+        <td>✅ 只有異常情況（呼叫 <code>RaiseAlert</code> 時）才記</td>
+        <td>只代表「這個問題已經通知過了」，避免同一個異常被重複發送通知</td>
+      </tr>
+    </table>
+    <div class="note">
+      <strong>白話理解：</strong><code>_resolvedKeys</code> 回答的問題是「這個時間點我還要不要再查一次歷史紀錄？」（不管查到的是好消息還是壞消息，查過了就不用再查）；<code>_alertedKeys</code> 回答的問題是「這個壞消息我還要不要再通知一次？」（好消息從來不需要通知，所以它天生只在有問題時才會累積內容）。
+    </div>
+  </section>
+
+  <!-- 4. 設定檔 -->
+  <section>
+    <h2><span class="num">4</span>設定參數 MonitorOptions</h2>
+    <p class="sub">五個參數對應到前面所有情境圖解中反覆出現的變數</p>
+    <table>
+      <tr><th>參數</th><th>預設值</th><th>意義</th><th>對應設計文件中的名稱</th></tr>
+      <tr><td><code>IntervalMinutes</code></td><td>30</td><td>巡檢週期，多久跑一次 Worker</td><td>巡檢間隔</td></tr>
+      <tr><td><code>ToleranceMinutes</code></td><td>30</td><td>單次事件型任務的「接受窗」寬度，超過才判漏排</td><td>接受窗 / Tolerance</td></tr>
+      <tr><td><code>LookbackMinutes</code></td><td>90</td><td>每輪往回看多久去撈候選時間與歷史紀錄，需 &gt; Interval + Tolerance 避免死角</td><td>Lookback 視窗</td></tr>
+      <tr><td><code>GapThresholdMinutes</code></td><td>10</td><td>心跳型任務的 gap 閾值，超過視為心跳停止</td><td>Gap 閾值</td></tr>
+      <tr><td><code>KeyRetentionHours</code></td><td>48</td><td>去重快取（_resolvedKeys/_alertedKeys）的保留時間，超過未更新即清除，避免記憶體無限增長</td><td>去重 Key TTL</td></tr>
+    </table>
+    <pre>"MonitorOptions": {
+  "IntervalMinutes": 30,
+  "ToleranceMinutes": 30,
+  "LookbackMinutes": 90,
+  "GapThresholdMinutes": 10,
+  "KeyRetentionHours": 48
+}</pre>
+    <div class="note">
+      <strong>為何 LookbackMinutes(90) &gt; IntervalMinutes(30) + ToleranceMinutes(30)=60？</strong>
+      多留 30 分鐘緩衝，確保即使某一輪巡檢延遲執行，前一輪還沒關窗的候選時間依然會被涵蓋到，不會因為視窗切齊而漏查。
+    </div>
+  </section>
+
+  <!-- 5. 對照表：四種類型如何落地 -->
+  <section>
+    <h2><span class="num">5</span>四種 Trigger 類型如何對應到程式碼</h2>
+    <table>
+      <tr><th>類型</th><th>範例</th><th>IsHeartbeat</th><th>實際檢查方式</th></tr>
+      <tr>
+        <td>A - Weekly</td>
+        <td>每週三 9:00 AM</td>
+        <td>false</td>
+        <td>GetRunTimes 展開每週候選時間 → CheckSingleEventTask</td>
+      </tr>
+      <tr>
+        <td>B - Daily 單次</td>
+        <td>每天 3:00 AM</td>
+        <td>false</td>
+        <td>GetRunTimes 展開每日候選時間 → CheckSingleEventTask</td>
+      </tr>
+      <tr>
+        <td>C - Daily + 高頻重複</td>
+        <td>2:01 PM 起每 5 分鐘重複 1 天</td>
+        <td>true</td>
+        <td>不展開候選時間，直接用 LastRunTime 算 gap → CheckHeartbeatTask</td>
+      </tr>
+      <tr>
+        <td>D - Multiple Triggers</td>
+        <td>10:10 AM / 4:10 PM / 10:10 PM 三組獨立 Daily</td>
+        <td>false</td>
+        <td>GetRunTimes 一次回傳三組時間全部候選 → CheckSingleEventTask 逐一判斷（已修正舊版只取最後一筆的 Bug）</td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- 6. 已完成 vs 待辦 -->
+  <section>
+    <h2><span class="num">6</span>目前實作進度</h2>
+    <table>
+      <tr><th>項目</th><th>狀態</th><th>說明</th></tr>
+      <tr><td>Models 更新（TaskMonitorPlan）</td><td>✅ 完成</td><td>MonitoredTask.cs</td></tr>
+      <tr><td>MonitorOptions 更新</td><td>✅ 完成</td><td>新增 GapThresholdMinutes，LookbackHours 改名 LookbackMinutes</td></tr>
+      <tr><td>ISchedulerReader / SchedulerReader 重寫</td><td>✅ 完成</td><td>GetMonitorPlan 取代 GetExpectedLastRunTime，修正 runTimes[^1] Bug</td></tr>
+      <tr><td>TaskMonitorWorker 重寫</td><td>✅ 完成</td><td>分流 CheckHeartbeatTask / CheckSingleEventTask，補上 _resolvedKeys 欄位</td></tr>
+      <tr><td>IAlertNotifier 補齊 HeartbeatStopped</td><td>✅ 完成</td><td>原本 switch 遺漏新告警類型</td></tr>
+      <tr><td>MonitorRoundContext 重構</td><td>✅ 完成</td><td>將 windowStart/now/tolerance/gapThreshold 打包成單一情境物件，避免參數雜訊</td></tr>
+      <tr><td>去重 Key TTL 清理機制</td><td>✅ 完成</td><td>HashSet 改 Dictionary&lt;string,DateTime&gt;，每輪清除超過 KeyRetentionHours(48h) 的過期 Key</td></tr>
+      <tr><td>appsettings.json 同步</td><td>✅ 完成</td><td>套用新參數名稱與預設值，含 KeyRetentionHours</td></tr>
+      <tr><td>dotnet build 全解法驗證</td><td>✅ 通過</td><td>0 Warning / 0 Error</td></tr>
+      <tr><td>本機建立 A/B/C/D 測試任務並實際跑一次驗證</td><td>⏳ 待辦</td><td>建議下一步進行</td></tr>
+      <tr><td>部署為 Windows Service</td><td>⏳ 待辦</td><td>dotnet publish + New-Service</td></tr>
+    </table>
+  </section>
+
+  <footer>
+    Windows Task Scheduler 監控設計文件系列 · 實作面說明（第 5 篇）· 對應原始碼 WindowsTaskManager.Monitor
+  </footer>
+</div>
+</body>
+</html>

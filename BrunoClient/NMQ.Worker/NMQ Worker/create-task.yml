@@ -1,0 +1,84 @@
+info:
+  name: create-task
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/task"
+  body:
+    type: json
+    data: '{ "Data": "{\"Id\":null,\"SourceType\":null,\"EventName\":null,\"IdempotencyKey\":null,\"Version\":null,\"SourceKey\":null,\"CreatedAt\":null,\"EventArgs\":null,\"Source\":{\"ShopId\":123,\"CreatedBy\":\"allen!\",\"CalculateDate\":\"2024-08-07T00:00:00+08:00\"}}", "JobName": "PromotionRewardBatchDispatcherV2"}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |+
+  ## 角標封存
+
+  {
+    "Data": "{\"ExpiredDays\":\"-60\",\"ShopId\":\"44\",\"ProductBadgeCount\":\"\"}",
+    "JobName": "ProductBadgeArchiveJob"
+  }
+
+
+  ## OrderAuditJob
+
+
+  {"Data":"{\"Id\":\"9d8713ca-3365-4ffd-95fe-2ef9bd3e162e\",\"IdempotencyKey\":\"TG260409M00001_OrderPlaced\",\"EventName\":\"OrderPlaced\",\"EventArgs\":{\"ShopId\":10230,\"Market\":null},\"Source\":{\"OrderCode\":\"TG260409M00001\",\"TotalAmount\":2.0,\"CurrencyCode\":\"TWD\",\"OrderDateTime\":\"2026-04-09T03:06:35.6817794+00:00\",\"PayType\":\"Family\",\"CountryCode\":\"886\",\"CellPhone\":\"0983798727\",\"UserAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\",\"HttpReferer\":\"https://10230.shop.qa.91dev.tw/V2/ShoppingCart/Index?shopId=10230\",\"TSCount\":2,\"ShopId\":10230,\"MemberId\":747292},\"SourceType\":\"Orders\",\"SourceKey\":\"TG260409M00001\",\"CreatedAt\":\"2026-04-09T03:06:36.0995834+00:00\"}"}
+
+
+  ## 單階
+  {"Data":"{\"Id\":\"b57afe9f-7a53-490b-ac3d-92ac485abfa5\",\"IdempotencyKey\":\"TG260409M00050_OrderPlaced\",\"EventName\":\"OrderPlaced\",\"EventArgs\":{\"ShopId\":10230,\"Market\":null},\"Source\":{\"OrderCode\":\"TG260409M00050\",\"TotalAmount\":11.0,\"CurrencyCode\":\"TWD\",\"OrderDateTime\":\"2026-04-09T03:45:38.5450031+00:00\",\"PayType\":\"Family\",\"CountryCode\":\"886\",\"CellPhone\":\"0983798727\",\"UserAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\",\"HttpReferer\":\"https://10230.shop.qa.91dev.tw/V2/ShoppingCart/Index?shopId=10230&reason=unknown\",\"TSCount\":2,\"ShopId\":10230,\"MemberId\":747292},\"SourceType\":\"Orders\",\"SourceKey\":\"TG260409M00050\",\"CreatedAt\":\"2026-04-09T03:45:39.0169413+00:00\"}"}
+
+
+  ## 多階
+  {"Data":"{\"Id\":\"238668cb-ae1f-4445-a867-207a347bcbce\",\"IdempotencyKey\":\"TG260413L00024_OrderPlaced\",\"EventName\":\"OrderPlaced\",\"EventArgs\":{\"ShopId\":10230,\"Market\":null},\"Source\":{\"OrderCode\":\"TG260413L00024\",\"TotalAmount\":30.0,\"CurrencyCode\":\"TWD\",\"OrderDateTime\":\"2026-04-13T02:39:17.0435233+00:00\",\"PayType\":\"CreditCardOnce\",\"CountryCode\":\"886\",\"CellPhone\":\"0983798727\",\"UserAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\",\"HttpReferer\":\"https://10230.shop.qa.91dev.tw/V2/ShoppingCart/Index?shopId=10230\",\"TSCount\":3,\"ShopId\":10230,\"MemberId\":747292},\"SourceType\":\"Orders\",\"SourceKey\":\"TG260413L00024\",\"CreatedAt\":\"2026-04-13T02:39:17.6915619+00:00\"}"}
+
+
+  ## live-event-status-sync
+
+  {"Data": "{\"liveSessionId\": \"你的場次ID\", \"shopId\": 123}"}
+
+
+  ## 發票
+
+
+  { "Data": "{\"ShopId\":17,\"TradesOrderGroupCode\":\"TG250811W00083\"}", "JobName": "GenerateMyInvoiceTask" }
+
+
+  ## 轉單
+  { "Data": "2242990", "JobName": "TransferOrderToERP" }
+
+
+  ## 角標封存
+
+  { "Data": "{\"ExpiredDays\":\"-60\"}", "JobName": "ProductBadgeArchiveJob" }
+
+
+  ##　訂單成立通知
+
+
+  {"Data":"{\"Id\":\"78d802b2-1b4c-4a86-acb9-4fe16f7a94d0\",\"IdempotencyKey\":\"TG240516R00003\",\"EventName\":\"OrderCreated\",\"EventArgs\":{\"Market\":null,\"ShopId\":2},\"Source\":{\"ShopId\":2,\"PayType\":\"FreeOfCharge\",\"TSCount\":2,\"MemberId\":32124,\"CellPhone\":\"912361906\",\"OrderCode\":\"TG240516R00003\",\"UserAgent\":\"python-requests/2.32.3\",\"CountryCode\":\"886\",\"HttpReferer\":null,\"TotalAmount\":0.00,\"CurrencyCode\":\"HKD\",\"OrderDateTime\":\"2024-12-04T04:32:46.4496753+00:00\"},\"SourceType\":\"Orders\",\"SourceKey\":\"TG240516R00003\",\"CreatedAt\":\"2024-12-04T15:32:47.5047135+00:00\"}","JobName":"OrderCreateNotification"}
+
+
+  ## 給點派發
+
+
+  { "Data": "{\"Id\":\"fd74c0e0-d6bd-4cc3-8f63-68878bb7e8fb\",\"SourceId\":\"96ba540a-8c69-41fa-83db-e6883dcd0521\",\"JobName\":\"PromotionRewardLoyaltyPointsDispatcherV2\",\"Data\":{\"Id\":\"96ba540a-8c69-41fa-83db-e6883dcd0521\",\"IdempotencyKey\":\"TG250516S00002\",\"EventName\":\"OrderCreated\",\"EventArgs\":{\"Market\":null,\"ShopId\":11},\"Source\":{\"ShopId\":11,\"PayType\":\"CreditCardOnce_Cybersource\",\"TSCount\":1,\"MemberId\":33437,\"CellPhone\":\"98330002\",\"OrderCode\":\"TG250516S00002\",\"UserAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\",\"CountryCode\":\"852\",\"HttpReferer\":\"https://shop11.shop.qa1.hk.91dev.tw/V2/ShoppingCart/Index?shopId=11\",\"TotalAmount\":357,\"CurrencyCode\":\"HKD\",\"OrderDateTime\":\"2025-05-16T08:50:18.4704284+00:00\"},\"SourceType\":\"Orders\",\"SourceKey\":\"TG250516S00002\",\"CreatedAt\":\"2025-05-16T08:50:25.4135632+00:00\"}}", "JobName": "PromotionRewardLoyaltyPointsDispatcherV2"}
+
+
+  ## 線下給點派發
+  PromotionRewardBatchDispatcherV2
+  { "Data": "{\"Id\":null,\"SourceType\":null,\"EventName\":null,\"IdempotencyKey\":null,\"Version\":null,\"SourceKey\":null,\"CreatedAt\":null,\"EventArgs\":null,\"Source\":{\"ShopId\":200074,\"CreatedBy\":\"PromotionRewardActiveCrmShopDispatcherJob\",\"CalculateDate\":\"2025-11-04T00:00:00+08:00\"}}", "JobName": "PromotionRewardBatchDispatcherV2"}
+  { "Data": "{\"Id\":null,\"SourceType\":null,\"EventName\":null,\"IdempotencyKey\":null,\"Version\":null,\"SourceKey\":null,\"CreatedAt\":null,\"EventArgs\":null,\"Source\":{\"ShopId\":200074,\"CreatedBy\":\"ManualCreated_202511041451\",\"CalculateDate\":\"2025-11-04T00:00:00+08:00\"}}", "JobName":"PromotionRewardBatchDispatcherV2"}
+  TransferStripePaymentMetadata
+  { "Data": "{\"TradesOrderGroupId\":2398525}", "JobName": "TransferStripePaymentMetadata" }
+
+
+
+

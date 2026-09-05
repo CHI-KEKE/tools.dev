@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>類型 B（Daily 單次）× 每30分鐘巡檢一次 · 情境圖解</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#86efac; background:rgba(134,239,172,.12); border:1px solid rgba(134,239,172,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 26px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:720px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--ok-soft); color:var(--ok); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:9px 11px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+
+  /* Timeline */
+  .timeline-box {
+    background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:28px 24px 40px; margin:18px 0; position:relative;
+  }
+  .timeline-title { font-size:13px; font-weight:700; color:#334155; margin-bottom:26px; }
+  .track { position:relative; height:56px; margin:0 10px; border-top:3px solid #cbd5e1; }
+  .hour-tick { position:absolute; top:-3px; width:2px; height:9px; background:#94a3b8; }
+  .tick-label { position:absolute; top:12px; transform:translateX(-50%); font-size:10.5px; color:#94a3b8; white-space:nowrap; }
+
+  .check-mark { position:absolute; top:-9px; transform:translateX(-50%); text-align:center; }
+  .check-mark .diamond { width:14px; height:14px; background:#94a3b8; transform:rotate(45deg); margin:0 auto; border:2px solid #fff; }
+  .check-mark.hit .diamond { background: var(--accent); }
+  .check-mark .clabel { font-size:10px; color:#64748b; margin-top:6px; white-space:nowrap; }
+
+  .event-dot { position:absolute; top:-16px; transform:translateX(-50%); text-align:center; }
+  .event-dot .dot {
+    width:26px; height:26px; border-radius:50%; color:#fff; display:flex;
+    align-items:center; justify-content:center; font-size:12px; font-weight:700; margin:0 auto; border:3px solid #fff;
+  }
+  .event-dot .dot.ok { background:var(--ok); }
+  .event-dot .dot.danger { background:var(--danger); }
+  .event-dot .dot.warn { background:var(--warn); }
+  .event-dot .dot.purple { background:var(--purple); }
+  .event-dot .dot.grey { background:#94a3b8; }
+  .event-dot .label { font-size:11px; font-weight:700; color:#334155; margin-top:4px; white-space:nowrap; }
+
+  .delay-bracket { position:absolute; top:34px; height:0; border-top:2px dashed var(--danger); }
+  .delay-bracket .dtext { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:11px; font-weight:700; color:var(--danger); white-space:nowrap; }
+
+  .legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:16px; font-size:12.5px; color:#334155; }
+  .legend .item { display:flex; align-items:center; gap:6px; }
+  .legend .dot { width:14px; height:14px; border-radius:50%; display:inline-block; }
+
+  footer { text-align:center; color:var(--muted); font-size:12.5px; margin-top:36px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">類型 B · Daily 單次 Trigger</span>
+  <h1>「每 30 分鐘巡檢一次」下，Daily 單次任務的各種情境</h1>
+  <p>Trigger 範例：<code>At 3:00 AM every day</code>，一天只觸發 1 次。採用與 Weekly 類型相同的設定：
+    <code>IntervalMinutes = 30</code>、<code>ToleranceMinutes = 30</code>、<code>LookbackMinutes = 90</code>，
+    判斷邏輯同樣是「以 Trigger 時間為中心的接受窗」+「時間閘門」模型。逐一檢視：正常結案、漏排告警、延遲但成功、
+    跨日邊界、多個 Daily 任務併存等情境。</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">1</span>基本設定回顧 —— Daily 單次為何比 Weekly 更單純</h2>
+    <table>
+      <tr><th>參數</th><th>設定值</th><th>對 Daily 單次的意義</th></tr>
+      <tr><td><code>IntervalMinutes</code></td><td>30</td><td>每 30 分鐘巡檢一次</td></tr>
+      <tr><td><code>ToleranceMinutes</code></td><td>30</td><td>Trigger 前後 30 分鐘算合理範圍；閘門 = Trigger + 30分</td></tr>
+      <tr><td><code>LookbackMinutes</code></td><td>90</td><td>每次巡檢用 <code>GetRunTimes(now-90分, now)</code> 抓候選。因為 Daily 每天都會產生 1 筆新的候選時間點，90 分鐘視窗完全足夠涵蓋，不需要像 Weekly 一樣擔心「一週才 1 筆、視窗要拉更長」的問題</td></tr>
+    </table>
+    <div class="note">
+      <strong>與 Weekly 類型的關鍵差異：</strong>Weekly Trigger 一週只產生 1 筆候選時間點，跨週邊界時容易漏抓；
+      Daily Trigger <strong>每天都會產生 1 筆新的候選</strong>，只要 Lookback（90分鐘）≥ 安全公式門檻（60分鐘），
+      同一套「查History → 查無才看閘門」的演算法完全不需要修改就能直接套用，是所有 Trigger 類型中最單純的一種。
+    </div>
+    <pre>for T in GetRunTimes(taskPath, now - 90分, now):
+    if (task, T) 已經 resolved: continue
+
+    history = GetHistory(taskPath, T - 30分, T + 30分)
+
+    if history 有找到成功或失敗紀錄:
+        下結論（成功 → 結案 / 失敗 → 告警）並標記 resolved
+    else if now >= T + 30分:
+        判定「漏排」，發出告警，並標記 resolved
+    else:
+        continue   // 閘門未開，略過，下一輪再看</pre>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>情境 1：正常執行 —— 準時觸發成功</h2>
+    <p class="sub">Trigger：每天 3:00 AM。任務準時觸發並成功。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">2:30 AM ── 3:00 AM(觸發) ── 3:30 AM（每 30 分鐘巡檢）</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:30</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">3:00</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:30</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot ok">✓</div>
+          <div class="label">3:00 AM<br>準時觸發並成功</div>
+        </div>
+        <div class="check-mark hit" style="left:95%;">
+          <div class="diamond"></div>
+          <div class="clabel">3:30 巡檢<br>GetHistory 查到成功紀錄</div>
+        </div>
+      </div>
+    </div>
+    <div class="note ok">
+      <strong>結論：</strong>3:00 巡檢當下，成功紀錄可能還沒寫入（任務剛開始跑），查不到；3:30 巡檢再查一次就能查到成功紀錄，立刻結案。
+      跟 Weekly 情境唯一的差別是：<strong>Daily 每天都會重複發生一次這個流程</strong>，不需要跨週等待。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>情境 2：漏排 —— 該執行卻沒執行</h2>
+    <p class="sub">Trigger：每天 3:00 AM。當天機器休眠 / 服務未啟動，3:00 AM 完全沒有觸發紀錄。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">2:30 AM ── 3:00 AM(應觸發) ── 3:30 AM（閘門 = 3:00+30 = 3:30）</div>
+      <div class="track" style="height:70px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:30</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">3:00</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:30</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot danger">✕</div>
+          <div class="label">3:00 AM<br>應觸發但無紀錄</div>
+        </div>
+        <div class="event-dot" style="left:52%; top:26px;">
+          <div class="dot grey">?</div>
+          <div class="label" style="color:#64748b;">3:00 巡檢<br>閘門未開(3:00&lt;3:30)<br>查無紀錄 → 略過</div>
+        </div>
+        <div class="check-mark hit" style="left:95%;">
+          <div class="diamond"></div>
+          <div class="clabel" style="color:var(--danger); font-weight:700;">3:30 巡檢<br>閘門已開(3:30≥3:30)<br>⚠ 查無紀錄→告警</div>
+        </div>
+      </div>
+    </div>
+    <div class="note danger">
+      <strong>判斷邏輯：</strong>3:00 巡檢時，<code>GetRunTimes(taskPath, 1:30,3:00)</code> 抓到候選 <code>T=3:00</code>；<code>GetHistory(taskPath, 2:30,3:30)</code> 查無紀錄；
+      閘門 <code>now(3:00) ≥ T+Tolerance(3:30)</code> 不成立 → 略過。
+      到了 3:30 巡檢，同一筆 T=3:00 再次被抓到；<code>GetHistory</code> 仍查無紀錄；這次閘門 <code>3:30 ≥ 3:30</code> 成立 → 判定漏排、發出告警，並標記 resolved。
+    </div>
+    <div class="note warn">
+      <strong>去重機制：</strong>下一次 4:00 巡檢時，即使 Lookback 視窗仍涵蓋 3:00 這筆，因為已標記 resolved 會直接跳過；直到隔天 3:00 AM 才會產生新的 key，不會每天累積重複告警。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>情境 3：延遲執行但仍成功 —— 先查到紀錄就不用等閘門</h2>
+    <p class="sub">Trigger：每天 3:00 AM。因系統剛好在跑其他排程忙碌，任務延後到 3:12 AM 才真正開始執行並成功。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">2:30 AM ── 3:00(理論) ── 3:12(實際成功) ── 3:30 AM</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:30</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">3:00</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:30</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot warn">◔</div>
+          <div class="label">3:00 AM<br>理論應觸發</div>
+        </div>
+        <div class="event-dot" style="left:63%;">
+          <div class="dot ok">✓</div>
+          <div class="label">3:12 AM<br>實際執行成功</div>
+        </div>
+        <div class="delay-bracket" style="left:52%; width:11%;">
+          <div class="dtext">12分</div>
+        </div>
+        <div class="check-mark hit" style="left:95%;">
+          <div class="diamond"></div>
+          <div class="clabel">3:30 巡檢<br>找到 3:12 執行紀錄</div>
+        </div>
+      </div>
+    </div>
+    <div class="note ok">
+      <strong>判斷邏輯：</strong>3:00 巡檢時，<code>GetHistory(taskPath, 2:30,3:30)</code> 查詢當下 3:12 這件事還沒發生，查無紀錄；閘門 <code>3:00 ≥ 3:30</code> 也不成立 → 略過。
+      到了 3:30 巡檢，<code>GetHistory(taskPath, 2:30,3:30)</code> 這次查到 3:12 AM 有一筆成功執行紀錄，落在 <code>[3:00−30分, 3:00+30分]</code> 接受窗內 → 立刻結案，<strong>不需要等閘門</strong>，也不告警。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span>情境 4：跨日邊界 —— 巡檢時間點接近午夜</h2>
+    <p class="sub">Trigger：每天 00:20 AM（凌晨剛過午夜）。巡檢在前一天 23:30、00:00、00:30 分別執行時，要能正確算出「今天凌晨」而非「昨天」的應觸發時間。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">前一天 23:30 ── 午夜 00:00 ── 00:20(觸發) ── 00:30 ── 01:00</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">23:30</div>
+        <div class="hour-tick" style="left:36%;"></div><div class="tick-label" style="left:36%;">00:00</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">00:20</div>
+        <div class="hour-tick" style="left:67%;"></div><div class="tick-label" style="left:67%;">00:30</div>
+        <div class="hour-tick" style="left:97%;"></div><div class="tick-label" style="left:97%;">01:00</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot ok">✓</div>
+          <div class="label">00:20 AM<br>準時觸發成功</div>
+        </div>
+        <div class="check-mark" style="left:36%;">
+          <div class="diamond"></div>
+          <div class="clabel">00:00 巡檢<br>GetRunTimes(前90分)<br>視窗內尚無00:20這筆</div>
+        </div>
+        <div class="check-mark hit" style="left:67%;">
+          <div class="diamond"></div>
+          <div class="clabel">00:30 巡檢<br>GetRunTimes(前90分)<br>正確抓到00:20這筆</div>
+        </div>
+      </div>
+    </div>
+    <div class="note warn">
+      <strong>容易誤判的地方：</strong>如果程式邏輯用「日曆日」切割（例如固定抓「今天 00:00 到現在」），在午夜前後容易出現「這筆算今天還是昨天」的判斷混亂，尤其當任務是「每天凌晨剛過午夜」這種貼近日界線的時間點時特別容易出錯。
+    </div>
+    <div class="note ok">
+      <strong>正確做法：</strong>同樣用<strong>以現在時間為終點、往前推 90 分鐘的滑動窄視窗</strong> —— <code>GetRunTimes(taskPath, now-90分, now)</code>，完全不依賴日曆日切割。
+      不管巡檢當下是 23:30、00:00 還是 00:30，只要視窗連續銜接，00:20 這筆必然會落在某一次巡檢視窗內，不會因為跨過午夜而漏抓或重複抓。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span>情境 5：多個 Daily 單次任務同時存在 —— 各自獨立判斷</h2>
+    <p class="sub">任務 X：每天 3:00 AM ｜ 任務 Y：每天 9:00 AM ｜ 任務 Z：每天 11:30 PM ── 全部用同一組「每 30 分鐘巡檢」處理</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">當天：00:00 ────────────────────────────────────→ 24:00</div>
+      <div class="track">
+        <div class="hour-tick" style="left:2%;"></div><div class="tick-label" style="left:2%;">00:00</div>
+        <div class="hour-tick" style="left:98%;"></div><div class="tick-label" style="left:98%;">24:00</div>
+
+        <div class="event-dot" style="left:14%;">
+          <div class="dot ok">✓</div>
+          <div class="label">任務X<br>3:00 AM</div>
+        </div>
+        <div class="event-dot" style="left:40%;">
+          <div class="dot danger">✕</div>
+          <div class="label">任務Y<br>9:00 AM<br>漏排</div>
+        </div>
+        <div class="event-dot" style="left:92%;">
+          <div class="dot warn">◔</div>
+          <div class="label">任務Z<br>11:30 PM<br>延遲執行</div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:var(--ok);"></span> 任務X：準時執行，查到成功紀錄立刻結案</div>
+      <div class="item"><span class="dot" style="background:var(--danger);"></span> 任務Y：查無紀錄，等閘門開了才告警</div>
+      <div class="item"><span class="dot" style="background:var(--warn);"></span> 任務Z：延遲但查到成功紀錄，不用等閘門也不告警</div>
+    </div>
+    <div class="note">
+      <strong>重點：</strong>三個 Daily 任務的觸發時間分散在一天不同時段，但巡檢邏輯是<strong>對每一個任務、每一筆候選 Trigger 時間各自套用同一套演算法</strong>，
+      彼此互不影響，也不需要監控排程去遷就任何一個任務的時間。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">7</span>情境 6：任務被停用（Disabled）後排除在檢查之外</h2>
+    <p class="sub">任務 W 原本是每天 3:00 AM 觸發，但被人為停用（<code>Enabled = false</code>）。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">2:30 AM ── 3:00 AM(已停用，不會觸發) ── 3:30 AM</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:30</div>
+        <div class="hour-tick" style="left:52%;"></div><div class="tick-label" style="left:52%;">3:00</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:30</div>
+
+        <div class="event-dot" style="left:52%;">
+          <div class="dot grey">－</div>
+          <div class="label" style="color:#64748b;">3:00 AM<br>已停用，本來就不會觸發</div>
+        </div>
+      </div>
+    </div>
+    <div class="note ok">
+      <strong>判斷邏輯：</strong>巡檢一開始就先篩選 <code>Enabled == true</code> 的任務清單，任務 W 因為 <code>Enabled == false</code> 從一開始就不在候選清單內，
+      不會呼叫 <code>GetRunTimes</code>，自然也不會產生候選時間點、不會被誤判漏排。這一步是所有類型（Daily/Weekly/Monthly…）共通的第一道篩選，
+      避免把「使用者刻意關閉的任務」誤判為異常。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">8</span>小結：Daily 單次 vs Weekly 的差異對照</h2>
+    <table>
+      <tr><th>面向</th><th>Daily 單次（本文）</th><th>Weekly</th></tr>
+      <tr><td>候選產生頻率</td><td>每天 1 筆，天天都有新的候選需要判斷</td><td>每週只有 1 筆，跨週邊界要特別小心視窗銜接</td></tr>
+      <tr><td>Lookback 是否需要特別放大</td><td>不需要，90分鐘（滿足安全公式）即可穩定涵蓋</td><td>同樣是90分鐘即可，因為採用滑動窄視窗而非「回顧一整週」的舊模型</td></tr>
+      <tr><td>漏排確認延遲</td><td>約 30 分鐘（閘門開啟後下一輪即確認）</td><td>約 30 分鐘（機制相同）</td></tr>
+      <tr><td>核心演算法</td><td colspan="2" style="text-align:center;">完全相同 —— 查History優先，查無才看時間閘門，成功結案/失敗告警/漏排告警三選一</td></tr>
+      <tr><td>額外要注意事項</td><td>需先排除 <code>Enabled=false</code> 的任務（情境6）</td><td>需注意跨週邊界的視窗銜接（情境4）</td></tr>
+    </table>
+    <div class="note ok">
+      <strong>結論：</strong>Daily 單次是所有 Trigger 類型中最單純的一種 —— 因為每天穩定產生 1 筆候選，不需要為了「等很久才出現1筆」而特別放大 Lookback，
+      也不會有 Weekly 那種「一週一次、視窗銜接特別敏感」的問題。核心演算法（查History → 查無才看閘門）完全不需要為 Daily 類型做任何調整，
+      直接沿用同一套邏輯即可正確處理成功、失敗、漏排三種結果。
+    </div>
+  </section>
+
+</div>
+
+<footer>Windows Task Scheduler 監控設計 · 類型 B（Daily 單次）× 每30分鐘巡檢情境圖解</footer>
+
+</body>
+</html>

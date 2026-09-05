@@ -1,0 +1,64 @@
+{
+  "skill_name": "common-dotnet-framework-build",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我有一個 .NET Framework 4.8 的解決方案檔 C:\\Projects\\MyApp\\MyApp.sln，我想建置它。",
+      "expected_output": "未指定組態，直接告知使用預設 Debug 組態，跳過組態與 region 選單，執行 MSBuild。",
+      "files": [],
+      "expectations": [
+        "不列出組態選單，不等待使用者選擇",
+        "告知使用者使用預設 Debug 組態",
+        "不執行 region 偵測",
+        "直接提供 MSBuild 執行指令（含 /p:Configuration=Debug）"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "請幫我建置 D:\\Work\\Api.csproj，用 Release 組態。",
+      "expected_output": "使用者指定 Release 組態，偵測是否有 Release region variant，若有則呈現 region 選單，再執行 MSBuild。",
+      "files": [],
+      "expectations": [
+        "直接使用 Release 組態，不詢問組態選擇",
+        "掃描 *.Release.<Region>.config 檔案",
+        "若有 region variant 則以編號列表呈現給使用者選擇",
+        "MSBuild 指令格式正確（包含 /p:Configuration=Release 及 /m）"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "請建置 C:\\91APP\\NineYi.Sms\\NineYi.Sms.sln，我選擇 Debug 組態，專案裡有 AppSettings.Debug.HK.config、AppSettings.Debug.MY.config、AppSettings.Debug.PX.config 這些檔案，請問要如何處理？",
+      "expected_output": "偵測到 Debug 組態下有 HK、MY、PX 三個 region variant，以選單方式讓使用者選擇 region，並在 MSBuild 指令中加入 /p:Region=<選擇的Region>。",
+      "files": [],
+      "expectations": [
+        "提供掃描 *.Debug.<Region>.config 檔案的 PowerShell 指令",
+        "從檔名中萃取出 HK、MY、PX 並以編號列表呈現",
+        "提供「不選 region」的選項",
+        "MSBuild 指令包含 /p:Region=<選擇的Region>"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我執行 msbuild 時出現：error MSB3644: The reference assemblies for framework \".NETFramework,Version=v4.6.1\" were not found。請說明原因和解決方式。",
+      "expected_output": "識別 MSB3644 是缺少 targeting pack，說明安裝步驟（Visual Studio Installer 或下載 Developer Pack）。",
+      "files": [],
+      "expectations": [
+        "正確識別 MSB3644 是 targeting pack 缺失問題",
+        "提供安裝 .NET Framework 4.6.1 targeting pack 的具體步驟",
+        "提及可透過 Visual Studio Installer 安裝對應工作負載"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "請建置 C:\\91APP\\NineYi.Sms\\NineYi.Sms.sln，不需要指定組態。",
+      "expected_output": "未指定組態，直接使用 Debug，不呈現組態選單也不偵測 region，直接執行 MSBuild。",
+      "files": [],
+      "expectations": [
+        "不呈現組態選單",
+        "告知使用者使用預設 Debug 組態",
+        "不執行 region 偵測流程",
+        "MSBuild 指令包含 /p:Configuration=Debug"
+      ]
+    }
+  ]
+}

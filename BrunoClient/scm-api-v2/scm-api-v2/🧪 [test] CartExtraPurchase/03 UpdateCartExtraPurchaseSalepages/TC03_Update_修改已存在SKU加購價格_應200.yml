@@ -1,0 +1,54 @@
+﻿info:
+  name: TC03_Update_修改已存在SKU加購價格_應200
+  type: http
+  seq: 3
+
+meta:
+  purpose: |-
+    【正向】對 TC01 已加入活動的 SKU 發 ActionType=Update，修改 CartExtraPurchasePrice 99→199。
+    預期：200，價格成功更新。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdateCartExtraPurchaseSalepages?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "PromotionId": {{promotionId}},
+        "IsAddHistory": false,
+        "CartExtraPurchaseConditionList": [
+          {
+            "ActionType": "Update",
+            "ReachPiece": 2,
+            "ReachPrice": 0,
+            "SalepageId": 1557573,
+            "SaleProductSKUId": 2169001,
+            "CartExtraPurchasePrice": 199,
+            "Sort": 1
+          }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC-SP03 狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

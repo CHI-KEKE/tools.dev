@@ -1,0 +1,22 @@
+info:
+  name: SearchPerson
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: https://localhost:7247/api/ModelBinding/SearchPerson?firstName=a&lastName=b
+  params:
+    - name: firstName
+      value: a
+      type: query
+    - name: lastName
+      value: b
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

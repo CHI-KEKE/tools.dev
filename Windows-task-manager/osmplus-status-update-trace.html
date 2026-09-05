@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>OSMPlus 任務成功／失敗狀態更新機制 Trace</title>
+<style>
+    :root {
+        --bg: #0f1115;
+        --card-bg: #171a21;
+        --border: #2a2e37;
+        --text: #e6e8ec;
+        --muted: #9096a3;
+        --danger: #e5484d;
+        --danger-bg: rgba(229,72,77,0.12);
+        --warning: #f5a524;
+        --warning-bg: rgba(245,165,36,0.12);
+        --success: #2fbf71;
+        --success-bg: rgba(47,191,113,0.12);
+        --info: #4c9eeb;
+        --info-bg: rgba(76,158,235,0.12);
+        --accent: #7c6cf0;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: "Segoe UI", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        padding: 0 0 60px 0;
+    }
+    header {
+        padding: 48px 40px 32px;
+        background: linear-gradient(135deg, #1b1f2a 0%, #12141a 100%);
+        border-bottom: 1px solid var(--border);
+    }
+    header h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: 0.3px; }
+    header p.subtitle { margin: 0; color: var(--muted); font-size: 15px; }
+    .container { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+    section { margin-top: 40px; }
+    h2 { font-size: 20px; border-left: 4px solid var(--accent); padding-left: 12px; margin-bottom: 16px; }
+    h3 { font-size: 16px; color: var(--text); margin: 24px 0 10px; }
+    p { color: #c8cbd3; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+    code, .mono {
+        font-family: "Cascadia Code", Consolas, monospace;
+        background: #0c0d11; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; color: #ffd479; border: 1px solid #24262e;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 6px; }
+    thead th {
+        text-align: left; background: #1d2029; color: var(--muted); font-weight: 600; font-size: 12.5px;
+        text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 12px; border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    tbody td { padding: 12px 12px; border-bottom: 1px solid var(--border); vertical-align: top; color: #d7d9de; }
+    tbody tr:hover { background: #1a1d25; }
+    .badge {
+        display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px;
+        font-size: 12.5px; font-weight: 600; white-space: nowrap;
+    }
+    .badge.success { background: var(--success-bg); color: var(--success); }
+    .badge.warn { background: var(--warning-bg); color: var(--warning); }
+    .badge.danger { background: var(--danger-bg); color: var(--danger); }
+    .badge.info { background: var(--info-bg); color: var(--info); }
+    .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+    .legend .item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); }
+    .flow { display: flex; flex-direction: column; gap: 0; margin-top: 10px; }
+    .flow .step {
+        position: relative; padding: 14px 18px 14px 42px; border: 1px solid var(--border); border-radius: 8px;
+        margin-bottom: 8px; background: #14161d;
+    }
+    .flow .step::before {
+        content: attr(data-n); position: absolute; left: 12px; top: 12px; width: 20px; height: 20px; border-radius: 50%;
+        background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .flow .step .title { font-weight: 600; margin-bottom: 4px; }
+    .flow .step .desc { color: var(--muted); font-size: 13.5px; }
+    .flow .step.outcome-success { border-left: 3px solid var(--success); }
+    .flow .step.outcome-warn { border-left: 3px solid var(--warning); }
+    .flow .step.outcome-danger { border-left: 3px solid var(--danger); }
+    .note { background: var(--info-bg); border: 1px solid rgba(76,158,235,0.35); border-radius: 8px; padding: 12px 16px; font-size: 13.5px; color: #cfe4fb; margin: 14px 0; }
+    .note.warn { background: var(--warning-bg); border-color: rgba(245,165,36,0.35); color: #ffe3b0; }
+    .note.danger { background: var(--danger-bg); border-color: rgba(229,72,77,0.35); color: #ffd0d1; }
+    footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 60px; }
+    .path { color: #9fd3ff; word-break: break-all; }
+
+    /* state machine diagram */
+    .sm-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 14px 0 20px; }
+    .sm-node {
+        padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13.5px; border: 1px solid var(--border); background: #14161d;
+    }
+    .sm-node.ready { color: var(--muted); }
+    .sm-node.running { color: var(--info); border-color: rgba(76,158,235,0.4); background: var(--info-bg); }
+    .sm-node.finish { color: var(--success); border-color: rgba(47,191,113,0.4); background: var(--success-bg); }
+    .sm-node.pass { color: var(--warning); border-color: rgba(245,165,36,0.4); background: var(--warning-bg); }
+    .sm-node.error { color: var(--danger); border-color: rgba(229,72,77,0.4); background: var(--danger-bg); }
+    .sm-arrow { color: var(--muted); font-size: 16px; }
+
+    .file-ref { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="container" style="padding:0;">
+        <h1>OSMPlus 任務成功／失敗狀態更新機制 Trace</h1>
+        <p class="subtitle">依據 <code>EtlFlowControlService.cs</code> / <code>EtlFlowTaskRepository.cs</code> / <code>RunFlowById\Program.cs</code> 原始碼，完整追蹤 EtlFlowTask 與 EtlFlowTaskSlave 狀態如何被建立、更新、重試、最終落地</p>
+    </div>
+</header>
+
+<div class="container">
+
+    <section>
+        <h2>1. 兩層狀態機總覽</h2>
+        <div class="card">
+            <p>OSMPlus 的每一次 ETL Flow 執行都有 <strong>兩層物件</strong> 在追蹤狀態：<code>EtlFlowTask</code>（整個流程實例）與 <code>EtlFlowTaskSlave</code>（流程內每一個步驟）。兩者的狀態欄位分別存在 <code>EtlFlowTask_Status</code> 與 <code>EtlFlowTaskSlave_Status</code>。</p>
+
+            <h3>EtlFlowTask（整體流程）狀態機</h3>
+            <div class="sm-row">
+                <div class="sm-node ready">Ready</div>
+                <div class="sm-arrow">→</div>
+                <div class="sm-node running">Running</div>
+                <div class="sm-arrow">→</div>
+                <div class="sm-node finish">Finish</div>
+            </div>
+            <div class="sm-row">
+                <div class="sm-node running">Running</div>
+                <div class="sm-arrow">→</div>
+                <div class="sm-node pass">Pass</div>
+                <span style="color:var(--muted); font-size:13px;">（流程被步驟中途主動中斷 <code>IsStopFlowProcess</code>，非失敗）</span>
+            </div>
+            <div class="sm-row">
+                <div class="sm-node running">Running</div>
+                <div class="sm-arrow">→</div>
+                <div class="sm-node error">Error</div>
+                <span style="color:var(--muted); font-size:13px;">（任一步驟拋出例外；若重試次數未用盡會再被下一輪 Running 覆蓋）</span>
+            </div>
+
+            <h3>EtlFlowTaskSlave（單一步驟）狀態機</h3>
+            <div class="sm-row">
+                <div class="sm-node running">Running</div>
+                <div class="sm-arrow">→</div>
+                <div class="sm-node finish">Finish</div>
+                <span style="color:var(--muted); font-size:13px;">正常執行完成</span>
+            </div>
+            <div class="sm-row">
+                <div class="sm-node running">Running</div>
+                <div class="sm-arrow">→</div>
+                <div class="sm-node error">Error</div>
+                <span style="color:var(--muted); font-size:13px;">執行中拋出例外</span>
+            </div>
+            <div class="sm-row">
+                <div class="sm-node ready">（未執行）</div>
+                <div class="sm-arrow">→</div>
+                <div class="sm-node pass">Pass</div>
+                <span style="color:var(--muted); font-size:13px;">前面步驟已中斷流程，此步驟直接跳過</span>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. 正常成功路徑</h2>
+        <div class="card">
+            <div class="flow">
+                <div class="step outcome-success" data-n="1">
+                    <div class="title">進入 <code>DoProcess()</code></div>
+                    <div class="desc"><code>UpdateTaskStatusToRunning</code>：設定 <code>StartDateTime</code>、<code>ExecutionCount + 1</code>、Task 狀態 → <span class="badge info">Running</span>；同時 <code>isExecuteFlow = true</code></div>
+                </div>
+                <div class="step outcome-success" data-n="2">
+                    <div class="title">逐一走訪 TaskSlave（流程步驟）</div>
+                    <div class="desc">每個步驟開始前 <code>UpdateTaskSlaveStatusToRunning</code>，執行 Service 的 <code>DoProcess</code> 成功後 <code>UpdateTaskSlaveStatusToFinish</code>，並寫入一筆 <code>EtlFlowTaskLog</code>（狀態 Finish）</div>
+                </div>
+                <div class="step outcome-success" data-n="3">
+                    <div class="title">全部步驟跑完，且未被中斷</div>
+                    <div class="desc"><code>UpdateTaskStatusToFinish</code>：Task 狀態 → <span class="badge success">Finish</span>，寫入 Task 層 <code>EtlFlowTaskLog</code>（Finish）。<strong>這是整個 Task 判定「成功」的唯一路徑</strong></div>
+                </div>
+            </div>
+            <div class="note">
+                若中途有步驟回傳 <code>IsStopFlowProcess = true</code>（主動中斷，例如判斷本次無資料可處理），流程不算失敗：該步驟仍 Finish，其餘尚未執行的步驟會被標記為 <span class="badge warn">Pass</span>，Task 最終狀態也是 <span class="badge warn">Pass</span> 而非 Finish。
+            </div>
+            <div class="file-ref">EtlFlowControlService.cs L106-480、L949-1051</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. 失敗路徑（單一步驟拋出例外）</h2>
+        <div class="card">
+            <div class="flow">
+                <div class="step outcome-danger" data-n="1">
+                    <div class="title">TaskSlave 執行中拋出例外</div>
+                    <div class="desc">被 <code>catch (Exception ex)</code> 攔截（<code>DoProcess</code> L329），在同一個 <code>TransactionScope</code> 內同時：</div>
+                </div>
+                <div class="step outcome-danger" data-n="2">
+                    <div class="title"><code>UpdateTaskSlaveStatusToError</code></div>
+                    <div class="desc">該步驟狀態 → <span class="badge danger">Error</span>，寫入 TaskSlave 層 <code>EtlFlowTaskLog</code>（Error）</div>
+                </div>
+                <div class="step outcome-danger" data-n="3">
+                    <div class="title"><code>UpdateTaskStatusToError</code></div>
+                    <div class="desc">整個 Task 狀態 → <span class="badge danger">Error</span>，同時設定 <code>BookingDateTime = Now + RetryInterval</code>；寫入 Task 層 <code>EtlFlowTaskLog</code>（Error）</div>
+                </div>
+                <div class="step outcome-danger" data-n="4">
+                    <div class="title">組 Slack 錯誤訊息（若非 debug mode）</div>
+                    <div class="desc">內容含 <code>ex.ToString()</code> 完整 stack trace、ShopId / TaskId / ServiceName / TaskSlaveId，附上紅色色條 <code>Color = "#ff6666"</code>，呼叫對應的 Slack Webhook 告警群組</div>
+                </div>
+                <div class="step outcome-danger" data-n="5">
+                    <div class="title"><code>throw;</code></div>
+                    <div class="desc">例外原樣往外拋，交給呼叫端（<code>Program.cs</code>）的重試迴圈處理</div>
+                </div>
+            </div>
+            <div class="note danger">
+                另外兩種「還沒開始跑 TaskSlave」就失敗的情況，一樣會走 <code>UpdateTaskStatusToError</code> + <code>InsertTaskLog(Error)</code>：<br>
+                ① 該 Task 完全沒有任何 TaskSlave（<code>flowServiceTasks.Any() == false</code>）<br>
+                ② Flow 驗證失敗 <code>DoFlowValidation</code>（例如步驟間輸入輸出型別對不上）
+            </div>
+            <div class="file-ref">EtlFlowControlService.cs L161-190、L310-448</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. 外層重試機制（Program.cs <code>ExecuteFlowId</code>）</h2>
+        <div class="card">
+            <p><code>DoProcess</code> 拋出例外後，並不會直接結束，而是回到呼叫端的 <code>while(true)</code> 迴圈由它決定要不要重試：</p>
+            <div class="flow">
+                <div class="step outcome-warn" data-n="1">
+                    <div class="title">計算目前重試次數</div>
+                    <div class="desc"><code>retryCount = etlTask.ExecutionCount - 1</code>（<code>ExecutionCount</code> 在每次 <code>UpdateTaskStatusToRunning</code> 都會 +1）</div>
+                </div>
+                <div class="step outcome-warn" data-n="2">
+                    <div class="title">若 <code>retryCount &lt; ShopEtlFlow_RetryCount</code> 且非 debug mode</div>
+                    <div class="desc">Slack 通知「等待重新執行」→ <code>Thread.Sleep(RetryInterval * 1000)</code>（<strong>同一個 process 原地等待</strong>，不是靠排程器重新啟動一個新進程）→ 重新 <code>GetTask</code> 拿最新資料 → <code>continue</code> 回到迴圈頂端再次呼叫 <code>DoProcess</code></div>
+                </div>
+                <div class="step outcome-danger" data-n="3">
+                    <div class="title">若重試次數已用盡</div>
+                    <div class="desc">Slack 通知「發生錯誤」→ <code>throw;</code> 往上拋給 <code>Main</code></div>
+                </div>
+            </div>
+            <div class="note warn">
+                重點：DB 上暫時出現的 <span class="badge danger">Error</span> 狀態，只要重試次數還沒用完，下一輪 <code>DoProcess</code> 一開始就會被 <code>UpdateTaskStatusToRunning</code> 覆蓋成 <span class="badge info">Running</span>。<strong>最終狀態只會是 Finish／Pass（成功），或是耗盡重試後停在 Error（真正失敗）</strong>。
+            </div>
+            <div class="file-ref">RunFlowById\Program.cs L248-296</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>5. 最外層 Main 的兜底處理</h2>
+        <div class="card">
+            <table>
+                <thead><tr><th>情況</th><th>isExecuteFlow</th><th>是否寫 ProgramException Log</th><th>原因</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>已經進入過 <code>DoProcess</code>（哪怕馬上失敗）</td>
+                        <td><span class="badge success">true</span></td>
+                        <td><span class="badge danger">否</span></td>
+                        <td>Flow 內部已經寫過 <code>EtlFlowTaskLog</code> 且 DB 狀態已更新為 Error，不需要重複紀錄</td>
+                    </tr>
+                    <tr>
+                        <td>連 <code>DoProcess</code> 都還沒進去就例外（CLI 參數錯誤、<code>CreateFlowTask</code> 失敗、<code>GetFlowIdByOptions</code> 找不到 Flow…）</td>
+                        <td><span class="badge danger">false</span></td>
+                        <td><span class="badge success">是</span></td>
+                        <td>此時 DB 連 Task 記錄都還沒建立，只能靠 <code>WriteProgramExceptionLog</code> 寫入當日共用的 ProgramException 檔案</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="file-ref">RunFlowById\Program.cs L141-150、L204（<code>isExecuteFlow = true</code> 設定點）</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>6. 總結對照表</h2>
+        <div class="card">
+            <table>
+                <thead>
+                    <tr><th>情況</th><th>Task Status</th><th>TaskSlave Status</th><th>EtlFlowTaskLog</th><th>ProgramException Log</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>全部步驟成功</td>
+                        <td><span class="badge success">Finish</span></td>
+                        <td><span class="badge success">Finish</span></td>
+                        <td><span class="badge success">有</span>（Finish）</td>
+                        <td><span class="badge danger">否</span></td>
+                    </tr>
+                    <tr>
+                        <td>流程主動中斷（<code>IsStopFlowProcess</code>）</td>
+                        <td><span class="badge warn">Pass</span></td>
+                        <td><span class="badge warn">Pass</span>（剩餘步驟）</td>
+                        <td><span class="badge success">有</span>（Pass）</td>
+                        <td><span class="badge danger">否</span></td>
+                    </tr>
+                    <tr>
+                        <td>某步驟例外、還有重試次數</td>
+                        <td>暫時 <span class="badge danger">Error</span> → 之後被 Running 覆蓋</td>
+                        <td>暫時 <span class="badge danger">Error</span> → 之後被 Running 覆蓋</td>
+                        <td><span class="badge success">有</span>（每次重試都累加一筆 Error）</td>
+                        <td><span class="badge danger">否</span></td>
+                    </tr>
+                    <tr>
+                        <td>某步驟例外、重試用盡</td>
+                        <td><strong><span class="badge danger">最終停在 Error</span></strong></td>
+                        <td><span class="badge danger">Error</span></td>
+                        <td><span class="badge success">有</span>（Error）</td>
+                        <td><span class="badge danger">否</span></td>
+                    </tr>
+                    <tr>
+                        <td>進入 <code>DoProcess</code> 前就例外（CLI 參數／CreateFlowTask 失敗等）</td>
+                        <td>無此 Task 記錄或未建立</td>
+                        <td>無</td>
+                        <td><span class="badge danger">沒有</span></td>
+                        <td><span class="badge success">有</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>7. 關鍵程式碼參照</h2>
+        <div class="grid2">
+            <div class="card">
+                <h3>EtlFlowControlService.cs</h3>
+                <table>
+                    <thead><tr><th>方法</th><th>行號</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>DoProcess</code></td><td>106-480</td></tr>
+                        <tr><td>沒有 TaskSlave / Flow 驗證失敗</td><td>161-190</td></tr>
+                        <tr><td>單步驟例外處理（catch）</td><td>310-448</td></tr>
+                        <tr><td><code>UpdateTaskStatusToRunning/Error/Finish/Pass</code></td><td>949-986</td></tr>
+                        <tr><td><code>UpdateTaskSlaveStatusToRunning/Error/Finish/Pass</code></td><td>992-1027</td></tr>
+                        <tr><td><code>UpdateTaskStatus</code> / <code>UpdateTaskSlaveStatus</code></td><td>1034-1051</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>RunFlowById\Program.cs</h3>
+                <table>
+                    <thead><tr><th>方法</th><th>行號</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>Main</code>（最外層 catch）</td><td>141-150</td></tr>
+                        <tr><td><code>ExecuteFlowId</code>（含重試迴圈）</td><td>202-298</td></tr>
+                        <tr><td>重試判斷 / <code>Thread.Sleep</code></td><td>265-296</td></tr>
+                        <tr><td><code>WriteProgramExceptionLog</code></td><td>329-</td></tr>
+                    </tbody>
+                </table>
+                <h3 style="margin-top:20px;">EtlFlowTaskRepository.cs</h3>
+                <table>
+                    <thead><tr><th>方法</th><th>行號</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>InsertLog</code></td><td>43-71</td></tr>
+                        <tr><td><code>UpdateTask</code></td><td>77-95</td></tr>
+                        <tr><td><code>UpdateTaskSlave</code></td><td>101-118</td></tr>
+                        <tr><td><code>GetFirstToDoTask</code>（只抓 Status=Ready）</td><td>125-160</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    OSMPlus 任務成功／失敗狀態更新機制 Trace　·　依 NineYi.OsmPlus.Console 原始碼分析
+</footer>
+
+</body>
+</html>

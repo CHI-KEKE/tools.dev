@@ -1,0 +1,21 @@
+## twqa
+@host = http://cart-api-internal.qa.91dev.tw
+
+
+## variables
+@traceId = testallenlin123
+@shopId = 10230
+
+
+### Calculate Cart
+POST {{host}}/api/carts/calculate
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+
+}
+
+
+954e14fe-3130-4ca3-ac70-fef4b5cdf0d6

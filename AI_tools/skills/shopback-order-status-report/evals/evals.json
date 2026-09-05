@@ -1,0 +1,49 @@
+{
+  "skill_name": "shopback-order-status-report",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "幫我處理 ShopBack 訂單狀態匯報",
+      "expected_output": "先檢查 Python 環境，再詢問使用者提供 ShopBack 訂單報表 Excel 檔案。",
+      "files": [],
+      "expectations": [
+        "先以 powershell 確認 Python 是否已安裝",
+        "確認 pandas 與 openpyxl 套件是否可用，若缺少則執行 pip install pandas openpyxl",
+        "使用 ask_user 詢問 ShopBack 訂單報表 Excel 檔案路徑",
+        "使用 Python 讀取 Excel 中的 order_number 欄位",
+        "從 purchase_date 欄位找出最早與最晚日期，推算 StartDate 與 EndDate",
+        "產生包含所有訂單編號的 BigQuery SQL",
+        "顯示 BigQuery SQL 並請使用者至 GCP 執行查詢",
+        "使用 ask_user 詢問 BigQuery 查詢結果 CSV 檔案路徑",
+        "使用 Python 合併 CSV 與 Excel，回填 status 與 reject_reason",
+        "輸出更新後的 Excel 檔案"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "ShopBack 訂單報表回填，Excel 是 tq_process_91APP_HK_2026-03.xlsx",
+      "expected_output": "讀取指定 Excel，從 purchase_date 欄位自動計算日期範圍，產生 BQ SQL。",
+      "files": ["tq_process_91APP_HK_2026-03.xlsx"],
+      "expectations": [
+        "先確認 Python 與 pandas、openpyxl 套件已就緒",
+        "讀取 Excel 的 purchase_date 欄位，找出最早與最晚訂單日期",
+        "StartDate 設為最早訂單當月 1 日，EndDate 設為最晚訂單當月最後一日",
+        "讀取 Excel order_number 欄位並產生 BQ SQL",
+        "詢問使用者提供 BQ 查詢結果 CSV",
+        "合併後輸出 tq_process_91APP_HK_2026-03_updated.xlsx"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "BQ 結果 CSV 是 bquxjob_6704656a_19d8606eb0d.csv，幫我回填到 ShopBack 報表",
+      "expected_output": "若已知 Excel 與 CSV 路徑，直接合併並回填。",
+      "files": ["tq_process_91APP_HK_2026-03.xlsx", "bquxjob_6704656a_19d8606eb0d.csv"],
+      "expectations": [
+        "以 order_number 為 key 合併兩個檔案",
+        "BQ CSV 的 status 欄位回填至 Excel 的 status 欄位",
+        "BQ CSV 的 real_reason 欄位回填至 Excel 的 reject_reason 欄位",
+        "輸出更新後的 Excel 檔案，命名加上 _updated 後綴"
+      ]
+    }
+  ]
+}

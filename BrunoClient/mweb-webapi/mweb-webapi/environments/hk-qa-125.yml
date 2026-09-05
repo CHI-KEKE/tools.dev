@@ -1,0 +1,7 @@
+name: hk-qa-125
+color: "#CE4F3B"
+variables:
+  - name: base-url
+    value: https://usdshop.shop.qa1.hk.91dev.tw
+  - name: shopId
+    value: "125"

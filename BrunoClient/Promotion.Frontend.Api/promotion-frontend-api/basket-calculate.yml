@@ -1,0 +1,294 @@
+info:
+  name: basket-calculate
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/api/basket-calculate"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "PromotionRuleId": 0,
+        "PromotionRuleIds": [7286],
+        "PromotionRules": [
+          {
+            "Id": 7286,
+            "Type": "RewardReachPriceWithPoint2",
+            "Rule": "{\"TypeFullName\":\"NineYi.Msa.Promotion.Rule.RewardReachPriceWithPoint2\",\"Id\":7286,\"Name\":\"回饋給點測試改的結果ALLEN\",\"Enabled\":true,\"Description\":\"回饋給點測試改的結果ALLEN\",\"Since\":\"2025-06-24T17:00:00+08:00\",\"Until\":\"2025-06-28T00:00:59.997+08:00\",\"UpdatedAt\":\"2025-06-24T15:33:24.443296+08:00\",\"Cyclable\":true,\"Accumulated\":false,\"IncludedProductScopes\":[{\"ProductScopeType\":\"NineYi.Msa.Promotion.Engine.AllProductScope\"}],\"ExcludedProductScopes\":null,\"IncludeRegionScopes\":[{\"RegionScopeType\":\"NineYi.Msa.Promotion.Engine.AllCountryRegionScope\"}],\"MatchedUserScopes\":[{\"UserScopeType\":\"NineYi.Msa.Promotion.Engine.AllUserScope\"}],\"VisibleUserScopes\":[{\"UserScopeType\":\"NineYi.Msa.Promotion.Engine.AllUserScope\"}],\"MatchedSalesChannels\":31,\"VisibleSalesChannels\":31,\"IncludedLocationScopes\":[{\"LocationScopeType\":\"NineYi.Msa.Promotion.Engine.AllLocationScope\"}],\"IsLimitedAddOnsPurchaseQty\":false,\"Thresholds\":{\"AllUserScope\":{\"ReachPricePointPairs\":[{\"ReachPrice\":10.0,\"Point\":6.0}]}},\"PointUntil\":{\"UntilType\":1,\"AfterDays\":10,\"UntilYearOffset\":0,\"UntilYearMonth\":12,\"FixedDate\":\"0001-01-01T00:00:00\"}}"
+          }
+        ],
+        "CalculateDateTime": "2025-06-24T17:34:26.1891521+08:00",
+        "PromotionSourceType": 0,
+        "Shop": {
+          "Id": 0,
+          "Tags": []
+        },
+        "User": {
+          "Id": "33671",
+          "Tags": [
+            "AllUserScope",
+            "CrmShopMemberCard:24"
+          ],
+          "OuterId": "5500033674",
+          "ShopMemberCode": "zoPVY9eLYe0vnBaSGUJETA=="
+        },
+        "Shipping": {
+          "ShippingProfileTypeDef": null,
+          "ShippingAreaId": 0,
+          "CountryProfileId": 0,
+          "LocationId": 35
+        },
+        "Payment": {
+          "PayProfileTypeDef": null
+        },
+        "Channel": "InStore",
+        "CurrencyDecimalDigits": 2,
+        "SalepageSkuList": [
+           {
+            "SalepageId": 0,
+            "SkuId": 0,
+            "Price": 8,
+            "SuggestPrice": 0,
+            "Qty": 1,
+            "Flags": [],
+            "OuterId": "",
+            "Tags": null,
+            "OptionalTypeDef": "",
+            "OptionalTypeId": 0,
+            "CartExtendInfoItemGroup": 828042,
+            "CartExtendInfoItemType": "TradesOrderSlaveId",
+            "PointsPayPair": null,
+            "CartExtendInfos": [],
+            "CartId": 0
+          },
+          {
+            "SalepageId": 0,
+            "SkuId": 0,
+            "Price": 7,
+            "SuggestPrice": 0,
+            "Qty": 1,
+            "Flags": [],
+            "OuterId": "",
+            "Tags": null,
+            "OptionalTypeDef": "",
+            "OptionalTypeId": 0,
+            "CartExtendInfoItemGroup": 828040,
+            "CartExtendInfoItemType": "TradesOrderSlaveId",
+            "PointsPayPair": null,
+            "CartExtendInfos": [],
+            "CartId": 0
+          },
+          {
+            "SalepageId": 0,
+            "SkuId": 0,
+            "Price": 6,
+            "SuggestPrice": 0,
+            "Qty": 1,
+            "Flags": [],
+            "OuterId": "",
+            "Tags": null,
+            "OptionalTypeDef": "",
+            "OptionalTypeId": 0,
+            "CartExtendInfoItemGroup": 828038,
+            "CartExtendInfoItemType": "TradesOrderSlaveId",
+            "PointsPayPair": null,
+            "CartExtendInfos": [],
+            "CartId": 0
+          },
+          {
+            "SalepageId": 0,
+            "SkuId": 0,
+            "Price": -6,
+            "SuggestPrice": 0,
+            "Qty": 1,
+            "Flags": [],
+            "OuterId": "",
+            "Tags": null,
+            "OptionalTypeDef": "",
+            "OptionalTypeId": 0,
+            "CartExtendInfoItemGroup": 828037,
+            "CartExtendInfoItemType": "TradesOrderSlaveId",
+            "PointsPayPair": null,
+            "CartExtendInfos": [],
+            "CartId": 0
+          }
+        ],
+        "FeeList": [],
+        "Promotion": {
+          "Code": null,
+          "PromoCodePoolGroupId": null,
+          "SelectedDesignatePaymentPromotionId": 0
+        },
+        "CouponSetting": {
+          "MultipleRedeem": {
+            "Discount": {
+              "IsMultiple": false,
+              "Qty": 1
+            },
+            "Gift": {
+              "IsMultiple": true,
+              "Qty": 9999
+            },
+            "Shipping": {
+              "IsMultiple": false,
+              "Qty": 1
+            }
+          },
+          "CouponList": [],
+          "Options": {
+            "IsVerbose": false,
+            "IsCouponPreSelect": null,
+            "IncludeRecordDetail": true
+          },
+          "LoyaltyPoint": {
+            "CheckoutPoint": 0,
+            "CheckoutDiscountPrice": null,
+            "IsSelected": false,
+            "IsSetDiscountPrice": false,
+            "TotalPoint": 0
+          }
+        }
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  ## 11
+
+  {
+    "PromotionRuleId": 0,
+    "PromotionRuleIds": [6886],
+    "PromotionRules": [
+      {
+        "Id": 6886,
+        "Type": "RewardReachPriceWithCoupon",
+        "Rule": "{\"TypeFullName\":\"NineYi.Msa.Promotion.Rule.RewardReachPriceWithCoupon\",\"Id\":6886,\"Name\":\"純線下指定料號測typememo，滿1000可拿至300折價券，可循環\",\"Enabled\":true,\"Description\":\"\",\"Since\":\"2025-05-21T18:10:00+08:00\",\"Until\":\"2025-05-31T00:00:59.997+08:00\",\"UpdatedAt\":\"2025-05-21T17:07:43.3814021+08:00\",\"Cyclable\":true,\"Accumulated\":false,\"IncludedProductScopes\":[{\"ProductScopeType\":\"NineYi.Msa.Tagging.TagProductScope\",\"Tag\":\"Collection:f_315898464947411712\"},{\"ProductScopeType\":\"NineYi.Msa.Tagging.TagProductScope\",\"Tag\":\"OuterIdTag:6109\"}],\"ExcludedProductScopes\":null,\"IncludeRegionScopes\":[{\"RegionScopeType\":\"NineYi.Msa.Promotion.Engine.AllCountryRegionScope\"}],\"MatchedUserScopes\":[{\"UserScopeType\":\"NineYi.Msa.Promotion.Engine.AllUserScope\"}],\"VisibleUserScopes\":[{\"UserScopeType\":\"NineYi.Msa.Promotion.Engine.AllUserScope\"}],\"MatchedSalesChannels\":24,\"VisibleSalesChannels\":31,\"IncludedLocationScopes\":[{\"LocationScopeType\":\"NineYi.Msa.Promotion.Engine.AllLocationScope\"}],\"IsLimitedAddOnsPurchaseQty\":false,\"Thresholds\":{\"AllUserScope\":{\"ReachPriceCouponPairs\":[{\"ReachPrice\":1000.0,\"Coupons\":[{\"Id\":\"2287\",\"Qty\":1}]}]}}}"
+      }
+    ],
+    "CalculateDateTime": "2025-05-21T19:20:00",
+    "PromotionSourceType": 0,
+    "Shop": {
+      "Id": 0,
+      "Tags": []
+    },
+    "User": {
+      "Id": "33469",
+      "Tags": ["AllUserScope", "CrmShopMemberCard:24"],
+      "OuterId": "5300033454",
+      "ShopMemberCode": "qGfenWP9zkoJmLA5pyGZIA=="
+    },
+    "Shipping": {
+      "ShippingProfileTypeDef": null,
+      "ShippingAreaId": 0,
+      "CountryProfileId": 0,
+      "LocationId": 127
+    },
+    "Payment": {
+      "PayProfileTypeDef": null
+    },
+    "Channel": "InStore",
+    "CurrencyDecimalDigits": 2,
+    "SalepageSkuList": [
+      {
+        "SalepageId": 0,
+        "SkuId": 0,
+        "Price": 500,
+        "SuggestPrice": 0,
+        "Qty": 1,
+        "Flags": [],
+        "OuterId": "A",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 827727,
+        "CartExtendInfoItemType": "TradesOrderSlaveId",
+        "PointsPayPair": null,
+        "CartExtendInfos": [],
+        "CartId": 0
+      },
+      {
+        "SalepageId": 0,
+        "SkuId": 0,
+        "Price": 500,
+        "SuggestPrice": 0,
+        "Qty": 1,
+        "Flags": [],
+        "OuterId": "A",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 827727,
+        "CartExtendInfoItemType": "TradesOrderSlaveId",
+        "PointsPayPair": null,
+        "CartExtendInfos": [],
+        "CartId": 0
+      },
+      {
+        "SalepageId": 0,
+        "SkuId": 0,
+        "Price": 2000,
+        "SuggestPrice": 0,
+        "Qty": 1,
+        "Flags": [],
+        "OuterId": "Red",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 827726,
+        "CartExtendInfoItemType": "TradesOrderSlaveId",
+        "PointsPayPair": null,
+        "CartExtendInfos": [],
+        "CartId": 0
+      }
+    ],
+    "FeeList": [],
+    "Promotion": {
+      "Code": null,
+      "PromoCodePoolGroupId": null,
+      "SelectedDesignatePaymentPromotionId": 0
+    },
+    "CouponSetting": {
+      "MultipleRedeem": {
+        "Discount": {
+          "IsMultiple": false,
+          "Qty": 1
+        },
+        "Gift": {
+          "IsMultiple": true,
+          "Qty": 9999
+        },
+        "Shipping": {
+          "IsMultiple": false,
+          "Qty": 1
+        }
+      },
+      "CouponList": [],
+      "Options": {
+        "IsVerbose": false,
+        "IsCouponPreSelect": null,
+        "IncludeRecordDetail": true
+      },
+      "LoyaltyPoint": {
+        "CheckoutPoint": 0,
+        "CheckoutDiscountPrice": null,
+        "IsSelected": false,
+        "IsSetDiscountPrice": false,
+        "TotalPoint": 0
+      }
+    }
+  }

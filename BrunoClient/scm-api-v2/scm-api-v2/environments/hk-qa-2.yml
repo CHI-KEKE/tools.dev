@@ -1,0 +1,21 @@
+name: hk-qa-2
+color: "#CE4F3B"
+variables:
+  - name: base-url
+    value: http://api.qa1.hk.91dev.tw/scm/V2
+  - name: token
+    value: "123456782"
+  - name: timestamp
+    value: ""
+  - name: saltKey
+    value: "73073046"
+  - name: apiKey
+    value: d80f29af-e686-4a25-8b62-7dc9f4f70417
+  - name: shopId
+    value: "2"
+  - name: signature
+    value: ""
+  - name: userId
+    value: "91273"
+  - name: userName
+    value: "123456782"

@@ -1,0 +1,28 @@
+info:
+  name: promotionEngineDetail-get
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/PromotionEngine/GetPromotionEngineDetail?promotionEngineId=7594&promotionEngineTypeDef=RewardReachPriceWithCoupon&shopId=2"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  params:
+    - name: promotionEngineId
+      value: "7594"
+      type: query
+    - name: promotionEngineTypeDef
+      value: RewardReachPriceWithCoupon
+      type: query
+    - name: shopId
+      value: "2"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

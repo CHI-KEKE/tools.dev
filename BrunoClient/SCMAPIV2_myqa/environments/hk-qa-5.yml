@@ -1,0 +1,14 @@
+name: hk-qa
+variables:
+  - name: base-url
+    value: http://api.qa1.hk.91dev.tw
+  - name: token
+    value: "123456785"
+  - name: saltKey
+    value: cef96a4e
+  - name: api-key
+    value: 5bb1fda2-b54a-4bde-a484-4b9776edea1c
+  - name: timestamp
+    value: ""
+  - name: signature
+    value: ""

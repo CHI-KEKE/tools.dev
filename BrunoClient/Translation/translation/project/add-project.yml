@@ -1,0 +1,30 @@
+info:
+  name: add-project
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v3/projects"
+  body:
+    type: json
+    data: |-
+      {
+          "project": "{{project-name}}",
+          "locales":[
+            { "locale":"zh-TW" },
+            { "locale":"en-US" },
+            { "locale":"zh-HK" },
+            { "locale":"ms-MY" },
+            { "locale":"zh-CN" },
+            { "locale":"ja-JP" },
+            { "locale":"th-TH" }
+         ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

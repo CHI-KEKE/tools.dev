@@ -1,0 +1,67 @@
+﻿info:
+  name: TC02_新增第三階ExtraPurchaseRule_應200
+  type: http
+  seq: 2
+
+meta:
+  purpose: |-
+    【正向】UpdatePromotion 在原 2 階（ReachPiece=2,5）基礎上增加第三階 ReachPiece=10。
+    依賴：S01 已執行，{{promotionId}} 已設定。
+    預期：200。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "Id": {{promotionId}},
+        "ShopId": 10230,
+        "TypeDef": "CartReachPieceExtraPurchase",
+        "Name": "[TC-U02] 滿件加價購-新增第三階",
+        "StartDateTime": "2029-06-01T00:00:00.000Z",
+        "EndDateTime": "2029-06-30T23:59:59.000Z",
+        "Description": "TC-U02 新增第三階",
+        "CustomCampaignCode": "TEST",
+        "CanUseECoupon": false,
+        "IsCartExtraPurchaseThresholdEligible": true,
+        "TargetMemberTypeDef": "All",
+        "PromotionTargetRegionTypeDef": "All",
+        "IsCyclable": false,
+        "ExtraPurchaseRuleList": [
+          { "ConditionId": 1, "ReachPiece": 2, "ReachPrice": 0, "LimitQty": 10 },
+          { "ConditionId": 2, "ReachPiece": 5, "ReachPrice": 0, "LimitQty": 5 },
+          { "ConditionId": 3, "ReachPiece": 10, "ReachPrice": 0, "LimitQty": 3 }
+        ],
+        "TargetTypeDef": "SalePage",
+        "ExcludeTargetTypeDef": "None",
+        "CalculateTypeDef": "Compatible",
+        "TargetPlatformTypeList": [
+          { "Platform": "Web", "IsEnabled": true },
+          { "Platform": "AppIOS", "IsEnabled": true },
+          { "Platform": "AppAndroid", "IsEnabled": true }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC-U02 狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

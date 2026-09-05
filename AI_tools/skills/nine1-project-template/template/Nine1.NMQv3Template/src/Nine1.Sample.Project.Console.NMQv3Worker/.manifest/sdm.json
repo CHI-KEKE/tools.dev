@@ -1,0 +1,7 @@
+{
+    "ServiceId": "nine1-sample-project-console-nmqv3worker",
+    "DisplayName": "SampleProject Console NMQv3 Worker",
+    "FQDN": "Nine1.Sample.Project.Console.NMQv3Worker",
+    "InitialDate": "{{INITIAL_DATE}}",
+    "ContactEmail": "upd@91app.com"
+}

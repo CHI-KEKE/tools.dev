@@ -1,0 +1,47 @@
+info:
+  name: SubscriptionOrderAutoGenPath
+  type: http
+  seq: 15
+
+http:
+  method: POST
+  url: http://webapi.qa1.my.91dev.tw/webapi/tradesOrderV2/SubscriptionOrderAutoGen
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 7,
+        "MemberId": 1676,
+        "SalePageId": 7631,
+        "SaleProductSKUId": 9711,
+        "Qty": 1,
+        "Price": 10.000,
+        "RegularOrderId": 334,
+        "ExpectShippingDate": "2026-06-27",
+        "NextExpectShippingDate": "2026-07-04",
+        "ShippingProfileTypeDef": "Home",
+        "PayProfileType": "CreditCardOnce_Razer",
+        "ReceiverName": "tdasdasd",
+        "ReceiverMobile": "0123456899",
+        "ReceiverCountry": "Malaysia",
+        "ReceiverCountryCode": "60",
+        "ReceiverState": "Negeri Sembilan",
+        "ReceiverZipCode": "73100",
+        "ReceiverCity": "Johol",
+        "ReceiverDistrict": "",
+        "ReceiverAddress": "test",
+        "StoreId": "",
+        "StoreName": "",
+        "RegularOrderProvider": "Nine1V2",
+        "TraceId": "37946e18-7a7f-48e8-813b-04c8667e30f0",
+        "InvoiceTitle": "",
+        "InvoiceNo": "",
+        "InvoiceEmail": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

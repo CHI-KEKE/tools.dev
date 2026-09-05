@@ -1,0 +1,37 @@
+info:
+  name: match
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v2/member-collections/match"
+  headers:
+    - name: n1-market
+      value: HK
+    - name: n1-shop-id
+      value: "12"
+    - name: n1-service-cert
+      value: PromotionService
+    - name: n1-user-id
+      value: rest-client
+    - name: n1-api-scopes
+      value: member_collection.operation:read
+  body:
+    type: json
+    data: |-
+      {
+         "bundleIds":[
+            "MemberId#6878728"
+         ],
+         "collectionIds":[
+            "bcc62702-6408-4ef7-818b-44106a5b6378"
+         ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

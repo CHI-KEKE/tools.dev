@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>診斷筆記：TranslationClientLocator 靜態初始化陷阱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3ede0;
+    --paper-2:#ece3d1;
+    --paper-3:#e6dbc3;
+    --ink:#2b2620;
+    --ink-soft:#5a5040;
+    --ink-faint:#8c8168;
+    --rule:#c7b98f;
+    --rule-soft:#dcd0ac;
+
+    /* 情境色 A — 問題 / 根因 */
+    --a:#a3502a;
+    --a-deep:#7a3a1d;
+    --a-tint:#f3e3d6;
+
+    /* 情境色 B — 修復 / 驗證 */
+    --b:#2f5d50;
+    --b-deep:#1f3f36;
+    --b-tint:#e2ede8;
+
+    --serif:'Newsreader', Georgia, serif;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(1000px 500px at 10% -5%, rgba(163,80,42,0.06), transparent 60%),
+      radial-gradient(1000px 500px at 100% 10%, rgba(47,93,80,0.06), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    position:relative;
+  }
+
+  .wrap{ max-width:980px; margin:0 auto; padding:0 30px 140px; position:relative; z-index:1; }
+
+  .masthead{
+    padding:52px 0 30px;
+    border-bottom:3px double var(--rule);
+    text-align:center;
+  }
+  .masthead .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:14px;
+  }
+  .masthead h1{
+    font-size:clamp(28px,4.6vw,44px);
+    font-weight:600;
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  .masthead .sub{
+    font-style:italic;
+    color:var(--ink-soft);
+    font-size:16px;
+  }
+  .masthead .meta{
+    margin-top:18px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-faint);
+    display:flex; gap:22px; justify-content:center; flex-wrap:wrap;
+  }
+
+  section{ padding:44px 0; border-bottom:1px solid var(--rule-soft); }
+  section:last-of-type{ border-bottom:none; }
+
+  h2{
+    font-size:22px; font-weight:600; margin:0 0 6px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  h2 .no{
+    font-family:var(--mono); font-size:13px; color:var(--ink-faint); font-weight:500;
+  }
+  h3{ font-size:17px; font-weight:600; margin:26px 0 10px; }
+  p{ line-height:1.85; color:var(--ink); font-size:15.5px; }
+  p.lede{ font-size:17px; color:var(--ink-soft); }
+  ul, ol{ line-height:1.85; font-size:15.5px; padding-left:22px; }
+  li{ margin-bottom:6px; }
+  strong{ color:var(--a-deep); }
+
+  .tag{
+    display:inline-block; font-family:var(--mono); font-size:11px;
+    letter-spacing:0.05em; padding:3px 9px; border-radius:3px;
+    margin-bottom:14px;
+  }
+  .tag.a{ background:var(--a-tint); color:var(--a-deep); }
+  .tag.b{ background:var(--b-tint); color:var(--b-deep); }
+
+  .card{
+    background:var(--paper-2);
+    border:1px solid var(--rule-soft);
+    border-radius:6px;
+    padding:20px 24px;
+    margin:18px 0;
+  }
+  .card.warn{ border-left:4px solid var(--a); }
+  .card.ok{ border-left:4px solid var(--b); }
+
+  pre{
+    background:#20201c; color:#eae3cf; font-family:var(--mono); font-size:13px;
+    padding:18px 20px; border-radius:6px; overflow-x:auto; line-height:1.6;
+    margin:14px 0;
+  }
+  code{
+    font-family:var(--mono); font-size:0.92em;
+    background:var(--paper-3); padding:1px 6px; border-radius:3px;
+  }
+  pre code{ background:none; padding:0; }
+
+  table{
+    width:100%; border-collapse:collapse; margin:16px 0; font-size:14.5px;
+  }
+  th, td{
+    text-align:left; padding:9px 12px; border-bottom:1px solid var(--rule-soft);
+  }
+  th{ font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-faint); }
+  td.num{ font-family:var(--mono); text-align:right; }
+  td.pass{ color:var(--b-deep); font-weight:600; }
+
+  .timeline{ position:relative; padding-left:26px; margin:20px 0; }
+  .timeline::before{
+    content:""; position:absolute; left:6px; top:4px; bottom:4px; width:2px; background:var(--rule);
+  }
+  .timeline .step{ position:relative; margin-bottom:22px; }
+  .timeline .step::before{
+    content:""; position:absolute; left:-26px; top:4px; width:11px; height:11px; border-radius:50%;
+    background:var(--paper); border:2px solid var(--a); box-sizing:border-box;
+  }
+  .timeline .step.ok::before{ border-color:var(--b); }
+  .timeline .step .t{ font-weight:600; margin-bottom:3px; }
+
+  .filelist{ font-family:var(--mono); font-size:13.5px; }
+  .filelist li{ list-style:none; padding:4px 0 4px 22px; position:relative; }
+  .filelist li::before{ content:"›"; position:absolute; left:2px; color:var(--ink-faint); }
+
+  footer{
+    text-align:center; padding:40px 0 10px; color:var(--ink-faint);
+    font-family:var(--mono); font-size:11.5px; letter-spacing:0.05em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Root Cause Analysis · NineYi.Sms</div>
+    <h1>單元測試診斷記錄</h1>
+    <div class="sub">TranslationClientLocator 靜態初始化陷阱，如何讓三支毫不相干的測試同時 FAIL</div>
+    <div class="meta">
+      <span>專案：NineYi.Sms.BL.Services.Test</span>
+      <span>測試框架：xUnit + NSubstitute</span>
+      <span>日期：2026-08</span>
+    </div>
+  </div>
+
+  <section>
+    <span class="tag a">問題現象</span>
+    <h2><span class="no">01</span> Cake Test With Coverage 出現 3 個 [FAIL]</h2>
+    <p class="lede">
+      在 <code>NineYi.Sms.BL.Services.Test</code> 專案的一次完整測試執行中，出現 3 個看似毫無關聯的測試失敗，
+      皆拋出相同型態的例外：
+    </p>
+    <pre><code>System.TypeInitializationException :
+  The type initializer for 'NineYi.Sms.Utilities.Extensions.CacheExtensions' threw an exception.
+---- System.NullReferenceException : ITranslationClient instance is null.</code></pre>
+    <div class="card warn">
+      <strong>失敗清單：</strong>
+      <ul>
+        <li><code>JooiiPromotionServiceTest.GetJooiiSettings_ShouldReturnDefaultResult_WhenSettingsAreNull</code></li>
+        <li><code>UserPermissionServiceTest.Test_DeleteUser_Success</code></li>
+        <li><code>NotificationServiceTest.Test_NotificationService_Create_Success</code></li>
+      </ul>
+    </div>
+    <p>
+      表面上這三個測試分屬 Jooii AI 行銷、使用者權限、推播通知三個完全不同的業務模組，
+      彼此的 Service、Repository、Mock 都沒有交集，卻在同一次測試執行中「集體陣亡」，這是最初讓人困惑的地方。
+    </p>
+  </section>
+
+  <section>
+    <span class="tag a">根因分析</span>
+    <h2><span class="no">02</span> .NET 型別初始化的「一次失敗、永久損毀」語意</h2>
+    <p>
+      追蹤 <code>CacheExtensions.cs</code> 原始碼後發現關鍵：
+    </p>
+    <pre><code>public static class CacheExtensions
+{
+    private static bool _isCacheWithLocale;
+
+    // 靜態欄位初始化：型別第一次被觸及時就會執行
+    private static ITranslationClient _translationClient = TranslationClientLocator.GetInstance();
+
+    static CacheExtensions() { /* ... */ }
+
+    public static string AppendLocale(this string src) { /* 使用 _translationClient */ }
+}</code></pre>
+    <p>
+      同樣的模式也出現在多語系自動產生的類別中，例如 <code>Backend.Validators.SalePages</code>：
+    </p>
+    <pre><code>private static readonly ITranslationClient _TranslationClient = TranslationClientLocator.GetInstance();</code></pre>
+    <div class="card warn">
+      <strong>關鍵機制：</strong>
+      C# 的靜態建構式 / 靜態欄位初始化在同一個 AppDomain（也就是一次測試執行的 process）中<strong>只會執行一次</strong>。
+      若第一次觸及該型別時 <code>TranslationClientLocator.GetInstance()</code> 回傳 <code>null</code>（尚未 <code>Register</code>），
+      CLR 會拋出 <code>TypeInitializationException</code>，並將該型別狀態<strong>永久標記為初始化失敗</strong>。
+      之後任何程式碼——即使已經正確完成 mock 設定——只要再次存取這個型別，都會直接收到同一個被快取住的例外，不會重新嘗試初始化。
+    </div>
+    <h3>為什麼會「一顆老鼠屎壞了一鍋粥」</h3>
+    <p>
+      本專案的慣例是在每個測試類別建構子呼叫共用工具 <code>CommonMocks.MockTranslationClientGetString()</code>，
+      內部會呼叫 <code>TranslationClientLocator.Register(mockedClient)</code> 先行注入一個 NSubstitute 假物件：
+    </p>
+    <pre><code>public sealed class CommonMocks
+{
+    private CommonMocks()
+    {
+        var mockedTranslationClient = Substitute.For&lt;ITranslationClient&gt;();
+        mockedTranslationClient
+            .GetString(Arg.Any&lt;string&gt;(), Arg.Any&lt;string&gt;(), Arg.Any&lt;string&gt;())
+            .Returns(x =&gt; x.Args()[1]); // 回傳 key 本身，而非真正翻譯字串
+        mockedTranslationClient.GetLocale().Returns("zh-TW");
+        TranslationClientLocator.Register(mockedTranslationClient);
+    }
+
+    public static void MockTranslationClientGetString()
+    {
+        if (_instance != null) return;
+        lock (Root) { _instance = new CommonMocks(); }
+    }
+}</code></pre>
+    <p>
+      問題在於：<strong><code>JooiiPromotionServiceTest.cs</code></strong> 與 <strong><code>StockServiceTest.cs</code></strong>
+      這兩個測試類別的建構子都<strong>漏掉了這一行呼叫</strong>（本專案其餘 180 餘個測試檔案都有）。
+      當 xUnit 依測試發現順序執行到這兩個類別、且是「本次 process 中第一個」觸及 <code>CacheExtensions</code> 或
+      <code>Backend.Validators.SalePages</code> 的測試時，就會讓該型別初始化失敗並被永久快取，
+      連帶拖累同一個 process 內、之後才執行、原本設定正確的其他測試。
+    </p>
+  </section>
+
+  <section>
+    <span class="tag a">為什麼需要多語系服務</span>
+    <h2><span class="no">03</span> 例外訊息 / 快取 Key 本身就是多語系文案</h2>
+    <p>
+      這些 Service 之所以在單元測試中也需要 <code>ITranslationClient</code>，是因為 production 邏輯把多語系當成一般字串在使用，而不只是畫面顯示：
+    </p>
+    <ul>
+      <li>
+        <code>CacheExtensions.AppendLocale()</code> — 快取 Key 需要加上目前語系（<code>GetLocale()</code>），確保不同語系不會共用到錯誤的快取內容。
+      </li>
+      <li>
+        <code>StockService.UpdateSafetyStockDefault()</code> — 驗證失敗時的例外訊息，是直接用
+        <code>Translations.Backend.Validators.SalePages.CanBeInput1ToX</code> 組出來的（「請輸入 1 ~ {0} 之間的數量」），
+        而不是寫死的字串常數。
+      </li>
+    </ul>
+    <p>
+      測試斷言（<code>Assert.Equal</code>）會拿「production 呼叫同一個多語系 API 組出的訊息」來比對，
+      因此測試環境必須先用 <code>CommonMocks</code> 把 <code>ITranslationClient</code> mock 起來，
+      讓 <code>GetString</code> 有一個可預期、不依賴外部翻譯伺服器的回傳值（實際上是直接回傳 <code>key</code> 本身），
+      測試才能在離線環境下穩定、可重現地驗證邏輯。
+    </p>
+  </section>
+
+  <section>
+    <span class="tag b">診斷與修復過程</span>
+    <h2><span class="no">04</span> 排查步驟</h2>
+    <div class="timeline">
+      <div class="step">
+        <div class="t">1. 檢視測試輸出，鎖定共同例外型態</div>
+        <p>三個 FAIL 的 Stack Trace 都指向 <code>CacheExtensions..cctor()</code> 與
+          <code>TranslationClientLocator.GetInstance()</code>，判斷這是同一根因造成的連鎖反應，而非三個獨立 bug。</p>
+      </div>
+      <div class="step">
+        <div class="t">2. 搜尋專案慣例，確認 mock 呼叫方式</div>
+        <p>以 <code>MockTranslationClientGetString</code> 為關鍵字搜尋，發現全專案 180 餘個測試檔案都有呼叫，
+          藉此比對出哪些測試檔案「漏掉了」這個慣例。</p>
+      </div>
+      <div class="step">
+        <div class="t">3. 逐一確認缺陷檔案</div>
+        <p><code>JooiiPromotionServiceTest.cs</code>（新增的 AI 行銷測試）與後續回報的
+          <code>StockServiceTest.cs</code>（安全庫存預設值測試）皆確認建構子未呼叫 <code>CommonMocks.MockTranslationClientGetString()</code>。</p>
+      </div>
+      <div class="step ok">
+        <div class="t">4. 套用一致的修復手法</div>
+        <p>在兩個測試類別的建構子最前面加入 <code>CommonMocks.MockTranslationClientGetString();</code>，
+          並補上對應的 <code>using NineYi.Sms.Translations.UnitTestTools;</code>。</p>
+      </div>
+      <div class="step ok">
+        <div class="t">5. Build + 全量測試驗證</div>
+        <p>使用 <code>xunit.console.exe</code> 分別針對受影響類別、以及整個測試專案重新執行，確認不再出現
+          <code>TypeInitializationException</code>，且無其他新增失敗。</p>
+      </div>
+    </div>
+
+    <h3>修改檔案清單</h3>
+    <ul class="filelist">
+      <li>Test/BL.Services.Test.Xunit/JooiiPromotions/JooiiPromotionServiceTest.cs</li>
+      <li>Test/BL.Services.Test.Xunit/Stock/StockServiceTest.cs</li>
+    </ul>
+    <p>修改內容皆相同：於建構子第一行加入 <code>CommonMocks.MockTranslationClientGetString();</code>，不觸碰任何業務邏輯或既有斷言。</p>
+  </section>
+
+  <section>
+    <span class="tag b">驗證結果</span>
+    <h2><span class="no">05</span> 修復後測試總覽</h2>
+    <table>
+      <thead>
+        <tr><th>測試專案</th><th class="num">Total</th><th class="num">Failed</th><th class="num">Skipped</th><th>結果</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>NineYi.Sms.BL.Services.Test</td><td class="num">1836</td><td class="num">0</td><td class="num">12</td><td class="pass">PASS</td></tr>
+        <tr><td>NineYi.Sms.Utilities.Test.Xunit</td><td class="num">47</td><td class="num">0</td><td class="num">0</td><td class="pass">PASS</td></tr>
+        <tr><td>NineYi.Sms.Validators.Test.Xunit</td><td class="num">509</td><td class="num">0</td><td class="num">0</td><td class="pass">PASS</td></tr>
+        <tr><td>NineYi.Sms.WebSite.Test.Xunit</td><td class="num">50</td><td class="num">0</td><td class="num">0</td><td class="pass">PASS</td></tr>
+      </tbody>
+    </table>
+    <div class="card ok">
+      三個原始 FAIL（Jooii、UserPermission、Notification）與後續發現的 Stock 三個案例，經修復後全數通過，
+      未產生新增失敗或警告數量增加。
+    </div>
+  </section>
+
+  <section>
+    <span class="tag b">結論與建議</span>
+    <h2><span class="no">06</span> 心得與後續預防建議</h2>
+    <ol>
+      <li>
+        <strong>症狀與根因不必然一一對應。</strong>
+        三個（後來變六個）互不相干的測試同時 FAIL，根因卻只有一個：新測試檔案漏寫一行既有慣例的 mock 呼叫。
+        關鍵在於辨識出「共同的例外型態 + 靜態初始化語意」，而不是逐一 debug 每支測試。
+      </li>
+      <li>
+        <strong>靜態欄位初始化搭配外部相依（Locator Pattern）具有隱藏風險。</strong>
+        <code>TranslationClientLocator.GetInstance()</code> 這種「型別載入時就綁死相依」的寫法，
+        會讓錯誤的影響範圍超出單一測試，波及同一 process 內所有之後執行的測試，且錯誤時機（哪個測試先跑到）帶有不確定性。
+      </li>
+      <li>
+        <strong>建議事項：</strong>
+        <ul>
+          <li>可考慮建立一個 <code>xUnit Collection Fixture / AssemblyFixture</code>，在整個測試組件載入時就統一呼叫一次
+            <code>CommonMocks.MockTranslationClientGetString()</code>，避免依賴「每個測試類別建構子都要記得寫」這種容易遺漏的慣例。</li>
+          <li>Code Review checklist 可加入一項：新增使用到 Translations 相關靜態類別 / <code>CacheExtensions</code> 的測試，
+            必須確認建構子有呼叫 <code>CommonMocks.MockTranslationClientGetString()</code>。</li>
+        </ul>
+      </li>
+    </ol>
+  </section>
+
+  <footer>NineYi.Sms · Test Diagnosis Notes · Generated 2026-08</footer>
+
+</div>
+</body>
+</html>

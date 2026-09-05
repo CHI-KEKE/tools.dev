@@ -1,0 +1,5 @@
+name: tw-qa-10230
+color: "#346AB2"
+variables:
+  - name: base-url
+    value: https://mall.qa8.91dev.tw

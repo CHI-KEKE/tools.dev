@@ -1,0 +1,27 @@
+info:
+  name: productsku-outerid-count
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/productsku-outerid-count"
+  body:
+    type: json
+    data: |-
+      {
+          "Id": 6097,
+          "ShopId": 2
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

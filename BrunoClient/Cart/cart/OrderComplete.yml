@@ -1,0 +1,37 @@
+info:
+  name: OrderComplete
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/api/Checkout/OrderComplete"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+    - name: N1-MEMBER-ID
+      value: ""
+    - name: N1-SESSION-UAUTH
+      value: ""
+    - name: N1-SESSION-AUTH
+      value: ""
+    - name: N1-SESSION-UAUTH-SAMESITE
+      value: ""
+    - name: N1-SESSION-AUTH-SAMESITE
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+        "payUniqueKey": "8ea695d0-d7f9-46a0-8d75-5c50bc228391",
+        "email": "jimchou2@91app.com",
+        "userMemo": "Hello Memo zzz",
+        "isEnableEDM": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

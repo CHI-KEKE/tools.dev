@@ -1,0 +1,135 @@
+#@url = http://localhost:5566
+#@url = https://payment-middleware-api-internal.qa1.hk.91dev.tw
+@url = http://payment-middleware-api-internal.my.91app.io
+
+@version = v1.0
+@payType = Atome
+@tgCode = abc
+
+#TW QA
+#@apiKey = 03VUuYsbCaULSTPsaJOhgMQEdlQqAP
+#@secretKey = niupRWfvCrV5rKon0Qyz78YFQYVkcm
+
+## MY_PROD_200017
+@apiKey = ecc77d1635094cf2898994bb8139b878
+@secretKey = c2bcd1223d02465089abcd995d0ea45f
+
+# HK QA
+#@apiKey = dMBB3SUGQO4TvdzNd0OFplo6ljiMwd
+#@secretKey = 8CTiTiM5TjGGvEAgTNAEZOYbqYCa0q
+
+### check
+GET {{url}}/health
+###
+
+### Request Id
+GET {{url}}/api/{{version}}/requestId
+###
+
+### Pay
+POST {{url}}/api/{{version}}/pay/{{payType}}/{{tgCode}}
+Content-Type: application/json; charset=UTF-8
+X-Secret: {{secretKey}}
+X-Key:{{apiKey}}
+
+{
+    "request_id": "MGTEST123",
+    "country": "MY",
+    "currency": "MYR",
+    "amount": 349,
+    "tg_code": "MGTEST123",
+    "device":"Mobile",
+    "platform":"iOSApp",
+    "extend_info": {
+        "mobileNumber": "+600129916207",
+        "shippingCountryCode": "MY",
+        "shippingAddress": "PT 60303, Jalan KPB 2, Kawasan Perindustrian Kg. Baru Balakong, 43300, Seri Kembangan, Selangor",
+        "shippingPostCode": "123",
+        "billingCountryCode": "MY",
+        "billingAddress": "PT 60303, Jalan KPB 2, Kawasan Perindustrian Kg. Baru Balakong, 43300, Seri Kembangan, Selangor",
+        "billingPostCode": "",
+        "items": "[{\"itemId\":\"TS01\",\"name\":\"RCBPC Imperial II 28 Inch PP Front Opener Luggage - Expandable+Security zip+TSA - 32890228\",\"quantity\":1,\"price\":349},{\"itemId\":\"TS02\",\"name\":\"Product Title2\",\"quantity\":1,\"price\":25}]",
+        "callbackUrl": "https://tw.yahoo.com",
+        "paymentResultUrl": "https://www.google.com",
+        "shopName": "LilyTest"
+    }
+}
+###
+
+### Query Payment
+POST {{url}}/api/{{version}}/QueryPayment/{{payType}}
+Content-Type: application/json; charset=UTF-8
+X-Secret: {{secretKey}}
+X-Key:{{apiKey}}
+
+{  
+    "request_id": "{{$guid}}",  
+    "country": "HK",
+    "transaction_id": "{{tgCode}}"
+}
+###
+
+@tgCode2 = TG220420A00002
+@tgCode3 = TG220420A00003
+
+### Query Payment List
+POST {{url}}/api/{{version}}/QueryPaymentList/{{payType}}
+Content-Type: application/json; charset=UTF-8
+X-Secret: {{secretKey}}
+X-Key:{{apiKey}}
+
+{
+   "request_id": "{{$guid}}",
+   "country": "HK",
+   "transactions_info": [
+      {
+         "payment_id": 1,
+         "tg_code": "{{tgCode}}",
+         "transaction_id": "{{tgCode}}"
+      },
+      {
+         "payment_id": 2,
+         "tg_code": "{{tgCode2}}",
+         "transaction_id": "{{tgCode2}}"
+      },
+      {
+         "payment_id": 3,
+         "tg_code": "{{tgCode3}}",
+         "transaction_id": "{{tgCode3}}"
+      }
+   ],
+   "extend_info": {}
+}
+###
+
+### Cancel
+POST {{url}}/api/{{version}}/Cancel/{{payType}}/{{tgCode}}
+Content-Type: application/json; charset=UTF-8
+X-Secret: {{secretKey}}
+X-Key:{{apiKey}}
+
+{ 
+   "request_id" :"{{$guid}}",
+   "transaction_id":"{{tgCode}}",
+   "extend_info": {}
+}
+###
+
+@refundRequestId = 1
+
+### Refund
+POST {{url}}/api/{{version}}/Refund/{{payType}}/{{tgCode}}
+Content-Type: application/json; charset=UTF-8
+X-Secret: {{secretKey}}
+X-Key:{{apiKey}}
+
+{
+    "request_id": "{{$guid}}",
+    "transaction_id": "{{tgCode}}",
+    "amount": 195,
+    "currency": "TWD",
+    "extend_info": {
+        "refundId": "{{refundRequestId}}"
+    }
+}
+###

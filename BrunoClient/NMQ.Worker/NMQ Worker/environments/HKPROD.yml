@@ -1,0 +1,5 @@
+name: HKPROD
+color: "#CE4F3B"
+variables:
+  - name: base-url
+    value: http://nmqv3-apimin.hk.91app.io/api/v1

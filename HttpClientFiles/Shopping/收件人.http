@@ -1,0 +1,195 @@
+
+@host = http://localhost:5566/api
+@Cookie = ai_user=H+kx0|2025-09-24T06:13:17.840Z; uAUTH_samesite=RAPgNExpXnnV/cdQRp+zkIHzQPI2jjActzimB2Tyk5DuD9Vuw/KGpF2/8ZUOFi+DDRp0I9yGFI91v1zbIWdgBvZNODms5qG242WhZZyKZQA=; gaClientId=241b2051-f85b-4a69-a8c6-0d4f8e7046b0; deviceid=a34b9334-c23d-4c29-a131-7feb55512343; GUID=60148b8e-c418-4cc3-8305-6e5d3aceaa10; _ga=GA1.6.058835b0-f3dc-4a9a-9d8f-ecd14b150df2; allowGetPrivacyInfo=true; _fbp=fb.1.1768012631882.200133521726464270; lang=zh-TW; currency=MYR; uAUTH=RAPgNExpXnnV/cdQRp+zkIHzQPI2jjActzimB2Tyk5DuD9Vuw/KGpF2/8ZUOFi+DDRp0I9yGFI91v1zbIWdgBvZNODms5qG242WhZZyKZQA=; salePageViewList=5602,6209; auth=aMnkJ5w8hxd2GZqrMvW3LqRt1xyaddt+wg2pL7FQKZWMcHRlXuBsSiSe6mk5fAaEKj+yk9K0Bg7D/gzAmwj7TPhPtM3DUJpf4LB2M3GF3zhnixt9AqGQtIMuQgsH6PxJFwqc/6rnqDbPsuVu0M4axODQtVNa3NPuj5UVtIhp8LAcYGFJ0kW8syg+J4Yynj0g3jF52eVtNZvI3ubrnD2HycT1h03TyrTVkxHA8AO3guXTxBfMu4r5RjqJn0XZWqzd6A3YdKgGHAKslCQFECR96zsusn33m/YD40+vbAioDIaFxtwoJS+rXki7w7W46hixHQUup38hnOIS6E0aBRYutnRpg0rA9QReq583aF5UL/y0ID+fP7vEbfmPjAsUsTHRAQD662RlOSW3XeIi8rkpA6v+t86iIpd+EXsFJtLgijVRa8OBdR/Bl5ZEj8V4rBSSx/EM8LJtBK6Es8293n6KLmOd/wwtWqAE3uVTGf1EA5IDax0sRp9USYnmqg8U3CVebTxDeRz8ithplKYZpPN8XgR9QkC3d5Lkum8YlJlVGlEmfmU2HiDIpH/r5ZPBhPSWUQNR8sAfPBhU8yclcYoMdmAYRDoAph54X1/XSWrHnOxdTnyrA15Ijm+btxMWFu6SUzn6ADCzUJ5Gy+3cCxiKQRfj0oOXmMcyUVw9MAL6oIsGYnm2ocg7Y39OwPNHpAdWLK8SbN0kC/6bM+WlJKoQv+71IjQFaqL/peUgFAbexjuDre6aXaSRjivoGJasNLM3b0v/wLdOPpaD0agW+qWOxthDx1xZ1fggHWTyVFge03m6tyhwO5dgvwLQOx0Rp5nbS9+pQw2r5lm2WxvNmmwfb7Bc5pfGU8Tmw4FxywzA2hKI+EydY1A8UK4aBe5F7+9q//VPFYX1tiuvj3ei2S/hmMlHXJ03ein5RkdsYpU1yHE=; auth_samesite=aMnkJ5w8hxd2GZqrMvW3LqRt1xyaddt+wg2pL7FQKZWMcHRlXuBsSiSe6mk5fAaEKj+yk9K0Bg7D/gzAmwj7TPhPtM3DUJpf4LB2M3GF3zhnixt9AqGQtIMuQgsH6PxJFwqc/6rnqDbPsuVu0M4axODQtVNa3NPuj5UVtIhp8LAcYGFJ0kW8syg+J4Yynj0g3jF52eVtNZvI3ubrnD2HycT1h03TyrTVkxHA8AO3guXTxBfMu4r5RjqJn0XZWqzd6A3YdKgGHAKslCQFECR96zsusn33m/YD40+vbAioDIaFxtwoJS+rXki7w7W46hixHQUup38hnOIS6E0aBRYutnRpg0rA9QReq583aF5UL/y0ID+fP7vEbfmPjAsUsTHRAQD662RlOSW3XeIi8rkpA6v+t86iIpd+EXsFJtLgijVRa8OBdR/Bl5ZEj8V4rBSSx/EM8LJtBK6Es8293n6KLmOd/wwtWqAE3uVTGf1EA5IDax0sRp9USYnmqg8U3CVebTxDeRz8ithplKYZpPN8XgR9QkC3d5Lkum8YlJlVGlEmfmU2HiDIpH/r5ZPBhPSWUQNR8sAfPBhU8yclcYoMdmAYRDoAph54X1/XSWrHnOxdTnyrA15Ijm+btxMWFu6SUzn6ADCzUJ5Gy+3cCxiKQRfj0oOXmMcyUVw9MAL6oIsGYnm2ocg7Y39OwPNHpAdWLK8SbN0kC/6bM+WlJKoQv+71IjQFaqL/peUgFAbexjuDre6aXaSRjivoGJasNLM3b0v/wLdOPpaD0agW+qWOxthDx1xZ1fggHWTyVFge03m6tyhwO5dgvwLQOx0Rp5nbS9+pQw2r5lm2WxvNmmwfb7Bc5pfGU8Tmw4FxywzA2hKI+EydY1A8UK4aBe5F7+9q//VPFYX1tiuvj3ei2S/hmMlHXJ03ein5RkdsYpU1yHE=; MID=5300001355; _gid=GA1.2.50297578.1768818328; _clck=1o0wrd8%5E2%5Eg2u%5E0%5E2210; SL_C_23361dd035530_SID={"61a79bbd82d029bef2eb0eebfe201ecae641c22f":{"sessionId":"nZBMqm8InsnJIYWrS-k2t","visitorId":"pj1lGNjRLcFQS4ZFS71a8"}}; __gads=ID=ff122ef4cb483dc5:T=1768874824:RT=1768874824:S=ALNI_Mbtv0ca8CkUnpg4nbsqWaLoLse33w; __gpi=UID=000011e828e48cd4:T=1768874824:RT=1768874824:S=ALNI_Ma_diubMbt99jKuBiEf0ROAi6AUvg; __eoi=ID=1bbdb658465f4d0b:T=1768874824:RT=1768874824:S=AA-AfjagpdbiWwlKdHREADAYClIT; _ga_PXC7ENYBGM=GS2.1.s1768878082$o2$g0$t1768878082$j60$l0$h0; _ga=GA1.2.1153032814.1768012217; _ga_P9SKT1T0T2=GS2.2.s1768975332$o14$g1$t1768975354$j38$l0$h0; _ga_2WFJBS7B20=GS2.1.s1768975307$o18$g1$t1768975584$j60$l0$h0; 91_FPID_v3_4_1=59ffe09510637bc8318cbeed2fa46f7a; ai_session=G0ggq|1768981298112|1768981375264.4; _ga_80Q05GNQGL=GS2.6.s1768981231$o46$g1$t1768981376$j41$l0$h0
+@traceId = testallenlin123
+@shopId = 4
+@categoryId = 3135
+
+### 新增常用收件人
+
+POST {{host}}/user/address-book-insert?lang=zh-TW&shopId=83
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+    "checkoutUniqueKey": "81b12edb-9d6d-49ca-b9b7-e44aebbf3520",
+    "shippingType": "Home",
+    "zipCode": "588605",
+    "address": "FEFEFEcccFEppp",
+    "city": "",
+    "district": "",
+    "state": "",
+    "country": "",
+    "cellPhone": "88889999",
+    "fullName": "ppppppp",
+    "shippingAreaId": 3
+}
+
+### 更新常用收件人
+
+POST {{host}}/user/address-book-update?lang=zh-TW&shopId=83
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+    "checkoutUniqueKey": "81b12edb-9d6d-49ca-b9b7-e44aebbf3520",
+    "shippingType": "Home",
+    "zipCode": "588605",
+    "address": "FEFEFEcccFEpvvvpp",
+    "city": "",
+    "district": "",
+    "state": "",
+    "country": "",
+    "cellPhone": "88889999",
+    "fullName": "ppppppp",
+    "shippingAreaId": 3
+}
+
+### 移除常用收件人
+
+POST {{host}}/user/address-book-delete?lang=zh-TW&shopId=83
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+    "checkoutUniqueKey": "81b12edb-9d6d-49ca-b9b7-e44aebbf3520",
+    "addressBookId": 950,
+    "shippingAreaId": 3
+}
+
+
+##正確 : 018946
+### delivery-set
+
+POST {{host}}/checkout/delivery-set?lang=zh-TW&shopId=83
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+    "checkoutUniqueKey": "81b12edb-9d6d-49ca-b9b7-e44aebbf3520",
+    "checkoutShippingType": {
+        "shippingProfileTypeDef": "Home",
+        "shippingAreaId": 3,
+        "deliveryTypeIdList": [
+            508
+        ]
+    },
+    "receiver": {
+        "addressBookId": 963,
+        "shippingProfileTypeDef": "Home",
+        "fullName": "ppppppp",
+        "cellPhone": "88889999",
+        "countryCode": "65",
+        "zipCode": "588605",
+        "addressDetail": "FEFEFEFEppp",
+        "city": "",
+        "state": "",
+        "district": "",
+        "country": "Singapore",
+        "countryEnglishName": null,
+        "shippingAreaId": 3,
+        "shippingAreaIdList": [
+            3,
+            159
+        ],
+        "storeId": "",
+        "storeName": "",
+        "floor": null,
+        "fullAddress": "FEFEFEFEppp Singapore 588605",
+        "note": "",
+        "latitude": null,
+        "longitude": null
+    }
+}
+
+
+# @shopId = 10230
+# @Cookie = ai_user=T22uB|2025-10-06T08:31:08.237Z; uAUTH_samesite=VwZq7/k4zIPP76WPvoXIscckWkXcbH6Bd7lDqTbgkBQcLdweRQIrgl380lyTC1v2GmV6finFQaAs/mrsc0tLzg0nUAr68H9ifV/uxp3rnEs=; _fbp=fb.1.1764829887192.388335359747575142; _gid=GA1.2.1054710274.1765510876; lang=zh-TW; GUID=f4b00915-749a-474f-ba36-960a32b1e349; gaClientId=88aa0ea0-7f47-4a0a-bb8d-6147822b16cf; deviceid=a34b9334-c23d-4c29-a131-7feb55512343; currency=TWD; __lt__cid=175f076b-ba17-42e4-a810-3f3330107a7f; _ga=GA1.5.461524625.1764829887; allowGetPrivacyInfo=true; auth=od+XMJjXjeNCLaky+2jWLxJMhdGz6OFU1MJESmMRiThWGg6W9Ho6kOAM1tk80HWhyBngJXeQ9eoky7c2uRPh/fxJ8P19U89ExNZDG4wAn2cAek1beUVvzq2isbI8f8/q7IPUwXfJqnssZc7n4A3CI0yRPSem7+whSyFQA0WrY7KAJdquujPp4wZJQKSZADBMCJMt25VAA5pjMDeHutPIjcAbQoooxO/B4jNjYp3Arv5udJNRJ0YqkccrXUHt1DXPfsarwOdF996G5JL1kzligP2ZIYXd67GX6vEcns2Kq8AVuY9nArAGFKwdyFde1jwA1UdpsSjnMMPAKj0dqWOEUM1YppBwj3dzmxto/bdQe0hOqK+S6ARl+pHVX5HwkhIcC1TwuB4/1h1U0N0ENWpX4by4HzDIoa80nHGK3vEF7YuOu9pjBuiw9jzbSX7fAACqmNa5FhAHDziFmMEoQNt1JgoDSw7FoirJVjLlpydXjy5NpZX/VaDakBAbYA/rMQf/P4kD/rHjqeZUYHjFl+2Vutm3URJ3oUMifq5IgPG5sbMnysGM/zIy8K5uhlcdG64VAu4jhZvn3RAfYJ515Fy+dHNlq7GcaFhcaqWLiq6YKCNVjm/Wap9RW4hVLlfmDBn9PhUmGxjDbpzxjYdoUyUVvlNbH8KNL196FoJGIwwNtNkVLxP1NkQrq5FiTBLbU8fPnJXh7wYddr3mQg7D7p7BBtpgrR+HyafHsMYTOeUe5ajzeZ7/rSJrQkAhGnCF5lL52QW7CPeyBXscG3pf9SDySBQv8uoeJw/K7IZlakbnOFrOGbf73j2x64bZ8NTi08h43HhE3tSmfPVXSFj0Oha4dzk6yJVjj3tcy46XHRjGkUFca8sJgiPqlCUkaOOhvYPkoYERGjE/FNCLYbp9qhzGymOy5WD6AxPwk9v5QpSbeaeyKBh94AqlM7GghFEudHRw; auth_samesite=od+XMJjXjeNCLaky+2jWLxJMhdGz6OFU1MJESmMRiThWGg6W9Ho6kOAM1tk80HWhyBngJXeQ9eoky7c2uRPh/fxJ8P19U89ExNZDG4wAn2cAek1beUVvzq2isbI8f8/q7IPUwXfJqnssZc7n4A3CI0yRPSem7+whSyFQA0WrY7KAJdquujPp4wZJQKSZADBMCJMt25VAA5pjMDeHutPIjcAbQoooxO/B4jNjYp3Arv5udJNRJ0YqkccrXUHt1DXPfsarwOdF996G5JL1kzligP2ZIYXd67GX6vEcns2Kq8AVuY9nArAGFKwdyFde1jwA1UdpsSjnMMPAKj0dqWOEUM1YppBwj3dzmxto/bdQe0hOqK+S6ARl+pHVX5HwkhIcC1TwuB4/1h1U0N0ENWpX4by4HzDIoa80nHGK3vEF7YuOu9pjBuiw9jzbSX7fAACqmNa5FhAHDziFmMEoQNt1JgoDSw7FoirJVjLlpydXjy5NpZX/VaDakBAbYA/rMQf/P4kD/rHjqeZUYHjFl+2Vutm3URJ3oUMifq5IgPG5sbMnysGM/zIy8K5uhlcdG64VAu4jhZvn3RAfYJ515Fy+dHNlq7GcaFhcaqWLiq6YKCNVjm/Wap9RW4hVLlfmDBn9PhUmGxjDbpzxjYdoUyUVvlNbH8KNL196FoJGIwwNtNkVLxP1NkQrq5FiTBLbU8fPnJXh7wYddr3mQg7D7p7BBtpgrR+HyafHsMYTOeUe5ajzeZ7/rSJrQkAhGnCF5lL52QW7CPeyBXscG3pf9SDySBQv8uoeJw/K7IZlakbnOFrOGbf73j2x64bZ8NTi08h43HhE3tSmfPVXSFj0Oha4dzk6yJVjj3tcy46XHRjGkUFca8sJgiPqlCUkaOOhvYPkoYERGjE/FNCLYbp9qhzGymOy5WD6AxPwk9v5QpSbeaeyKBh94AqlM7GghFEudHRw; MID=67007472C5; 10230:vipMemberOuterId=WEN0000819; salePageViewList=1015535; _ga=GA1.2.461524625.1764829887; _ga_P9SKT1T0T2=GS2.2.s1765584220$o14$g1$t1765585758$j60$l0$h0; _ga_2WFJBS7B20=GS2.1.s1765584202$o855$g1$t1765586315$j57$l0$h0; _clck=nwv4gr%5E2%5Eg1t%5E0%5E2172; SL_C_23361dd035530_SID={"61a79bbd82d029bef2eb0eebfe201ecae641c22f":{"sessionId":"o9SH74uFjUHQFdjOFJfqk","visitorId":"pj1lGNjRLcFQS4ZFS71a8"}}; ai_session=MdQAe|1765620501400|1765620522974.2; _clsk=1oqf3lp%5E1765620522975%5E2%5E1%5Es.clarity.ms%2Fcollect; __lt__sid=e5440813-3880ee75; 91_FPID_v3_4_1=db5c6417ae896f4dda93e1a327ae8097; ad2udid=66f10aaa921938.25089637db5c6417ae896f4dda93e1a327ae8097; ad2udid=66f10aaa921938.25089637db5c6417ae896f4dda93e1a327ae8097; ad2udid=66f10aaa921938.25089637db5c6417ae896f4dda93e1a327ae8097; ad2udid=66f10aaa921938.25089637db5c6417ae896f4dda93e1a327ae8097; ad2udid=66f10aaa921938.25089637db5c6417ae896f4dda93e1a327ae8097; _ga_EWNCQ3BY24=GS2.5.s1765620521$o2$g1$t1765620549$j32$l0$h0
+
+### area-set
+
+POST {{host}}/carts/area-set?lang=zh-TW&shopId=83
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+    "cartUniqueKey": "bd4a5833-75ea-4ce0-89bb-c47dd6a8fb0b",
+    "selectedShippingArea": {
+        "id": 3,
+        "name": "新加坡",
+        "countryId": 35,
+        "countryName": "新加坡",
+        "countryEnglishName": "Singapore",
+        "countryCode": "65",
+        "countryAliasCode": "SG",
+        "isLocal": true,
+        "defaultSelectedEnable": true,
+        "languageKey": "singapore",
+        "shippingAreaSort": 0,
+        "deliveryTypeName": null,
+        "deliveryTypeId": 0,
+        "isDisplayDeliveryType": true,
+        "subShippingAreaId": 0
+    }
+}
+
+
+
+## locationid
+
+
+
+
+### delivery-set - location
+
+POST {{host}}/checkout/delivery-set?lang=zh-TW&shopId=4
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+    "checkoutUniqueKey": "b90bf0fa-938c-4981-abae-7a7bcbf263d9",
+    "checkoutShippingType": {
+        "shippingProfileTypeDef": "LocationPickup",
+        "shippingAreaId": 140,
+        "deliveryTypeIdList": [
+            440
+        ]
+    },
+    "receiver": {
+        "addressBookId": 0,
+        "shippingProfileTypeDef": "LocationPickup",
+        "fullName": "AllenLinabczxv",
+        "cellPhone": "1789012346",
+        "countryCode": "60",
+        "zipCode": "",
+        "addressDetail": "吉打州亞羅士打tttttt",
+        "city": "",
+        "state": "",
+        "district": "",
+        "country": "Malaysia",
+        "countryEnglishName": null,
+        "shippingAreaId": 140,
+        "shippingAreaIdList": [
+            140
+        ],
+        "storeId": "253",
+        "storeName": "test",
+        "floor": null,
+        "fullAddress": null,
+        "note": null,
+        "latitude": null,
+        "longitude": null
+    }
+}

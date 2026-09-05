@@ -1,0 +1,30 @@
+info:
+  name: rule-delete
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/delete"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "Id":6537,
+          "ShopId": 2
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

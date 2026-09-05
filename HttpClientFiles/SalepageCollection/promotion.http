@@ -1,0 +1,90 @@
+### QA
+#@host=https://salepage-service-api-internal.qa.91dev.tw/
+@host=https://salepage-service-api-internal.qa1.hk.91dev.tw/
+#@host=https://salepage-service-api-internal.qa1.my.91dev.tw/
+
+### PP
+##@host=https://salepage-service-api-internal.pp.91dev.tw/
+
+### Prod
+#@host=https://salepage-service-api-internal.91app.io/
+#@host=https://salepage-service-api-internal.hk.91app.io/
+#@host=https://salepage-service-api-internal.my.91app.io/
+
+@traceId=TEST-{{$guid}}
+@shopId=2
+@collectionId=f_371602421048813312
+@promotionEngineId = 2595
+
+### 以 Shop 為單位查詢所有的 Promotions
+POST {{host}}api/promotion-salepage-collections:query
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+{
+  "pagination": {
+    "pageIndex": 0,
+    "pageSize": 10
+  }
+}
+
+
+### 取得 promotion-salepageCollections 的關聯
+GET {{host}}api/promotion-salepage-collections/{{promotionEngineId}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+### 建立 promotion-salepageCollections 的關聯
+POST {{host}}api/promotion-salepage-collections
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+{
+  "promotionEngineId": {{promotionEngineId}},
+  "validityAt": "2023-02-24T09:59:11.001Z",
+  "expiredAt": "2023-03-24T09:59:11.001Z"
+}
+
+### 設置 promotion 的所有 salepageCollection ids
+PUT {{host}}api/promotion-salepage-collections/{{promotionEngineId}}:set-collections
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+{
+  "salepageCollectionIds": [
+    "{{collectionId}}"
+  ]
+}
+
+
+### 傳入一批 salepage ids，回傳 salepage ids 分別在哪些圈選內 (FilterByPromotions)
+POST {{host}}api/salepage-collections:match
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+{
+  "salepageIds": [
+    10636996,
+    10539607,
+    10031478,
+    9997491
+  ],
+  "matchType": "FilterByPromotions",
+  "expectedPromotionsOnActiveTime": "2025-08-15T12:00:00.008Z",
+  "expectedPromotionsExtentDurationSeconds": 1800
+}
+
+### PUT 設置 promotion 的有效時間
+PUT {{host}}api/promotion-salepage-collections/{{promotionEngineId}}:update-active-time
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+{
+  "validityAt": "2023-02-24T09:59:11.001Z",
+  "expiredAt": "2023-04-24T09:59:11.001Z"
+}

@@ -1,0 +1,219 @@
+<!--
+主題：MySQL 海豚品牌風格（mysql-dolphin-style）
+適用：MySQL / 資料庫底層機制主題的知識型技術文章（事務隔離、鎖機制、索引原理等），想直接呼應 MySQL 官方品牌識別色時使用。
+不適合：事件回顧/故障排查等需要風險分級語意的文章（改用 case-file-style），非 MySQL/非資料庫主題避免濫用官方識別色。
+
+doc-* 對應變數：
+  --doc-accent:#e48e00; --doc-accent2:#f7b955; --doc-ink:#12303e; --doc-sub:#547485;
+  --doc-card:#ffffff; --doc-line:#dce7ee; --doc-bg:#f4f9fc; --doc-shadow:0 10px 30px -12px rgba(0,59,82,.18);
+  （側欄也可改用海豚藍 --doc-accent:#00618a 作為主色，橘色 #e48e00 作輔助強調色）
+
+包含區塊：
+  1. msq-hero：開場橫幅，海豚藍漸層底 + 橘色 eyebrow 標籤 + 大標題 + 說明文字 + 徽章列 + 海豚點陣點綴
+  2. msq-section-head：章節標題（圓角徽章編號 + h2），徽章可用 .accent/.teal/.violet 變化色彩區分章節分類
+  3. msq-card：白色卡片容器
+  4. msq-callout：提示框（info/warn/danger/ok 四種中性語意色，非品牌色）
+  5. msq-summary-grid + msq-box：三欄摘要卡片網格（navy/orange/teal 三種分類）
+  6. msq-flow + msq-step：橫向流程步驟
+  7. msq-steps + msq-stepcard：直向時間軸步驟卡
+  8. msq-checklist：條列核取清單
+  9. msq-evidence：案例佐證框
+  10. pre.msq-pre：深色終端機風程式碼區塊
+  11. msq-dot-divider：海豚點列分隔線
+-->
+
+<style>
+.msq{
+  display:block;
+  font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'PingFang TC','Microsoft JhengHei',sans-serif;
+  background:
+    radial-gradient(700px 400px at 92% -8%, rgba(228,142,0,.14), transparent 60%),
+    radial-gradient(900px 500px at -8% 108%, rgba(0,97,138,.12), transparent 55%),
+    #f4f9fc;
+  color:#12303e!important;
+  line-height:1.75;
+  border-radius:20px;
+  padding:1px 0 28px;
+  margin:0 0 20px;
+  overflow:hidden;
+  --ink:#12303e; --sub:#547485; --card:#ffffff; --line:#dce7ee;
+  --navy:#00618a; --navy2:#003b52; --orange:#e48e00; --orange2:#f7b955; --teal:#0d9488; --violet:#7c6cf7; --danger:#e5484d;
+  --shadow:0 10px 30px -12px rgba(0,59,82,.18);
+}
+.msq *{box-sizing:border-box;}
+.msq a{color:var(--orange)!important;text-decoration:none;}
+.msq a:hover{text-decoration:underline;}
+.msq .msq-hero{padding:48px 6vw 34px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--navy2),var(--navy));}
+.msq .msq-hero::before{content:"🐬 · · · 🐬 · · · 🐬 · · · 🐬";position:absolute;top:14px;left:0;right:0;text-align:center;font-size:.9rem;opacity:.25;letter-spacing:.3em;color:#fff!important;pointer-events:none;}
+.msq .msq-eyebrow{display:inline-block;font-size:.78rem;letter-spacing:.16em;color:#fff!important;text-transform:uppercase;font-weight:700;margin-bottom:12px;background:rgba(228,142,0,.35);padding:6px 14px;border-radius:999px;}
+.msq .msq-hero h1{font-size:1.7rem;margin:0 0 12px;color:#fff!important;font-weight:800;}
+.msq .msq-hero p{color:#cfe6f0!important;max-width:700px;margin:0 auto;font-size:1rem;}
+.msq .msq-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.msq .msq-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:999px;font-size:.8rem;color:#eaf4f9!important;}
+.msq .msq-container{padding:0 5vw;}
+.msq section{margin-bottom:44px;}
+.msq .msq-section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.msq .msq-section-head .msq-chip{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;background:linear-gradient(135deg,var(--navy2),var(--navy));color:#fff!important;font-size:1rem;box-shadow:var(--shadow);}
+.msq .msq-section-head.accent .msq-chip{background:linear-gradient(135deg,#c97400,var(--orange2));}
+.msq .msq-section-head.teal .msq-chip{background:linear-gradient(135deg,#0d7a70,#5fd4c4);}
+.msq .msq-section-head.violet .msq-chip{background:linear-gradient(135deg,#7c6cf7,#a78bfa);}
+.msq .msq-section-head h2{margin:0;font-size:1.3rem;font-weight:800;color:var(--ink)!important;}
+.msq h3{font-size:1.08rem;margin:26px 0 10px;color:var(--ink)!important;border-left:4px solid var(--navy);padding-left:10px;}
+.msq p{color:var(--sub)!important;}
+.msq .msq-card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 22px;margin:14px 0;}
+.msq table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card)!important;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:14px 0 22px;font-size:.88rem;box-shadow:var(--shadow);}
+.msq thead th{background:#eaf3f8!important;color:var(--ink)!important;text-align:left;padding:13px 16px;font-weight:800;border-bottom:1px solid var(--line);}
+.msq tbody td{padding:13px 16px;border-bottom:1px solid var(--line);color:#2b4753!important;vertical-align:top;background:var(--card)!important;}
+.msq tbody tr:last-child td{border-bottom:none;}
+.msq tbody tr:hover td{background:#f3faff!important;}
+.msq tbody td strong{color:var(--ink)!important;}
+.msq tbody td code{color:#b4630a!important;}
+.msq code{font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace;background:#e9f2f7!important;color:#b4630a!important;padding:2px 7px;border-radius:6px;font-size:.88em;border:1px solid #d7e6ee;}
+.msq pre.msq-pre{background:#0d2233!important;border:none;border-radius:16px;padding:20px 22px;overflow-x:auto;margin:16px 0;position:relative;color:#e6f2f8!important;font-size:.85rem!important;line-height:1.7!important;font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace!important;white-space:pre!important;box-shadow:var(--shadow);}
+.msq pre.msq-pre::before{content:attr(data-lang);position:absolute;top:12px;right:16px;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#7fa3b8!important;font-family:'Segoe UI',sans-serif;}
+.msq .kw{color:#7fd0ff!important;} .msq .str{color:#c3e88d!important;} .msq .cm{color:#5f89a0!important;font-style:italic;} .msq .fn{color:#ffb454!important;} .msq .type{color:#f7b955!important;} .msq .num{color:#c3e88d!important;} .msq .op{color:#ff6b9d!important;}
+.msq .msq-callout{border-radius:16px;padding:18px 22px;margin:18px 0;border:1px solid transparent;display:flex;gap:14px;}
+.msq .msq-callout .msq-icon{font-size:1.3rem;flex:none;}
+.msq .msq-callout.info{background:#eff6ff;border-color:#bfdbfe;}
+.msq .msq-callout.warn{background:#fffbeb;border-color:#fde68a;}
+.msq .msq-callout.danger{background:#fef2f2;border-color:#fecaca;}
+.msq .msq-callout.ok{background:#ecfdf5;border-color:#a7f3d0;}
+.msq .msq-callout p{margin:0;font-size:.92rem;color:#2b4753!important;}
+.msq .msq-callout strong{color:var(--ink)!important;}
+.msq .msq-tag{display:inline-block;font-size:.72rem;font-weight:800;padding:3px 11px;border-radius:999px;letter-spacing:.02em;}
+.msq .msq-tag.danger{background:#fee2e2!important;color:#b91c1c!important;}
+.msq .msq-tag.ok{background:#dcfce7!important;color:#15803d!important;}
+.msq .msq-tag.warn{background:#fef3c7!important;color:#b45309!important;}
+.msq .msq-tag.info{background:#e0f2fe!important;color:#0369a1!important;}
+.msq .msq-tag.navy{background:#dceaf1!important;color:#00435c!important;}
+.msq .msq-tag.orange{background:#fdecd2!important;color:#9a5a00!important;}
+.msq .msq-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0;}
+.msq .msq-summary-grid .msq-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--navy);position:relative;overflow:hidden;}
+.msq .msq-summary-grid .msq-box.navy{border-top-color:var(--navy);}
+.msq .msq-summary-grid .msq-box.orange{border-top-color:var(--orange);}
+.msq .msq-summary-grid .msq-box.teal{border-top-color:var(--teal);}
+.msq .msq-summary-grid .msq-box h4{margin:0 0 8px;color:var(--ink)!important;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;}
+.msq .msq-summary-grid .msq-box p{margin:0;font-size:.87rem;color:var(--sub)!important;}
+@media (max-width:780px){.msq .msq-summary-grid{grid-template-columns:1fr;}}
+.msq .msq-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0;}
+.msq .msq-flow .msq-step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:.85rem;font-weight:700;color:var(--ink)!important;box-shadow:var(--shadow);}
+.msq .msq-flow .msq-step.cond{background:#fffbeb;border-color:#fde68a;color:#b45309!important;}
+.msq .msq-flow .msq-arrow{color:var(--orange)!important;font-size:1.2rem;font-weight:900;}
+.msq .msq-steps{display:flex;flex-direction:column;gap:14px;margin:16px 0 22px;}
+.msq .msq-stepcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;position:relative;padding-left:60px;box-shadow:var(--shadow);}
+.msq .msq-stepcard .msq-stepnum{position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--navy2),var(--navy));color:#fff!important;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
+.msq .msq-stepcard.cond .msq-stepnum{background:linear-gradient(135deg,#c97400,var(--orange2));}
+.msq .msq-stepcard .msq-step-title{font-weight:700;color:var(--ink)!important;font-size:1rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.msq .msq-stepcard p{margin:6px 0;font-size:.9rem;color:var(--sub)!important;}
+.msq .msq-checklist{list-style:none;padding:0;margin:16px 0;}
+.msq .msq-checklist li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);color:var(--sub)!important;}
+.msq .msq-checklist li:last-child{border-bottom:none;}
+.msq .msq-checklist li::before{content:"✓";flex:none;width:22px;height:22px;border-radius:7px;background:#dceaf1;color:#00618a!important;font-size:.75rem;display:flex;align-items:center;justify-content:center;margin-top:2px;font-weight:900;}
+.msq .msq-evidence{border:1px solid var(--line);background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px;margin:16px 0 22px;}
+.msq .msq-evidence .msq-evidence-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.msq .msq-evidence .msq-evidence-head .msq-tag{background:var(--navy2)!important;color:#fff!important;}
+.msq .msq-dot-divider{display:flex;align-items:center;gap:10px;justify-content:center;margin:36px 0;color:var(--navy)!important;}
+.msq .msq-dot-divider::before,.msq .msq-dot-divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line) 40%,var(--line) 60%,transparent);}
+.msq .msq-dot-divider span{font-size:1.1rem;}
+.msq footer{text-align:center;padding:30px 5vw 6px;color:var(--sub)!important;font-size:.82rem;border-top:1px solid var(--line);margin-top:8px;}
+</style>
+
+<div class="msq">
+<div class="msq-hero">
+<span class="msq-eyebrow">範例 · MySQL Dolphin Style</span>
+<h1>🐬 MySQL 海豚品牌風格範例</h1>
+<p>這是一份示範文章的開場橫幅說明，用來展示海豚藍漸層底、橘色強調色與白卡片陰影的整體觀感。</p>
+<div class="msq-badges">
+<span class="msq-badge">範例徽章一</span>
+<span class="msq-badge">範例徽章二</span>
+</div>
+</div>
+<div class="msq-container">
+
+<section>
+<div class="msq-section-head">
+<div class="msq-chip">01</div>
+<h2>章節標題範例</h2>
+</div>
+<p>章節說明文字，顏色使用中性藍灰 <code>--sub</code>。</p>
+
+<div class="msq-card">
+<p>這是一張白色卡片，內容可以放任何段落文字或表格。</p>
+</div>
+
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td><code>ExampleField</code></td><td>範例說明文字</td></tr>
+</tbody>
+</table>
+
+<div class="msq-callout info">
+<span class="msq-icon">💡</span>
+<p><strong>提示：</strong>這是資訊性提示框，底色為淡藍，語意色與品牌色分開使用。</p>
+</div>
+
+<div class="msq-callout warn">
+<span class="msq-icon">⚠️</span>
+<p><strong>注意：</strong>這是警示提示框，底色為淡黃。</p>
+</div>
+
+<div class="msq-summary-grid">
+<div class="msq-box navy">
+<h4>分類一</h4>
+<p>說明文字。</p>
+</div>
+<div class="msq-box orange">
+<h4>分類二</h4>
+<p>說明文字。</p>
+</div>
+<div class="msq-box teal">
+<h4>分類三</h4>
+<p>說明文字。</p>
+</div>
+</div>
+
+<div class="msq-flow">
+<div class="msq-step">開始</div>
+<div class="msq-arrow">→</div>
+<div class="msq-step cond">條件判斷</div>
+<div class="msq-arrow">→</div>
+<div class="msq-step">結束</div>
+</div>
+
+<div class="msq-steps">
+<div class="msq-stepcard">
+<div class="msq-stepnum">1</div>
+<div class="msq-step-title">步驟一標題</div>
+<p>步驟說明文字。</p>
+</div>
+<div class="msq-stepcard cond">
+<div class="msq-stepnum">2</div>
+<div class="msq-step-title">步驟二標題（條件分支）</div>
+<p>步驟說明文字。</p>
+</div>
+</div>
+
+<ul class="msq-checklist">
+<li>檢查項目一</li>
+<li>檢查項目二</li>
+</ul>
+
+<div class="msq-evidence">
+<div class="msq-evidence-head">
+<span class="msq-tag">案例</span>
+<strong>範例案例編號</strong>
+</div>
+<p>案例佐證說明文字。</p>
+</div>
+
+<div class="msq-dot-divider"><span>🐬</span></div>
+
+<pre class="msq-pre" data-lang="sql"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="type">users</span> <span class="kw">WHERE</span> id = <span class="num">1</span>; <span class="cm">-- 註解說明</span></pre>
+
+</section>
+
+<footer>整理自範例來源</footer>
+
+</div>
+</div>

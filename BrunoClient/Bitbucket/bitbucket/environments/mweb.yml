@@ -1,0 +1,4 @@
+name: mweb
+variables:
+  - name: repoName
+    value: NineYi.WebStore.MobileWebMall

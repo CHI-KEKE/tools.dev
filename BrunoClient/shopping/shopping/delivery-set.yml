@@ -1,0 +1,56 @@
+info:
+  name: delivery-set
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{base-url}}/api/Checkout/delivery-set"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+    - name: N1-HOST
+      value: "{{host}}"
+  body:
+    type: json
+    data: |-
+      {
+          "checkoutUniqueKey": "630da897-ae72-4c3e-a9bf-1406ef66b54a",
+          "checkoutShippingType": {
+              "shippingProfileTypeDef": "Home",
+              "shippingAreaId": 1,
+              "deliveryTypeIdList": [
+                  19099
+              ]
+          },
+          "receiver": {
+              "tradesOrderReceiverId": 0,
+              "addressBookId": 4796,
+              "shippingProfileTypeDef": "Home",
+              "fullName": "賴*德",
+              "cellPhone": "0912****78",
+              "countryCode": "886",
+              "zipCode": "201",
+              "addressDetail": "***蘭大道1號",
+              "city": "基隆市",
+              "state": "",
+              "district": "信義區",
+              "country": "",
+              "countryEnglishName": null,
+              "shippingAreaId": 1,
+              "storeId": "",
+              "storeName": "",
+              "floor": null,
+              "fullAddress": "基隆市信義區凱達格蘭大道1號",
+              "note": ""
+          }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

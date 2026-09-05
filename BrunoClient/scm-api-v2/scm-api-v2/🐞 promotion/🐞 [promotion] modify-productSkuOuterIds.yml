@@ -1,0 +1,37 @@
+info:
+  name: 🐞 [promotion] modify-productSkuOuterIds
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/SCM/V2/Promotion/ModifyPromotionProductSkuOuterIds?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |
+      {
+        "Id": 5949,
+        "ModifyType": "Add",
+        "ProductSkuOuterIds": [
+          "SKU123",
+          "SKU789"
+        ],
+        "ShopId": 2
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

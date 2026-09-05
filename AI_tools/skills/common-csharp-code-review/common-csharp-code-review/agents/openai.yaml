@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nine1 Code Review"
+  short_description: "Review working-tree C# changes with requirements, checklist, and Dify"
+  default_prompt: "Use $common-csharp-code-review to review working-tree C# changes against Azure DevOps Description requirements, the repository checklist, and Dify findings."

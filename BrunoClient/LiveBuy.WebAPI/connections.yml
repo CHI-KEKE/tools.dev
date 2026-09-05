@@ -1,0 +1,15 @@
+info:
+  name: connections
+  type: websocket
+  seq: 2
+
+websocket:
+  url: "{{wss-url}}?shopId={{shopId}}&liveSessionId=ls000&platformUserId=allen"
+  message:
+    type: json
+    data: "{}"
+  auth: inherit
+
+settings:
+  timeout: 0
+  keepAliveInterval: 0

@@ -1,0 +1,29 @@
+info:
+  name: refund
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/Refund/CreditCardOnce_Stripe/{{TG}}"
+  body:
+    type: json
+    data: |-
+      { 
+         "request_id" :"{{$guid}}",
+         "transaction_id":"{{transactionId}}",
+         "amount":"{{amount}}",
+         "extend_info":{ 
+            "payment_flow": "{{flow}}",
+            "stripe_account":"{{acct}}",
+            "application_fee_amount":{{application_fee_amount}},
+            "is_refund_application_fee":true
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

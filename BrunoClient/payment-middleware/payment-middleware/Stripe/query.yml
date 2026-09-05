@@ -1,0 +1,27 @@
+info:
+  name: query
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/QueryPayment/CreditCardOnce_Stripe"
+  body:
+    type: json
+    data: |-
+      {
+         "country":"{{country-code}}",
+         "request_id":"{{$guid}}",
+         "transaction_id": "{{transactionId}}",
+         "extend_info": {
+            "payment_flow": "{{flow}}",
+            "stripe_account":"{{acct}}"
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

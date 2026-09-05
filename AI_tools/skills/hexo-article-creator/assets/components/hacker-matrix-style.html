@@ -1,0 +1,239 @@
+<!--
+元件：駭客終端機風格（hacker-matrix-style）
+用途：CPU/位元運算、資安、底層系統、逆向工程、演算法拆解等技術硬核主題，想要「駭客電影 / 終端機 / Matrix 數字雨」的強烈科技感觀感時使用。
+實戰來源：Allen 提供一張「戴帽兜的數位面孔」插畫截圖（純黑底、螢光綠二進位數字雨背景、螢光綠線條勾勒的兜帽輪廓、由光點與三角形拼成的發光面孔、鏤空發光眼睛），套用在 twos-complement.md（二補數/signed overflow 主題）。
+
+視覺語言拆解：
+  - 底色是純黑或極深墨黑（`#05080a` ~ `#0b120d`），不是白底也不是一般深色卡片風，整體要有「終端機黑屏」的觀感。
+  - 主色是螢光矩陣綠（`--green` #00ff6a），搭配更亮的高對比綠 `--green-bright` 與偏暗的 `--green-dim` 做層次；所有標題、強調文字、邊框都用綠色系搭配 `text-shadow`/`box-shadow` 做出發光（glow）效果，呼應原圖線條發光的質感。
+  - 背景點綴「二進位數字雨」：用 `::before` 偽元素 + `content` 塞入多行 0/1 字串（`white-space:pre` + `\A` 換行），低透明度、等寬字、大字距，放在 hero 開場橫幅背景，呼應原圖滿版的綠色二進位瀑布。
+  - 全文字體改成等寬字（`Consolas`/`Courier New`/`SFMono-Regular`），比其他風格更強調「這是一份終端機輸出」的感覺，包含標題、內文、卡片都維持等寬字。
+  - 卡片、提示框底色是比背景略亮一階的深墨綠灰（`--card` #0d1710），邊框用半透明綠色線 + 細微 box-shadow 光暈，不用陰影營造柔和感（原圖沒有柔和陰影，是銳利發光線條）。
+  - callout 提示框仍維持中性 info/warn/danger/ok 四色語意，但背景改成深色系搭配該色系的邊框發光，不是走淺色底的糖果色。
+  - 章節標題徽章用 `>` 終端機提示符字樣（`$` 或 `#`）取代一般數字編號，強化「指令列」的感覺。
+  - 程式碼區塊維持深色終端機風，但比其他風格更貼近原生 terminal（純黑底、綠字為主、關鍵字反白/亮綠、字級略大），並在頂部加一條「視窗列」（三個圓點 + 標題列），呼應原圖兜帽的輪廓線條感。
+  - 分隔線用一整排交錯的 0/1 字元模擬數字雨墜落的效果，取代其他風格的表情符號分隔線。
+
+適用情境：
+  - CPU / 位元運算、二補數、overflow、記憶體底層機制、資安/滲透測試、逆向工程、演算法內部運作等偏「硬核工程／駭客感」的技術文章。
+  - 想要跳脫一般「柔和卡片、淺色底」風格，走強烈對比、螢光發光、終端機黑屏觀感的文章。
+
+不適合情境：
+  - 事件回顧/故障排查等需要明確「紅=急迫、琥珀=待觀察、綠=已解決」風險分級語意的文章，本風格的綠色是品牌/主題裝飾語意（呼應 Matrix 駭客感），callout 仍沿用中性四色語意但不要把主題綠誤用成「已解決」的語意，避免混淆。
+  - 溫馨/生活/品牌自然類主題（改用 `cozy-meadow-style`/`organic-glass-style`），或需要柔和閱讀體感的長篇知識型文章（改用 `warm-paper-style`），純黑螢光底長時間閱讀較傷眼，不適合輕鬆隨筆類內容。
+
+包含區塊：
+  1. hkr-hero：開場橫幅，純黑漸層底 + 二進位數字雨背景裝飾 + 綠色發光大標題 + eyebrow 終端機提示字樣 + 徽章列
+  2. hkr-section-head：章節標題（`>` 終端機提示符徽章 + h2），可用 .accent/.info/.danger 切換色彩
+  3. hkr-card：深墨綠卡片容器，半透明綠色邊框 + 微光暈
+  4. hkr-callout：提示框（info/warn/danger/ok 四種中性語意色，深色底 + 對應色邊框發光）
+  5. hkr-summary-grid + hkr-box：三欄摘要卡片網格，每張卡頂部一條發光色條
+  6. hkr-flow + hkr-step：橫向流程步驟（含 .cond 條件分支樣式與箭頭連接）
+  7. hkr-steps + hkr-stepcard：直向時間軸步驟卡（左側圓形發光編號 + 卡片說明）
+  8. hkr-checklist：條列核取清單（綠色打勾圖示）
+  9. hkr-evidence：案例佐證框（標籤 + 案例內容）
+  10. pre.hkr-pre：純黑終端機風程式碼區塊，含視窗列裝飾（語法上色 class：.kw/.str/.cm/.fn/.type/.num/.op）
+  11. hkr-rain-divider：二進位數字雨分隔線，用於長文章分隔大段落
+
+同一篇文章內若要用多個章節，`<style>` 只需在第一個出現的 tab 定義一次，之後每個 tab 直接重複使用 class 即可。
+-->
+
+<style>
+.hkr{
+  display:block;
+  font-family:Consolas,'SFMono-Regular','Courier New',Menlo,monospace;
+  background:#05080a;
+  color:#d7ffe4!important;
+  line-height:1.75;
+  border-radius:14px;
+  padding:1px 0 28px;
+  margin:0 0 20px;
+  overflow:hidden;
+  --ink:#d7ffe4; --sub:#7fdba0; --card:#0d1710; --line:rgba(0,255,106,.28);
+  --green:#00ff6a; --green-bright:#7dffb0; --green-dim:#00b34c; --danger:#ff4d5e; --warn:#ffcc33; --info:#33e0ff;
+  --glow:0 0 18px rgba(0,255,106,.22);
+}
+.hkr *{box-sizing:border-box;}
+.hkr a{color:var(--green-bright)!important;text-decoration:none;}
+.hkr a:hover{text-decoration:underline;}
+.hkr .hkr-hero{padding:50px 6vw 34px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(180deg,#050807,#0a140d 70%,#05080a);border-bottom:1px solid var(--line);}
+.hkr .hkr-hero::before{content:"01001101 01100001 01110100 01110010 01101001 01111000 00100000 01000111 01110010 01100101 01100101 01101110\A 11010010 00101101 01011010 10100101 01101001 00110101 01100101 01100100 00100000 01000011 01101111 01100100 01100101\A 01010111 01100001 01101011 01100101 00100000 01110101 01110000 00101100 00100000 01001110 01100101 01101111 00101110\A 00110010 00110000 00110011 00110101 00100000 01001111 01110110 01100101 01110010 01100110 01101100 01101111 01110111\A";white-space:pre;position:absolute;inset:0;text-align:center;font-size:.72rem;letter-spacing:.28em;line-height:2.2;color:var(--green)!important;opacity:.16;pointer-events:none;padding-top:10px;}
+.hkr .hkr-eyebrow{display:inline-block;position:relative;font-size:.76rem;letter-spacing:.14em;color:var(--green-bright)!important;text-transform:uppercase;font-weight:700;margin-bottom:14px;background:rgba(0,255,106,.08);border:1px solid var(--line);padding:5px 14px;border-radius:4px;}
+.hkr .hkr-hero h1{position:relative;font-size:1.7rem;margin:0 0 12px;color:var(--green-bright)!important;font-weight:800;text-shadow:0 0 18px rgba(0,255,106,.55),0 0 4px rgba(0,255,106,.8);}
+.hkr .hkr-hero p{position:relative;color:var(--sub)!important;max-width:700px;margin:0 auto;font-size:.98rem;}
+.hkr .hkr-badges{position:relative;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.hkr .hkr-badge{background:rgba(0,255,106,.06);border:1px solid var(--line);padding:6px 14px;border-radius:4px;font-size:.78rem;color:var(--sub)!important;}
+.hkr .hkr-container{padding:0 5vw;}
+.hkr section{margin-bottom:44px;}
+.hkr .hkr-section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.hkr .hkr-section-head .hkr-chip{flex:none;min-width:38px;height:38px;padding:0 10px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;background:rgba(0,255,106,.1);border:1px solid var(--green-dim);color:var(--green-bright)!important;font-size:.95rem;box-shadow:var(--glow);}
+.hkr .hkr-section-head.info .hkr-chip{border-color:var(--info);color:var(--info)!important;background:rgba(51,224,255,.1);}
+.hkr .hkr-section-head.danger .hkr-chip{border-color:var(--danger);color:var(--danger)!important;background:rgba(255,77,94,.1);}
+.hkr .hkr-section-head.warn .hkr-chip{border-color:var(--warn);color:var(--warn)!important;background:rgba(255,204,51,.1);}
+.hkr .hkr-section-head h2{margin:0;font-size:1.28rem;font-weight:800;color:var(--ink)!important;}
+.hkr h3{font-size:1.04rem;margin:26px 0 10px;color:var(--green-bright)!important;border-left:3px solid var(--green-dim);padding-left:10px;}
+.hkr p{color:var(--sub)!important;}
+.hkr .hkr-card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--glow);padding:18px 22px;margin:14px 0;}
+.hkr table{width:auto;max-width:100%;border-collapse:separate;border-spacing:0;background:var(--card)!important;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:14px 0 22px;font-size:.86rem;box-shadow:var(--glow);}
+.hkr thead th{background:rgba(0,255,106,.08)!important;color:var(--green-bright)!important;text-align:left;padding:12px 16px;font-weight:800;border-bottom:1px solid var(--line);}
+.hkr tbody td{padding:12px 16px;border-bottom:1px solid var(--line);color:var(--sub)!important;vertical-align:top;background:var(--card)!important;}
+.hkr tbody tr:last-child td{border-bottom:none;}
+.hkr tbody tr:hover td{background:rgba(0,255,106,.04)!important;}
+.hkr tbody td strong{color:var(--ink)!important;}
+.hkr tbody td code{color:var(--green-bright)!important;}
+.hkr code{font-family:Consolas,'SFMono-Regular','Courier New',Menlo,monospace;background:rgba(0,255,106,.1)!important;color:var(--green-bright)!important;padding:2px 7px;border-radius:5px;font-size:.88em;border:1px solid var(--line);}
+.hkr .hkr-term{background:#000000!important;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0;box-shadow:var(--glow);}
+.hkr .hkr-term-bar{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#0a0f0b;border-bottom:1px solid var(--line);}
+.hkr .hkr-term-dot{width:10px;height:10px;border-radius:50%;flex:none;background:#3a3f3a;}
+.hkr .hkr-term-dot.r{background:#ff5f56;} .hkr .hkr-term-dot.y{background:#ffbd2e;} .hkr .hkr-term-dot.g{background:#27c93f;}
+.hkr .hkr-term-title{margin-left:6px;font-size:.72rem;color:var(--sub)!important;letter-spacing:.04em;}
+.hkr pre.hkr-pre{background:#000000!important;border:none;border-radius:0;padding:18px 20px;overflow-x:auto;margin:0;color:#c8ffe0!important;font-size:.86rem!important;line-height:1.75!important;font-family:Consolas,'SFMono-Regular','Courier New',Menlo,monospace!important;white-space:pre!important;}
+.hkr .kw{color:var(--green-bright)!important;font-weight:700;} .hkr .str{color:#7dffb0!important;} .hkr .cm{color:#4f8a6a!important;font-style:italic;} .hkr .fn{color:#33e0ff!important;} .hkr .type{color:#ffcc33!important;} .hkr .num{color:#7dffb0!important;} .hkr .op{color:#ff8ad1!important;}
+.hkr .hkr-callout{border-radius:10px;padding:16px 20px;margin:18px 0;border:1px solid transparent;display:flex;gap:14px;}
+.hkr .hkr-callout .hkr-icon{font-size:1.2rem;flex:none;}
+.hkr .hkr-callout.info{background:rgba(51,224,255,.08);border-color:rgba(51,224,255,.35);}
+.hkr .hkr-callout.warn{background:rgba(255,204,51,.08);border-color:rgba(255,204,51,.35);}
+.hkr .hkr-callout.danger{background:rgba(255,77,94,.08);border-color:rgba(255,77,94,.35);}
+.hkr .hkr-callout.ok{background:rgba(0,255,106,.08);border-color:rgba(0,255,106,.35);}
+.hkr .hkr-callout p{margin:0;font-size:.92rem;color:var(--sub)!important;}
+.hkr .hkr-callout strong{color:var(--ink)!important;}
+.hkr .hkr-tag{display:inline-block;font-size:.7rem;font-weight:800;padding:3px 11px;border-radius:4px;letter-spacing:.02em;border:1px solid transparent;}
+.hkr .hkr-tag.danger{background:rgba(255,77,94,.14)!important;color:var(--danger)!important;border-color:rgba(255,77,94,.4);}
+.hkr .hkr-tag.ok{background:rgba(0,255,106,.14)!important;color:var(--green-bright)!important;border-color:rgba(0,255,106,.4);}
+.hkr .hkr-tag.warn{background:rgba(255,204,51,.14)!important;color:var(--warn)!important;border-color:rgba(255,204,51,.4);}
+.hkr .hkr-tag.info{background:rgba(51,224,255,.14)!important;color:var(--info)!important;border-color:rgba(51,224,255,.4);}
+.hkr .hkr-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0;}
+.hkr .hkr-summary-grid .hkr-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;box-shadow:var(--glow);border-top:3px solid var(--green-dim);position:relative;overflow:hidden;}
+.hkr .hkr-summary-grid .hkr-box.info{border-top-color:var(--info);}
+.hkr .hkr-summary-grid .hkr-box.danger{border-top-color:var(--danger);}
+.hkr .hkr-summary-grid .hkr-box.warn{border-top-color:var(--warn);}
+.hkr .hkr-summary-grid .hkr-box h4{margin:0 0 8px;color:var(--green-bright)!important;font-size:.84rem;text-transform:uppercase;letter-spacing:.04em;}
+.hkr .hkr-summary-grid .hkr-box p{margin:0;font-size:.86rem;color:var(--sub)!important;}
+@media (max-width:780px){.hkr .hkr-summary-grid{grid-template-columns:1fr;}}
+.hkr .hkr-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0;}
+.hkr .hkr-flow .hkr-step{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:9px 16px;font-size:.84rem;font-weight:700;color:var(--ink)!important;box-shadow:var(--glow);}
+.hkr .hkr-flow .hkr-step.cond{background:rgba(255,204,51,.08);border-color:rgba(255,204,51,.4);color:var(--warn)!important;}
+.hkr .hkr-flow .hkr-step.danger{background:rgba(255,77,94,.08);border-color:rgba(255,77,94,.4);color:var(--danger)!important;}
+.hkr .hkr-flow .hkr-arrow{color:var(--green)!important;font-size:1.2rem;font-weight:900;}
+.hkr .hkr-steps{display:flex;flex-direction:column;gap:14px;margin:16px 0 22px;}
+.hkr .hkr-stepcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px;position:relative;padding-left:60px;box-shadow:var(--glow);}
+.hkr .hkr-stepcard .hkr-stepnum{position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;background:rgba(0,255,106,.12);border:1px solid var(--green-dim);color:var(--green-bright)!important;font-weight:800;font-size:.88rem;display:flex;align-items:center;justify-content:center;}
+.hkr .hkr-stepcard.cond .hkr-stepnum{background:rgba(255,204,51,.12);border-color:var(--warn);color:var(--warn)!important;}
+.hkr .hkr-stepcard .hkr-step-title{font-weight:700;color:var(--ink)!important;font-size:.98rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.hkr .hkr-stepcard p{margin:6px 0;font-size:.88rem;color:var(--sub)!important;}
+.hkr .hkr-checklist{list-style:none;padding:0;margin:16px 0;}
+.hkr .hkr-checklist li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);color:var(--sub)!important;}
+.hkr .hkr-checklist li:last-child{border-bottom:none;}
+.hkr .hkr-checklist li::before{content:"✓";flex:none;width:22px;height:22px;border-radius:5px;background:rgba(0,255,106,.12);color:var(--green-bright)!important;font-size:.75rem;display:flex;align-items:center;justify-content:center;margin-top:2px;font-weight:900;border:1px solid var(--green-dim);}
+.hkr .hkr-evidence{border:1px solid var(--line);background:var(--card);border-radius:10px;box-shadow:var(--glow);padding:18px 20px;margin:16px 0 22px;}
+.hkr .hkr-evidence .hkr-evidence-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.hkr .hkr-evidence .hkr-evidence-head .hkr-tag{background:rgba(255,77,94,.16)!important;color:var(--danger)!important;border-color:rgba(255,77,94,.45);}
+.hkr .hkr-rain-divider{display:flex;align-items:center;gap:10px;justify-content:center;margin:36px 0;color:var(--green-dim)!important;font-size:.85rem;letter-spacing:.3em;}
+.hkr .hkr-rain-divider::before,.hkr .hkr-rain-divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line) 40%,var(--line) 60%,transparent);}
+.hkr footer{text-align:center;padding:30px 5vw 6px;color:var(--sub)!important;font-size:.8rem;border-top:1px solid var(--line);margin-top:8px;}
+</style>
+
+<div class="hkr">
+<div class="hkr-hero">
+<span class="hkr-eyebrow">root@matrix:~$ style guide</span>
+<h1>駭客終端機風格範例</h1>
+<p>這是一份示範文章的開場橫幅說明，用來展示純黑底、螢光矩陣綠與二進位數字雨背景的整體觀感。</p>
+<div class="hkr-badges">
+<span class="hkr-badge">範例徽章一</span>
+<span class="hkr-badge">範例徽章二</span>
+</div>
+</div>
+<div class="hkr-container">
+
+<section>
+<div class="hkr-section-head">
+<div class="hkr-chip">&gt;_</div>
+<h2>章節標題範例</h2>
+</div>
+<p>章節說明文字，顏色使用暗綠 <code>--sub</code>。</p>
+
+<div class="hkr-card">
+<p>這是一張深墨綠卡片，內容可以放任何段落文字或表格。</p>
+</div>
+
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td><code>ExampleField</code></td><td>範例說明文字</td></tr>
+</tbody>
+</table>
+
+<div class="hkr-callout info">
+<span class="hkr-icon">💡</span>
+<p><strong>提示：</strong>這是資訊性提示框，底色為深青，語意色與主題綠分開使用。</p>
+</div>
+
+<div class="hkr-callout danger">
+<span class="hkr-icon">🚨</span>
+<p><strong>警告：</strong>這是危險提示框，底色為深紅。</p>
+</div>
+
+<div class="hkr-summary-grid">
+<div class="hkr-box">
+<h4>分類一</h4>
+<p>說明文字。</p>
+</div>
+<div class="hkr-box info">
+<h4>分類二</h4>
+<p>說明文字。</p>
+</div>
+<div class="hkr-box danger">
+<h4>分類三</h4>
+<p>說明文字。</p>
+</div>
+</div>
+
+<div class="hkr-flow">
+<div class="hkr-step">開始</div>
+<div class="hkr-arrow">→</div>
+<div class="hkr-step cond">條件判斷</div>
+<div class="hkr-arrow">→</div>
+<div class="hkr-step">結束</div>
+</div>
+
+<div class="hkr-steps">
+<div class="hkr-stepcard">
+<div class="hkr-stepnum">1</div>
+<div class="hkr-step-title">步驟一標題</div>
+<p>步驟說明文字。</p>
+</div>
+<div class="hkr-stepcard cond">
+<div class="hkr-stepnum">2</div>
+<div class="hkr-step-title">步驟二標題（條件分支）</div>
+<p>步驟說明文字。</p>
+</div>
+</div>
+
+<ul class="hkr-checklist">
+<li>檢查項目一</li>
+<li>檢查項目二</li>
+</ul>
+
+<div class="hkr-evidence">
+<div class="hkr-evidence-head">
+<span class="hkr-tag">案例</span>
+<strong>範例案例編號</strong>
+</div>
+<p>案例佐證說明文字。</p>
+</div>
+
+<div class="hkr-rain-divider"><span>01 10 01</span></div>
+
+<div class="hkr-term">
+<div class="hkr-term-bar"><span class="hkr-term-dot r"></span><span class="hkr-term-dot y"></span><span class="hkr-term-dot g"></span><span class="hkr-term-title">example.c</span></div>
+<pre class="hkr-pre"><span class="kw">int</span> <span class="fn">main</span>() {
+<span class="kw">return</span> <span class="num">0</span>; <span class="cm">// 註解說明</span>
+}</pre>
+</div>
+
+</section>
+
+<footer>整理自範例來源</footer>
+
+</div>
+</div>

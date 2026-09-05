@@ -1,0 +1,34 @@
+name: tw-prod
+variables:
+  - name: base-url
+    value: http://pos-api.91app.io
+  - name: scm_api
+    value: https://api.91mai.com
+  - name: shop_Id
+    value: "39317"
+  - name: token
+    value: "54361439"
+  - name: api_key
+    value: 770555d7-1806-4ee8-9452-7762bc80ef7d
+  - name: salt_key
+    value: d6b55cf9
+  - name: phone
+    value: "+886955592761"
+  - name: request_id
+    value: NY0643
+  - name: machine_code
+    value: NY0643
+  - name: location_code
+    value: "0020014215"
+  - name: employee_code
+    value: LS060
+  - name: outermembercode
+    value: LS0882000002
+  - name: member_code
+    value: "5333814851"
+  - name: timestamp
+    value: "1736331178"
+  - name: signature
+    value: a44c0ba40cd241588943632cb7f6242a8ea9a8a84e9b63d5c1ff82811e0c96bf3d564f93ad8aa8d8757b6efc2a4e190b97a512c12c8d788193a8e532b7114647
+  - name: request_body
+    value: '{"OuterMemberCode":"LS0882000002","MemberCode":"5333814851","CellPhone":"+886955592761"}'

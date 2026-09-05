@@ -1,0 +1,41 @@
+info:
+  name: 🏪 [shop API] get-shipping-order
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/ShippingOrder/Get?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "ShopId": 2,
+          "ShippingOrderCode": "SO241106T00001",
+          "TSCode": "TS241028T000009"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+      "ShopId": 83,
+      "TGCode": "MG260127M00002",
+      "TMCode": "MM260127M00002",
+      "TSCode": "MS260127M000003"
+  }

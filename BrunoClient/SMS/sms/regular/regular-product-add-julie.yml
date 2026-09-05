@@ -1,0 +1,43 @@
+info:
+  name: regular-product-add-julie
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/RegularProduct/Create"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+          "title": "[allen測]ssxdd",
+          "salepageId": "67250",
+          "planDateBegin": "2026-08-12T16:00:00",
+          "planDateEnd": "2026-08-13T00:00:00",
+          "shipPeriodList": [3],
+          "shippingCountMode": "Fixed",
+          "shipLimitCount": 2,
+          "allowOneTimePurchase": false,
+          "isGiftEnabled": true,
+          "regularProductPromotionRules": [
+              {
+                  "type": "Gift",
+                  "triggerMode": "Interval",
+                  "interval": 2,
+                  "outOfStockAction": "Proceed",
+                  "regularProductPromotionGiftItemList": [
+                      { "giftTypeId": 62849, "qty": 1 }
+                  ]
+              }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

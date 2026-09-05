@@ -1,0 +1,31 @@
+info:
+  name: Get_EDA_Routing
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{base-url}}/events/routings?eventName=Internal_MemberTierCalculateFinished&jobName=PromotionRewardBatchDispatcherV2"
+  params:
+    - name: eventName
+      value: Internal_MemberTierCalculateFinished
+      type: query
+    - name: jobName
+      value: PromotionRewardBatchDispatcherV2
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## eventName
+
+  - Internal_MemberTierCalculateFinished- 
+
+  ## jobName
+
+  - PromotionRewardBatchDispatcherV2

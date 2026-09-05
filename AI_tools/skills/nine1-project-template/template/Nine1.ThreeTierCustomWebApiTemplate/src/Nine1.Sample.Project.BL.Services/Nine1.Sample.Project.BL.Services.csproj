@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(isFlatStruct)' == 'true'">
+    <ProjectReference Include="..\Nine1.Sample.Project.DA.DB\Nine1.Sample.Project.DA.DB.csproj" />
+    <ProjectReference Include="..\Nine1.Sample.Project.DA.Repositories\Nine1.Sample.Project.DA.Repositories.csproj" />
+    <ProjectReference Include="..\Nine1.Sample.Project.BL.BE\Nine1.Sample.Project.BL.BE.csproj" />
+    <ProjectReference Include="..\Nine1.Sample.Project.Common.Utils\Nine1.Sample.Project.Common.Utils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(isModuleStruct)' == 'true'">
+    <ProjectReference Include="..\Nine1.Sample.Project.BL.BE\Nine1.Sample.Project.BL.BE.csproj" />
+    <ProjectReference Include="..\..\DataAccess\Nine1.Sample.Project.DA.DB\Nine1.Sample.Project.DA.DB.csproj" />
+    <ProjectReference Include="..\..\DataAccess\Nine1.Sample.Project.DA.Repositories\Nine1.Sample.Project.DA.Repositories.csproj" />
+    <ProjectReference Include="..\..\Common\Nine1.Sample.Project.Common.Utils\Nine1.Sample.Project.Common.Utils.csproj" />
+  </ItemGroup>
+    
+</Project>

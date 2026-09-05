@@ -1,0 +1,27 @@
+info:
+  name: chat-messages
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://dify.91app.biz/v1/chat-messages
+  body:
+    type: json
+    data: |-
+      {
+        "inputs" : {},
+        "query" : "test",
+        "response_mode" : "blocking",
+        "conversation_id" : "",
+        "user" : "abc"
+      }
+  auth:
+    type: bearer
+    token: app-ZiyaCPCjqiTaN8YEAsMTZU8e
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

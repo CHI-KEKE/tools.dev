@@ -1,0 +1,49 @@
+info:
+  name: insetOrUpdate-translate
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/Translate/InsetOrUpdateTranslate"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |
+      {
+          "Id": 7091,
+          "ShopId": 2,
+          "ModuleType": "PromotionReward",
+          "Language": "en-US",
+          "Content": [
+              {
+                  "Key": "Name",
+                  "Value": "my english is really good!"
+              }
+          ],
+          "VerificationToken": "115534af3e2aced23586cc9190c702eac8ced99e4fa21248ab9f2e56dd58f84757ce13e90abc764ab1ad925c0baace235a48b01d3c61237f70289440f7562c58"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  {
+      "Id": 6177,
+      "ShopId": 2,
+      "ModuleType": "PromotionEngineRewardPoint",
+      "Language": "en-US",
+      "Content": [
+          {
+              "Key": "Name",
+              "Value": "115534af3e2aced23586cc9190c702eac8ced99e4fa21248ab9f2e56dd58f84757ce13e90abc764ab1ad925c0baace235a48b01d3c61237f70289440f7562c58"
+          }
+      ],
+      "VerificationToken": "115534af3e2aced23586cc9190c702eac8ced99e4fa21248ab9f2e56dd58f84757ce13e90abc764ab1ad925c0baace235a48b01d3c61237f70289440f7562c58"
+  }

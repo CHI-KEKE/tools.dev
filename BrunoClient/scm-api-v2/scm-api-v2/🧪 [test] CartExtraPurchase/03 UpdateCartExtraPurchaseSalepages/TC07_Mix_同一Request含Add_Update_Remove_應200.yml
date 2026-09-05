@@ -1,0 +1,83 @@
+﻿info:
+  name: TC07_Mix_同一Request含Add_Update_Remove_應200
+  type: http
+  seq: 7
+
+meta:
+  purpose: |-
+    【組合】單一 request 同時包含三個不同 SKU 的 Add / Update / Remove。
+    驗證 SCMAPIV2 三段式 grouping（Add→Update→Remove）都能正確執行。
+
+    ⚠️ 前置條件（可能需要手動調整 SKUId）：
+    - 2169001：已在活動中（可 Update）
+    - 2169002：不在活動中（可 Add）
+    - 2169003：已在活動中（可 Remove）
+
+    預期：200，三項操作各自成功。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdateCartExtraPurchaseSalepages?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "PromotionId": {{promotionId}},
+        "IsAddHistory": false,
+        "CartExtraPurchaseConditionList": [
+          {
+            "ActionType": "Add",
+            "ReachPiece": 2,
+            "ReachPrice": 0,
+            "SalepageId": 1557573,
+            "SaleProductSKUId": 2169002,
+            "CartExtraPurchasePrice": 88,
+            "Sort": 2
+          },
+          {
+            "ActionType": "Update",
+            "ReachPiece": 2,
+            "ReachPrice": 0,
+            "SalepageId": 1557573,
+            "SaleProductSKUId": 2169001,
+            "CartExtraPurchasePrice": 299,
+            "Sort": 1
+          },
+          {
+            "ActionType": "Remove",
+            "ReachPiece": 5,
+            "ReachPrice": 0,
+            "SalepageId": 1557573,
+            "SaleProductSKUId": 2169003,
+            "CartExtraPurchasePrice": 0,
+            "Sort": 1
+          }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC-SP07 Mix 操作狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("TC-SP07 印出回傳內容（肉眼確認三項都成功）", function () {
+    const body = res.getBody();
+    console.log("TC-SP07 response:", JSON.stringify(body));
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

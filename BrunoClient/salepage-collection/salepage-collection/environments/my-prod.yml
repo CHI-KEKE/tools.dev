@@ -1,0 +1,4 @@
+name: my-prod
+variables:
+  - name: base-url
+    value: https://salepage-service-api-internal.my.91app.io

@@ -1,0 +1,51 @@
+info:
+  name: Untitled
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/CartExtraPurchase/UpdateExtraPurchase"
+  body:
+    type: json
+    data: |-
+      {
+          "Id": 39583,
+          "ShopId": 12765,
+          "ConditionId": 1,
+          "CartExtraPurchaseSalePageList": [
+              {
+                  "ActionType": 0,
+                  "CartExtraPurchasePrice": "5",
+                  "ReachPrice": 0,
+                  "ReachPiece": 0,
+                  "SalepageId": 1557465,
+                  "SaleProductSKUId": 2168785,
+                  "Sort": 1000
+              }
+          ]
+      }
+
+      {
+          "Id": 39583,
+          "ShopId": 12765,
+          "ConditionId": 1,
+          "CartExtraPurchaseSalePageList": [
+              {
+                  "ActionType": 2,
+                  "CartExtraPurchasePrice": 0,
+                  "ReachPrice": 0,
+                  "ReachPiece": 0,
+                  "SalepageId": 1557465,
+                  "SaleProductSKUId": 2168785,
+                  "Sort": 2
+              }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,24 @@
+info:
+  name: diff
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{base-url}}/2.0/repositories/allenlin0000/nineyi.databases/diff/allenlin0000/nineyi.databases:a7fa86de79a7%0Dbd8d7c283710?from_pullrequest_id=2&topic=true"
+  params:
+    - name: from_pullrequest_id
+      value: "2"
+      type: query
+    - name: topic
+      value: "true"
+      type: query
+  auth:
+    type: bearer
+    token: "{{databases_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

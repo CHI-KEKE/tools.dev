@@ -1,0 +1,126 @@
+<!--
+主題：療癒插畫風（cozy-meadow-style）
+適用：生活隨筆、放鬆/休息主題、寵物或角色類內容、想走可愛療癒感而非冷硬技術感的文章。
+配色語意是「溫暖分類」裝飾語意，非危險分級：bear(棕熊色)=核心重點、cream(奶白)=中性補充、moss(苔綠)=延伸資訊。
+不適合：事件回顧/故障排查等需要風險分級語意的文章，也不適合品牌/永續主題（改用 organic-glass-style，兩者不建議混用同一篇）。
+
+doc-* 對應變數：
+  --doc-accent:#c48a5e; --doc-accent2:#7a9a5e; --doc-ink:#4a3a28; --doc-sub:#6b5c46;
+  --doc-card:#fbf7ef; --doc-line:#ecdfc9; --doc-bg:#f7f2e6; --doc-shadow:0 4px 12px rgba(120,90,50,.08);
+
+包含區塊：
+  1. cozy-hero：開場大標題橫幅（草地綠漸層底 + 散落小花與小熊點綴）
+  2. cozy-feature-row：橫向並列重點特色列（圖示預設熊掌 🐾）
+  3. cozy-card-grid：大地色塊卡片網格（棕熊色/奶白/苔綠三種色塊）
+  4. cozy-line-steps：極簡編號時間軸
+  5. cozy-bear-divider：小熊分隔線（純裝飾，用於分隔長文章大段落）
+-->
+
+<style>
+.cozy-hero { position:relative; overflow:hidden; border-radius:20px; padding:34px 38px; margin:24px 0 30px; background:radial-gradient(circle at 15% 20%, rgba(255,255,255,.10) 0, transparent 45%), linear-gradient(150deg, #6f9250 0%, #547a3d 55%, #3f5f2e 100%); color:#fbf8ef; }
+.cozy-hero .ch-dot { position:absolute; font-size:1.4rem; opacity:.55; pointer-events:none; }
+.cozy-hero .ch-dot.d1 { top:16px; right:70px; }
+.cozy-hero .ch-dot.d2 { bottom:20px; right:26px; font-size:1.1rem; opacity:.4; }
+.cozy-hero .ch-dot.d3 { top:50%; right:130px; font-size:.9rem; opacity:.35; }
+.cozy-hero .ch-bear { position:absolute; bottom:10px; right:96px; font-size:2.1rem; opacity:.9; filter:drop-shadow(0 3px 4px rgba(0,0,0,.2)); pointer-events:none; }
+.cozy-hero .ch-tag { display:inline-block; font-size:.72rem; letter-spacing:2px; text-transform:uppercase; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.32); padding:3px 12px; border-radius:20px; margin-bottom:14px; }
+.cozy-hero .ch-title { margin:0 0 10px; font-size:1.4rem; font-weight:700; position:relative; z-index:1; }
+.cozy-hero .ch-desc { max-width:80%; font-size:.92rem; line-height:1.85; color:#eef1e2; position:relative; z-index:1; }
+.cozy-hero .ch-desc code { background:rgba(255,255,255,.2); padding:1px 6px; border-radius:3px; color:#fffaf0; }
+
+.cozy-feature-row { display:flex; flex-wrap:wrap; gap:16px; margin:18px 0 28px; }
+.cozy-feature-row .cf-item { flex:1 1 160px; background:#fbf7ef; border:1px solid #ecdfc9; border-radius:18px; padding:20px 18px; text-align:center; box-shadow:0 4px 12px rgba(120,90,50,.08); }
+.cozy-feature-row .cf-icon { width:44px; height:44px; margin:0 auto 10px; border-radius:50%; background:#c48a5e; color:#fff8ea; display:flex; align-items:center; justify-content:center; font-size:1.15rem; }
+.cozy-feature-row .cf-title { font-weight:700; font-size:.92rem; color:#4a3a28; margin-bottom:6px; }
+.cozy-feature-row .cf-desc { font-size:.8rem; line-height:1.7; color:#6b5c46; }
+.cozy-feature-row .cf-desc code { background:#f1e6d2; padding:1px 6px; border-radius:3px; color:#8a5a2e; }
+
+.cozy-card-grid { display:flex; flex-wrap:wrap; gap:16px; margin:16px 0 26px; }
+.cozy-card { flex:1 1 220px; border-radius:22px; padding:20px 20px 22px; box-shadow:0 6px 14px rgba(90,70,40,.14); }
+.cozy-card.bear { background:linear-gradient(155deg,#c48a5e,#a06a41); color:#fff8ea; }
+.cozy-card.cream { background:#fbf7ef; border:1px solid #ecdfc9; color:#4a3a28; }
+.cozy-card.moss { background:linear-gradient(155deg,#7a9a5e,#57753f); color:#f4f7ea; }
+.cozy-card .cc-badge { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.14); font-size:.9rem; margin-bottom:10px; }
+.cozy-card.cream .cc-badge { background:#f1e6d2; }
+.cozy-card .cc-title { font-weight:700; font-size:.96rem; margin-bottom:6px; }
+.cozy-card .cc-desc { font-size:.82rem; line-height:1.75; }
+.cozy-card.bear .cc-desc code, .cozy-card.moss .cc-desc code { background:rgba(255,255,255,.22); padding:1px 6px; border-radius:3px; color:#fffaf0; font-size:.85em; }
+.cozy-card.cream .cc-desc code { background:#f1e6d2; padding:1px 6px; border-radius:3px; color:#8a5a2e; font-size:.85em; }
+
+.cozy-line-steps { position:relative; margin:22px 0 30px; padding-left:56px; }
+.cozy-line-steps::before { content:''; position:absolute; left:19px; top:4px; bottom:4px; width:2px; background:linear-gradient(180deg, #c48a5e, #7a9a5e); opacity:.55; }
+.cozy-line-steps .cl-step { position:relative; margin-bottom:26px; }
+.cozy-line-steps .cl-step:last-child { margin-bottom:0; }
+.cozy-line-steps .cl-num { position:absolute; left:-56px; top:0; width:38px; height:38px; border-radius:50%; background:#fbf7ef; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; z-index:2; box-shadow:0 2px 6px rgba(90,70,40,.18); }
+.cozy-line-steps .cl-step.bear .cl-num { border:2px solid #a06a41; color:#a06a41; }
+.cozy-line-steps .cl-step.moss .cl-num { border:2px solid #57753f; color:#57753f; }
+.cozy-line-steps .cl-body { display:flex; align-items:center; flex-wrap:wrap; gap:10px; min-height:38px; }
+.cozy-line-steps .cl-title { font-weight:700; font-size:.95rem; color:#4a3a28; }
+.cozy-line-steps .cl-connector { flex:1 1 30px; height:0; border-bottom:1.5px dashed #d8c9ab; min-width:24px; }
+.cozy-line-steps .cl-desc { font-size:.82rem; color:#6b5c46; line-height:1.6; }
+.cozy-line-steps .cl-desc code { background:#f1e6d2; padding:1px 6px; border-radius:3px; color:#8a5a2e; font-size:.85em; }
+
+.cozy-bear-divider { display:flex; align-items:center; gap:14px; margin:26px 0; }
+.cozy-bear-divider::before, .cozy-bear-divider::after { content:''; flex:1; height:2px; background:linear-gradient(90deg, transparent, #c48a5e, #7a9a5e, transparent); opacity:.45; }
+.cozy-bear-divider .bd-icon { font-size:1.5rem; flex:0 0 auto; }
+</style>
+
+<div class="cozy-hero">
+<span class="ch-dot d1">🌼</span><span class="ch-dot d2">🌿</span><span class="ch-dot d3">🌼</span><span class="ch-bear">🐻</span>
+<div class="ch-tag">章節標籤</div>
+<div class="ch-title">開場大標題</div>
+<div class="ch-desc">用一段白話說明這個章節在講什麼情境，字數不用多，抓住重點即可。</div>
+</div>
+
+<div class="cozy-feature-row">
+<div class="cf-item">
+<div class="cf-icon">🐾</div>
+<div class="cf-title">重點一</div>
+<div class="cf-desc">說明文字，術語用 <code>code</code> 包起來</div>
+</div>
+<div class="cf-item">
+<div class="cf-icon">🐾</div>
+<div class="cf-title">重點二</div>
+<div class="cf-desc">說明文字</div>
+</div>
+<div class="cf-item">
+<div class="cf-icon">🐾</div>
+<div class="cf-title">重點三</div>
+<div class="cf-desc">說明文字</div>
+</div>
+</div>
+
+<div class="cozy-card-grid">
+<div class="cozy-card bear">
+<div class="cc-badge">🐻</div>
+<div class="cc-title">核心重點卡片</div>
+<div class="cc-desc">內容描述，術語用 <code>code</code> 包起來</div>
+</div>
+<div class="cozy-card cream">
+<div class="cc-badge">🐾</div>
+<div class="cc-title">中性補充卡片</div>
+<div class="cc-desc">內容描述</div>
+</div>
+<div class="cozy-card moss">
+<div class="cc-badge">🌿</div>
+<div class="cc-title">延伸資訊卡片</div>
+<div class="cc-desc">內容描述</div>
+</div>
+</div>
+
+<div class="cozy-bear-divider"><span class="bd-icon">🐻</span></div>
+
+<div class="cozy-line-steps">
+<div class="cl-step bear">
+<div class="cl-num">01</div>
+<div class="cl-body"><span class="cl-title">步驟一標題</span><span class="cl-connector"></span><span class="cl-desc">簡短補充說明</span></div>
+</div>
+<div class="cl-step moss">
+<div class="cl-num">02</div>
+<div class="cl-body"><span class="cl-title">步驟二標題</span><span class="cl-connector"></span><span class="cl-desc">簡短補充說明</span></div>
+</div>
+<div class="cl-step bear">
+<div class="cl-num">03</div>
+<div class="cl-body"><span class="cl-title">最後一步／結果</span><span class="cl-connector"></span><span class="cl-desc">簡短補充說明</span></div>
+</div>
+</div>

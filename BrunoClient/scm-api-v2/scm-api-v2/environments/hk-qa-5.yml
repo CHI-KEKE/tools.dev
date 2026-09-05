@@ -1,0 +1,11 @@
+name: hk-qa-5
+color: "#CE4F3B"
+variables:
+  - name: token
+    value: "123456785"
+  - name: saltKey
+    value: cef96a4e
+  - name: api-key
+    value: 5bb1fda2-b54a-4bde-a484-4b9776edea1c
+  - name: base-url
+    value: aaa

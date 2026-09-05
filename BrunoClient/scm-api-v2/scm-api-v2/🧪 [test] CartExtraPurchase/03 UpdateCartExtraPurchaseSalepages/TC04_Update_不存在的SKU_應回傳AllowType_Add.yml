@@ -1,0 +1,59 @@
+﻿info:
+  name: TC04_Update_不存在的SKU_應回傳AllowType_Add
+  type: http
+  seq: 4
+
+meta:
+  purpose: |-
+    【邊界】對未加入活動的 SKU（SaleProductSKUId=9999999）發 ActionType=Update。
+    Filter 應偵測：SKU 不在活動中 → 回傳 AllowActionType=Add 提示。
+    預期：200（含 AllowActionType 提示）。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdateCartExtraPurchaseSalepages?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "PromotionId": {{promotionId}},
+        "IsAddHistory": false,
+        "CartExtraPurchaseConditionList": [
+          {
+            "ActionType": "Update",
+            "ReachPiece": 2,
+            "ReachPrice": 0,
+            "SalepageId": 1557573,
+            "SaleProductSKUId": 9999999,
+            "CartExtraPurchasePrice": 199,
+            "Sort": 1
+          }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC-SP04 狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("TC-SP04 不存在 SKU 做 Update 應有 AllowActionType=Add 提示（肉眼確認 log）", function () {
+    const body = res.getBody();
+    console.log("TC-SP04 response:", JSON.stringify(body));
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

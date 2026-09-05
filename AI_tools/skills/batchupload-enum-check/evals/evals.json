@@ -1,0 +1,42 @@
+{
+  "skill_name": "batchupload-enum-check",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "剛剛解完 merge conflict，幫我檢查一下 BatchUpload 的 enum 有沒有問題。主要是 BusinessLogic/BE/BatchUploads/Enums/BatchUploadTypeDefEnum.cs、BatchUploadExecuteTaskTypeEnum.cs，還有對應的 WebSite/WebSite/Scripts/Enums.ts 跟 WebSite/WebSite/ClientApp/package_cloud/common/src/typings/enum.ts。",
+      "expected_output": "完整的差異報告，顯示 C# enum 與 TS 檔案的比對結果。若有問題需列出衝突殘留、值錯誤、名稱不符、缺少成員等情況，並按兩層級規則分別處理。",
+      "files": [],
+      "expectations": [
+        "報告區分了 Enums.ts（Tier 1 完全一致）和 enum.ts（Tier 2 值一致）兩種規則",
+        "正確識別 C# enum 的自動遞增值（無需明確賦值）",
+        "若有衝突殘留（重複值成員）能正確偵測並標記",
+        "報告包含每個差異的修正建議"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "BatchUpload enum 一致性確認，以 .cs 為來源，Enums.ts 要完全一致，enum.ts 有缺少的不用補但 value 要對。幫我修正所有不一致的地方。",
+      "expected_output": "執行完整比對後，對所有發現的問題進行修正。Enums.ts 需完全鏡像 C#；enum.ts 只修正現有成員的錯誤值，不補充缺少的成員。修正後確認無誤。",
+      "files": [],
+      "expectations": [
+        "Enums.ts 修正後成員數量與 C# 相同",
+        "Enums.ts 修正後每個成員的名稱和值均與 C# 一致",
+        "enum.ts 修正後現有成員的值均與 C# 對應值相同",
+        "enum.ts 未補充 C# 才有的新成員（符合 Tier 2 規則）",
+        "修正完成後提供驗收確認"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "幫我 review BatchUpload 相關 enum 解衝突的結果，看 enum 這幾個檔案的值是否有差異：BusinessLogic/BE/BatchUploads/Enums/BatchUploadExecuteTaskTypeEnum.cs、BatchUploadTypeDefEnum.cs、WebSite/WebSite/Scripts/Enums.ts、WebSite/WebSite/ClientApp/package_cloud/common/src/typings/enum.ts",
+      "expected_output": "全面的 code review 報告，逐一比對 C# enum 的每個成員與 TS 檔案，找出值差異、名稱不符、衝突殘留等問題，並依嚴重程度排序。",
+      "files": [],
+      "expectations": [
+        "讀取了所有 4 個目標檔案的完整內容（使用分段讀取）",
+        "建立了 C# enum 的完整成員值對照表",
+        "逐一核對每個 TS 成員的值",
+        "偵測到衝突殘留（重複值）若存在的話"
+      ]
+    }
+  ]
+}

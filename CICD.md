@@ -1,6 +1,10 @@
-# 🚀 CI/CD 維護文件
 
-<br>
+## 問題
+
+nmq 為啥要多按一步
+versionId 壓根根不用輸入吧  
+
+跑ci TYO-TW-JKCI-S2 硬碟滿了喔，volume D 剩下 0% 會斷掉
 
 ## 📖 目錄
 

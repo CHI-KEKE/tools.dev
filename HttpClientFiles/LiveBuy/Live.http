@@ -1,0 +1,112 @@
+@host = http://localhost:5566/api
+#@host = https://91app-live-io.qa1.hk.91dev.tw/api
+@Cookie = deviceid=a34b9334-c23d-4c29-a131-7feb55512343; allowGetPrivacyInfo=true; ai_user=klosO|2025-11-20T00:31:49.773Z; _ga_2WFJBS7B20=deleted; _ga_2WFJBS7B20=deleted; _fbp=fb.1.1764829887192.388335359747575142; SL_C_23361dd035530_SID={"61a79bbd82d029bef2eb0eebfe201ecae641c22f":{"sessionId":"o9SH74uFjUHQFdjOFJfqk","visitorId":"pj1lGNjRLcFQS4ZFS71a8"}}; _clck=nwv4gr%5E2%5Eg1v%5E0%5E2172; __gads=ID=3a5843d5da425745:T=1765843815:RT=1765843815:S=ALNI_MZcceiW30Z9ULe78Zi19ne6XXysZw; __gpi=UID=000011cbab288416:T=1765843815:RT=1765843815:S=ALNI_MbHXONsPDl3xR29NTK7F8EDazhZog; __eoi=ID=d98a22409003d828:T=1765843815:RT=1765843815:S=AA-AfjZRPjS5qkIp8oN02rQJBOC-; _gcl_au=1.1.1239928245.1763426748.656949898.1765844734.1765844733; ad2udid=66f10aaa921938.25089637f6c86ed618c2441273e77a9dc1c67ea2; _ga_PXC7ENYBGM=GS2.1.s1766368718$o4$g1$t1766368879$j60$l0$h0; gaClientId=384cbd4f-dd7f-46fa-af99-511d7db27e62; uAUTH=PaG88AX4S/icNoDeCxSBnqodsxDGxT+bYjD0+desHPfJdFRAjARyg0Omvn7VAAbu0ca5tOAAsPXrXXno5UMEHbKu/gLDlsQMz69eqjvDoAM=; uAUTH_samesite=PaG88AX4S/icNoDeCxSBnqodsxDGxT+bYjD0+desHPfJdFRAjARyg0Omvn7VAAbu0ca5tOAAsPXrXXno5UMEHbKu/gLDlsQMz69eqjvDoAM=; GUID=4b1574c2-8027-4a96-8963-e22e32701165; auth=IH5refGff2PtGOBokeSKmZuCbTnqCTboZC87j0D8LTDIeC3FvlDUoOCVs03pWn0Lczm90ahiKGxLVUl8VlC1cQAwBZzoP7wAJeNH8mF+zZD0Uy7q3cQdCRMUPCrKPWkklJEC6y3/rP0uFh9ISSuSIINmgCOQJR1/1N5lkN5YQgiYTCqhgkAHghqQ9bkThO+9OdPtd1Kch78ZDbfY7L23k10rfOj83DAJGKg/x+Y7d5QFm26G9Ai/JdkEAiJQ4uRW+gfcPGDIcgWVB0B++IFu/QXGedUNw2rmzP4O7RY4W3fdR+2HE0jxznx/sqBwN2AJJ35eQQGWUVBDmAyFZZqEkey9D8LcQ/tO1e28C2wZef+1WDJrDDKz0LKO1jAULqoyvGKjZutTrpJTKtv9xAEndsNpeHDddYYmOTrTIdPDwdY/jXLNLZdtMRR0DeuLE7LaKbvm/XhxDRzkfCqVFqU9AO6TL9Ig/Mia+ErJl3Z85xnCbcD/T5uAy5fdNg7cngeduo2L8PGoHmRJOMpPKr71UwNkSkIQ8wttP2RImYfMcjr4Gl3MCoPfI/4szDCEv8OuAZ5J1iPtYXX4HUJMdYJ6onlnM9/Y7HGT8GF+tYWxK6brZMO7oISilpTRJIYiqlZLsY92TBm3ZAH4F9IvaDvOLzVoRyxQTIDT2PE7zgKrCynaqrNvwLZrF0qywSFqO2cqeSmnxWhe1+ZAdL9+Jxi2tXE+KTKDSCDRIv9v6UVJmSdu3H27Hmdt4gAHEbNfvEHgJcTYVhSUVEVNBk6Rn0ilCCRq6DRq8AYY1lgyJTx/DYKLBUIOurlXwPJm1xJOoYO2c1+A/tga1Y+ojVz+oIlZdRQszeHGlmmyWz00Fh7jUZeDSQlerDtHPMIG6P+JCSAiuP2+bnfEzL2ukJbliSjeV1gLIdQS/kFvjc7BTDpxnIiiiomfubK8DM/5KNL9VWK/; auth_samesite=IH5refGff2PtGOBokeSKmZuCbTnqCTboZC87j0D8LTDIeC3FvlDUoOCVs03pWn0Lczm90ahiKGxLVUl8VlC1cQAwBZzoP7wAJeNH8mF+zZD0Uy7q3cQdCRMUPCrKPWkklJEC6y3/rP0uFh9ISSuSIINmgCOQJR1/1N5lkN5YQgiYTCqhgkAHghqQ9bkThO+9OdPtd1Kch78ZDbfY7L23k10rfOj83DAJGKg/x+Y7d5QFm26G9Ai/JdkEAiJQ4uRW+gfcPGDIcgWVB0B++IFu/QXGedUNw2rmzP4O7RY4W3fdR+2HE0jxznx/sqBwN2AJJ35eQQGWUVBDmAyFZZqEkey9D8LcQ/tO1e28C2wZef+1WDJrDDKz0LKO1jAULqoyvGKjZutTrpJTKtv9xAEndsNpeHDddYYmOTrTIdPDwdY/jXLNLZdtMRR0DeuLE7LaKbvm/XhxDRzkfCqVFqU9AO6TL9Ig/Mia+ErJl3Z85xnCbcD/T5uAy5fdNg7cngeduo2L8PGoHmRJOMpPKr71UwNkSkIQ8wttP2RImYfMcjr4Gl3MCoPfI/4szDCEv8OuAZ5J1iPtYXX4HUJMdYJ6onlnM9/Y7HGT8GF+tYWxK6brZMO7oISilpTRJIYiqlZLsY92TBm3ZAH4F9IvaDvOLzVoRyxQTIDT2PE7zgKrCynaqrNvwLZrF0qywSFqO2cqeSmnxWhe1+ZAdL9+Jxi2tXE+KTKDSCDRIv9v6UVJmSdu3H27Hmdt4gAHEbNfvEHgJcTYVhSUVEVNBk6Rn0ilCCRq6DRq8AYY1lgyJTx/DYKLBUIOurlXwPJm1xJOoYO2c1+A/tga1Y+ojVz+oIlZdRQszeHGlmmyWz00Fh7jUZeDSQlerDtHPMIG6P+JCSAiuP2+bnfEzL2ukJbliSjeV1gLIdQS/kFvjc7BTDpxnIiiiomfubK8DM/5KNL9VWK/; lang=zh-TW; currency=SGD; fr=; fr2=; _gid=GA1.2.717588888.1766502793; MID=L098000150; salePageViewList=6124,6122,6125; _ga_2WFJBS7B20=GS2.1.s1766589776$o881$g1$t1766589865$j58$l0$h0; _ga=GA1.2.461524625.1764829887; GaPurchaseOrderId=MG251224Z00001; _ga_P9SKT1T0T2=GS2.2.s1766590124$o35$g1$t1766590196$j60$l0$h0; 91_FPID_v3_4_1=68ad66db896399f650310f17020d7a9a; ai_session=Aw8mN|1766672110287|1766672110287
+@traceId = testallenlin123
+@shopId = 2
+@categoryId = 3135
+@signature = sha256=test_signature
+
+
+# 狀態 : Scheduled / Ended/ 
+
+### Live_Session - GetList
+GET {{host}}/live/sessions
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+
+### Connections
+POST {{host}}/websocket/connections
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+  "shopId": 2,
+  "platformUserId": "string",
+//  "liveSessionId": "LIVE1",
+  "connectionId": "CON4",
+  "userName": "string"
+}
+
+### DisConnections
+DELETE {{host}}/websocket/connections
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+  "connectionId": "CON4",
+  "userName": "string"
+}
+
+### DisConnections - gateway
+DELETE {{host}}/websocket/connections
+Cookie: {{Cookie}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+content-type: application/json
+
+{
+  "connectionId": "CON4",
+  "userName": "string"
+}
+
+
+### Facebook- Receive
+POST {{host}}/Webhooks/facebook
+X-Hub-Signature-256: {{signature}}
+content-type: application/json
+
+{
+  "object": "page",
+  "entry": [
+    {
+      "id": "123456789012345",
+      "time": 1766730720,
+      "changes": [
+        {
+          "field": "feed",
+          "value": {
+            "item": "comment",
+            "verb": "add",
+            "post_id": "1476842600629429",
+            "comment_id": "758484510598432_1642578930044588",
+            "parent_id": "169441722919446_758484510598432",
+            "message": "這個商品看起來不錯！",
+            "created_time": "2025-12-26T10:00:00+0000",
+            "from": {
+              "id": "987654321098765",
+              "name": "張小明"
+            },
+            "comments": {
+              "data": [
+                {
+                  "id": "758484510598432_1642578930044599",
+                  "message": "同意，直播介紹得很清楚！",
+                  "created_time": "2025-12-26T10:01:00+0000",
+                  "from": {
+                    "id": "112233445566778",
+                    "name": "王小華"
+                  }
+                }
+              ]
+            },
+            "post": {
+              "id": "169441722919446_758484510598432",
+              "status_type": "added_video",
+              "is_published": true,
+              "updated_time": "2025-12-26T03:06:02+0000",
+              "permalink_url": "https://www.facebook.com/122214758060110098/videos/758484510598432",
+              "promotion_status": "eligible"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

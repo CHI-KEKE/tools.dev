@@ -1,0 +1,61 @@
+﻿info:
+  name: TC05_ExtraPurchaseRuleList為空_應400
+  type: http
+  seq: 5
+
+meta:
+  purpose: |-
+    【負向】ExtraPurchaseRuleList 傳空陣列，加價購活動必須有至少一個條件。
+    預期：400。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/CreatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "TypeDef": "CartReachPieceExtraPurchase",
+        "Name": "[C05]加購規則清單空",
+        "StartDateTime": "2029-07-01T00:00:00.000Z",
+        "EndDateTime": "2029-07-31T23:59:59.000Z",
+        "Description": "TC05",
+        "CustomCampaignCode": "TC05",
+        "CanUseECoupon": false,
+        "IsCartExtraPurchaseThresholdEligible": true,
+        "TargetMemberTypeDef": "All",
+        "PromotionTargetRegionTypeDef": "All",
+        "IsCyclable": false,
+        "ExtraPurchaseRuleList": [],
+        "TargetTypeDef": "SalePage",
+        "ExcludeTargetTypeDef": "None",
+        "CalculateTypeDef": "Compatible",
+        "TargetPlatformTypeList": [
+          { "Platform": "Web", "IsEnabled": true },
+          { "Platform": "AppIOS", "IsEnabled": true },
+          { "Platform": "AppAndroid", "IsEnabled": true }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC05 ExtraPurchaseRuleList 為空應被擋（預期 400）", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

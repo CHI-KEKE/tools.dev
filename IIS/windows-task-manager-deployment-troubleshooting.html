@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows Task Manager · IIS 部署實戰疑難排解記錄</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#fca5a5; background:rgba(252,165,165,.12); border:1px solid rgba(252,165,165,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 27px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:820px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--accent-soft); color:var(--accent); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  h3 { font-size:15.5px; margin:22px 0 8px; color:#1e293b; }
+  h4 { font-size:14px; margin:16px 0 6px; color:#1e293b; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .issue {
+    border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin:18px 0; background:#fafbff;
+  }
+  .issue .tag {
+    display:inline-block; font-size:11.5px; font-weight:700; padding:2px 10px; border-radius:999px;
+    margin-bottom:10px;
+  }
+  .issue .tag.root { background:var(--danger-soft); color:var(--danger); }
+  .issue .tag.config { background:var(--warn-soft); color:var(--warn); }
+  .issue h4 { margin-top:0; font-size:15px; }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:10px 12px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+  td.center, th.center { text-align:center; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+  pre code { background:none; color:inherit; padding:0; }
+
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; }
+  .split .col { border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .split .col.purple { background:var(--purple-soft); border-color:#ddd6fe; }
+  .split .col.blue { background:var(--accent-soft); border-color:#bfdbfe; }
+  .split .col.danger { background:var(--danger-soft); border-color:#fecaca; }
+  .split .col.warn { background:var(--warn-soft); border-color:#fde68a; }
+  .split .col h4 { margin:0 0 8px; font-size:14px; }
+
+  .steps { counter-reset: step; list-style:none; padding:0; margin:14px 0; }
+  .steps li {
+    counter-increment: step; position:relative; padding:8px 0 8px 40px; margin-bottom:4px; font-size:14px;
+  }
+  .steps li::before {
+    content: counter(step); position:absolute; left:0; top:6px; width:26px; height:26px; border-radius:50%;
+    background:var(--accent-soft); color:var(--accent); font-weight:700; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .checklist { list-style:none; padding:0; margin:10px 0; }
+  .checklist li { padding:4px 0 4px 26px; position:relative; font-size:14px; }
+  .checklist li::before { content:"✅"; position:absolute; left:0; }
+
+  .badge {
+    display:inline-block; font-size:11.5px; font-weight:700; padding:2px 10px; border-radius:999px;
+    background:var(--purple-soft); color:var(--purple); margin-left:8px; vertical-align:middle;
+  }
+  .badge.env-qa { background:var(--ok-soft); color:var(--ok); }
+  .badge.env-prod { background:var(--danger-soft); color:var(--danger); }
+
+  footer { text-align:center; color:#94a3b8; font-size:12.5px; margin-top:34px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow">Real-World Troubleshooting Log</span>
+    <h1>Windows Task Manager — IIS 部署實戰疑難排解記錄</h1>
+    <p>記錄 <code>nine1.tools.windows-task-manager</code> 在 <strong>QA</strong> 與 <strong>Production</strong> 環境實際部署過程中
+      真正遇到的問題、根本原因與解決步驟，依時間順序整理，可作為未來重新部署時的檢查清單與除錯依據。</p>
+  </header>
+
+  <!-- 0. 總覽 -->
+  <section>
+    <h2><span class="num">0</span>部署環境總覽</h2>
+    <table>
+      <thead><tr><th>環境</th><th>主機網域</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge env-qa">QA</span></td><td><code>windows-task-manager.my.91dev.tw</code></td><td>部署在 IP <code>10.51.121.152</code> 這台機器自己</td></tr>
+        <tr><td><span class="badge env-prod">Production</span></td><td><code>windows-task-manager.my.91app.io</code></td><td>監控自己這台機器的排程</td></tr>
+      </tbody>
+    </table>
+    <div class="note warn">兩個環境都是「<strong>網站部署的機器，同時也是要被監控排程的目標機器</strong>」，這個前提是後面好幾個問題的根本原因，務必先確認清楚。</div>
+  </section>
+
+  <!-- 1. QA -->
+  <section>
+    <h2><span class="num">1</span>QA 環境：問題與解法時間軸</h2>
+
+    <div class="issue">
+      <span class="tag config">設定選擇</span>
+      <h4>1.1 setup.ps1 的 Scope 該選 Machine 還是 User？</h4>
+      <p><strong>現象</strong>：執行 <code>setup.ps1</code> Step 3 詢問 Scope，不確定選哪個。</p>
+      <p><strong>原因</strong>：<code>User</code> 層級只對登入使用者生效，IIS 應用程式集區是系統服務身分，讀不到。</p>
+      <p><strong>解法</strong>：一律選擇 <strong>Machine</strong>（需系統管理員身分執行）。</p>
+    </div>
+
+    <div class="issue">
+      <span class="tag config">版本檢查</span>
+      <h4>1.2 Hosting Bundle 版本確認</h4>
+      <pre><code>Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*, HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* |
+  Where-Object { $_.DisplayName -like "*Hosting Bundle*" -or $_.DisplayName -like "*ASP.NET Core*" } |
+  Select-Object DisplayName, DisplayVersion</code></pre>
+      <p><strong>現象</strong>：機器只裝了 ASP.NET Core 3.1.32，但專案是 <code>net8.0</code>，版本不符會導致 500.30 / 502.5。</p>
+      <p><strong>解法</strong>：</p>
+      <pre><code>winget install --id Microsoft.DotNet.HostingBundle.8 -e
+iisreset</code></pre>
+    </div>
+
+    <div class="issue">
+      <span class="tag config">IIS 站台</span>
+      <h4>1.3 同一台機器多個 IIS Sites，如何讓網域指到正確站台？</h4>
+      <p><strong>原因</strong>：IIS 用「IP : Port : Host Header」組合判斷路由。</p>
+      <p><strong>解法</strong>：使用 <strong>Host Header</strong> 區隔，多個 Site 共用 Port 80，內部 DNS 需有一筆記錄指向本機 IP。</p>
+      <pre><code>Resolve-DnsName windows-task-manager.my.91dev.tw</code></pre>
+    </div>
+
+    <div class="issue">
+      <span class="tag root">根本原因</span>
+      <h4>1.4 Google OAuth 登入失敗：redirect_uri_mismatch（錯誤 400）</h4>
+      <p><strong>原因</strong>：程式碼回呼路徑是 <code>/LoginCallback</code>（非預設 <code>/signin-google</code>）：</p>
+      <pre><code>var redirectUrl = Url.Page("/LoginCallback");
+var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+return Challenge(properties, GoogleDefaults.AuthenticationScheme);</code></pre>
+      <p>改用 Host Header 網域存取後，實際 <code>redirect_uri</code> 變成 <code>http://windows-task-manager.my.91dev.tw/LoginCallback</code>，但 Google Console 只登記了 localhost 版本。</p>
+      <p><strong>解法</strong>：Google Cloud Console → 憑證 → 編輯 OAuth Client → 新增：</p>
+      <pre><code>http://windows-task-manager.my.91dev.tw/LoginCallback</code></pre>
+      <div class="note ok">同一組 Client ID / Secret 可同時登記多筆 redirect URI，不需每個環境都建立新 Client。</div>
+    </div>
+
+    <div class="issue">
+      <span class="tag root">根本原因</span>
+      <h4>1.5 排程清單「權限不足：Access is denied (0x80070005)」</h4>
+      <p><strong>根本原因</strong>：<code>appsettings.QA.json</code> 的 <code>IPAddress</code> 填了機器自己的實際 IP，而非 <code>localhost</code>。</p>
+      <pre><code>if (config.IPAddress == "localhost" || config.IPAddress == "127.0.0.1")
+{
+    ts = new TaskService();              // 本機模式：直接用執行身分做本機 COM 呼叫
+}
+else
+{
+    ts = new TaskService(config.IPAddress, ...);  // 遠端模式：強制走網路驗證
+}</code></pre>
+      <p>即使目標就是自己，只要填實際 IP，就會走「遠端」分支，觸發 Windows 對「用網路方式驗證自己」的 <strong>Loopback 限制</strong>，跟帳密正確與否無關。</p>
+      <p><strong>最終解法</strong>：<code>IPAddress</code> 維持填實際 IP/網域（不改成 <code>localhost</code>），改從 App Pool 執行身分下手，見 1.6。</p>
+    </div>
+
+    <div class="issue">
+      <span class="tag config">權限設定</span>
+      <h4>1.6 最終解法：App Pool Identity 改為 LocalSystem</h4>
+      <p><strong>原因</strong>：走「遠端」分支時，App Pool 執行身分（<code>ApplicationPoolIdentity</code>）在網路驗證自己時權限不足，導致列舉任務失敗或「安靜地看不到」，不會顯示成錯誤。</p>
+      <p><strong>實際採用的解法</strong>：IIS 管理員 → Application Pools → Advanced Settings → Identity → <code>LocalSystem</code>；或用 PowerShell：</p>
+      <pre><code>Set-ItemProperty IIS:\AppPools\WindowsTaskManagerPool -Name processModel.identityType -Value LocalSystem</code></pre>
+      <p><code>LocalSystem</code> 對應 <code>NT AUTHORITY\SYSTEM</code>，對外網路驗證時會用機器帳號憑證，繞過 Loopback 限制，同時具備列舉本機排程任務所需的權限。</p>
+      <div class="note danger"><strong>重要</strong>：變更身分後一定要 Recycle App Pool，因為 Access Token 在處理程序啟動當下就決定好，舊 worker process 不會自動感知新的身分設定。</div>
+      <pre><code>Restart-WebAppPool -Name "WindowsTaskManagerPool"</code></pre>
+      <div class="note"><strong>風險提醒</strong>：<code>LocalSystem</code> 權限等同系統層級，屬於權限最大化做法；若有資安強化需求，可評估改用「加入 Administrators 群組」或更精細的最小權限服務帳號設計。</div>
+    </div>
+  </section>
+
+  <!-- 2. Production -->
+  <section>
+    <h2><span class="num">2</span>Production 環境：問題與解法時間軸</h2>
+
+    <div class="issue">
+      <span class="tag config">設定同步</span>
+      <h4>2.1 appsettings.Production.json 的 IPAddress 設定</h4>
+      <p>沿用 1.5/1.6 的結論，Production 機器監控自己時 <code>IPAddress</code> 一樣維持填實際 IP/網域，存取權限問題同樣以 App Pool Identity 改為 <code>LocalSystem</code> 解決，QA 與 Production 作法一致。</p>
+    </div>
+
+    <div class="issue">
+      <span class="tag config">前置需求</span>
+      <h4>2.2 這台 Production 機器發現連 IIS 都還沒安裝</h4>
+      <p><strong>解法（UI）</strong>：伺服器管理員 → 管理 → 新增角色及功能 → Server Roles 勾選 <strong>Web Server (IIS)</strong> → Role Services 使用預設勾選 → 安裝。</p>
+      <div class="note">精靈最後一頁若沒勾選「自動重新啟動目的地伺服器」，不會自動重開機，可放心安裝。</div>
+    </div>
+
+    <div class="issue">
+      <span class="tag root">⚠️ 關鍵坑 · 根本原因</span>
+      <h4>2.3 Hosting Bundle 裝在 IIS 之前 → ANCM 模組沒有正確註冊</h4>
+      <p>這是本次 Production 部署耗費最多時間排查的問題，完整記錄如下：</p>
+      <p><strong>現象</strong>：網站可連到（IIS 存取記錄有紀錄），但外部瀏覽器顯示通用 <code>500 - Internal server error</code>。改在<strong>伺服器本機</strong>瀏覽後才看到詳細錯誤：</p>
+      <pre><code>Error Code   0x8007000d
+Module       IIS Web Core
+Config File  \\?\D:\windows-task-manager\web.config</code></pre>
+      <p><strong>排查過程</strong>：</p>
+      <ol>
+        <li>先懷疑是 web.config 的 XML 語法問題，逐一修正（見 2.4）後 XML 已完全合法，錯誤依舊。</li>
+        <li>進一步確認 IIS 是否真的註冊了 <code>aspNetCore</code> 設定區段：
+          <pre><code>Test-Path "$env:windir\System32\inetsrv\config\schema\aspnetcore_schema.xml"</code></pre>
+          結果回傳 <strong>False</strong> —— 確認 ANCM 模組根本沒有整合進 IIS。
+        </li>
+      </ol>
+      <p><strong>根本原因</strong>：這台機器是「先裝 Hosting Bundle → 後裝 IIS」。Hosting Bundle 安裝當下 IIS 還不存在，導致無法把 <code>AspNetCoreModuleV2</code> 與 <code>aspNetCore</code> schema 正確登記進 <code>applicationHost.config</code>。單純重新執行安裝程式（非 repair 流程）不會補回這個註冊動作。</p>
+      <p><strong>解法</strong>：解除安裝後在 IIS 已裝好的狀態下重新安裝：</p>
+      <pre><code>winget uninstall --id Microsoft.DotNet.HostingBundle.8
+winget install --id Microsoft.DotNet.HostingBundle.8 -e
+iisreset</code></pre>
+      <p><strong>驗證修復成功</strong>：</p>
+      <pre><code>Test-Path "$env:windir\System32\inetsrv\config\schema\aspnetcore_schema.xml"
+# 應回傳 True</code></pre>
+      <div class="note danger"><strong>關鍵教訓</strong>：IIS 角色必須先安裝完成，Hosting Bundle 一定要在 IIS 裝好「之後」才安裝。順序顛倒會導致模組沒有正確註冊，且錯誤代碼 <code>0x8007000d</code> 本身不會直接指出「模組未註冊」，需額外用 <code>Test-Path</code> 驗證 schema 檔案才能確認根因。</div>
+    </div>
+
+    <div class="issue">
+      <span class="tag config">web.config</span>
+      <h4>2.4 web.config 編輯過程中的兩個 XML 錯誤（附帶記錄）</h4>
+      <p>排查 2.3 過程中，手動編輯 web.config 時曾出現以下問題（也會造成同樣的 0x8007000d，但非最終根因）：</p>
+      <table>
+        <thead><tr><th>問題</th><th>修正方式</th></tr></thead>
+        <tbody>
+          <tr><td>重複的結尾標籤 <code>&lt;/aspNetCore&gt;&lt;/aspNetCore&gt;</code></td><td>刪除多餘的一個，確保開始/結尾標籤數量對稱</td></tr>
+          <tr><td><code>stdoutLogEnabled="true"</code> 卻沒有 <code>stdoutLogFile</code></td><td>schema 規定兩者必須同時指定，需補上 <code>stdoutLogFile=".\logs\stdout"</code></td></tr>
+        </tbody>
+      </table>
+      <div class="note warn"><code>.\logs</code> 資料夾 IIS 不會自動建立，需手動建立並給寫入權限：</div>
+      <pre><code>New-Item -ItemType Directory -Path "D:\windows-task-manager\logs" -Force
+icacls "D:\windows-task-manager\logs" /grant "IIS AppPool\WindowsTaskManagerProdPool:(OI)(CI)F"</code></pre>
+    </div>
+
+    <div class="issue">
+      <span class="tag config">除錯技巧</span>
+      <h4>2.5 IIS 預設只在「本機」顯示詳細錯誤</h4>
+      <p><strong>現象</strong>：即使加了 <code>ASPNETCORE_DETAILEDERRORS=true</code>，外部瀏覽器仍只顯示通用 500 訊息。</p>
+      <p><strong>原因</strong>：IIS <code>httpErrors</code> 預設 <code>errorMode="DetailedLocalOnly"</code>，只有從伺服器「本機」瀏覽才顯示詳細內容，遠端一律顯示通用訊息（安全機制）。</p>
+      <p><strong>解法</strong>：透過遠端桌面連進主機，在<strong>主機本機瀏覽器</strong>開啟網址查看詳細錯誤。</p>
+    </div>
+
+    <div class="issue">
+      <span class="tag config">除錯技巧</span>
+      <h4>2.6 如何確認外部請求真的有打到這台機器</h4>
+      <ul class="checklist">
+        <li>確認 DNS 解析：<code>Resolve-DnsName &lt;網域&gt;</code> 比對是否為本機 IP</li>
+        <li>查 IIS 存取記錄：<code>C:\inetpub\logs\LogFiles\W3SVC&lt;id&gt;\</code></li>
+        <li>放置測試檔案：wwwroot 底下建立含 hostname 的 txt 檔，外部瀏覽器開啟驗證</li>
+        <li>本機模擬外部 Host Header 請求：<code>Invoke-WebRequest -Uri "http://localhost" -Headers @{Host="&lt;網域&gt;"}</code></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3. SOP -->
+  <section>
+    <h2><span class="num">3</span>完整正確部署 SOP（去蕪存菁版）</h2>
+    <ol class="steps">
+      <li>安裝 IIS 角色（伺服器管理員 → 新增角色及功能 → Web Server (IIS)）</li>
+      <li>確認 IIS 安裝完成後，才安裝 .NET 8 ASP.NET Core Hosting Bundle：<code>winget install --id Microsoft.DotNet.HostingBundle.8 -e</code> → <code>iisreset</code></li>
+      <li>驗證 ANCM 模組正確註冊：<code>Test-Path "$env:windir\System32\inetsrv\config\schema\aspnetcore_schema.xml"</code>（應為 True）</li>
+      <li><code>dotnet publish</code> 專案，並將 publish 資料夾複製到目標主機</li>
+      <li>確認 <code>appsettings.{Environment}.json</code> 裡 <code>ServersConfig.Servers[].IPAddress</code>：填實際 IP/網域即可，不需改成 <code>localhost</code></li>
+      <li>建立 Application Pool：.NET CLR Version = No Managed Code，Start Mode = AlwaysRunning</li>
+      <li>將 App Pool Identity 改為 LocalSystem：<code>Set-ItemProperty IIS:\AppPools\&lt;PoolName&gt; -Name processModel.identityType -Value LocalSystem</code></li>
+      <li>建立網站：Physical Path 指向 publish 資料夾，Binding 用 Host Header 綁定對應網域</li>
+      <li>建立 logs 資料夾並給寫入權限</li>
+      <li>確認 web.config：stdoutLogEnabled 若為 true 必須搭配 stdoutLogFile；標籤需完整配對</li>
+      <li>執行 <code>setup.ps1</code>（系統管理員身分），Scope 選 Machine</li>
+      <li>Google OAuth：新增對應網域的 <code>/LoginCallback</code> 回呼 URL（可與其他環境共用同一組 Client）</li>
+      <li>Recycle App Pool 讓所有設定生效：<code>Restart-WebAppPool -Name "&lt;PoolName&gt;"</code></li>
+      <li>驗證：DNS 解析、IIS 存取記錄、首頁可開啟、登入流程正常、伺服器卡片「連線正常」且任務數量非 0</li>
+    </ol>
+  </section>
+
+  <!-- 4. 安全性 -->
+  <section>
+    <h2><span class="num">4</span>安全性提醒</h2>
+    <ul class="checklist">
+      <li>appsettings.*.json 內若填入帳密／Client Secret，不應提交進版控，考慮加入 .gitignore 或改用機器層級環境變數</li>
+      <li>診斷用的 <code>ASPNETCORE_DETAILEDERRORS=true</code> 與 <code>httpErrors errorMode="Detailed"</code> 僅供臨時排查，確認問題後務必移除</li>
+      <li>任何密碼／Client Secret 曾明碼出現在聊天記錄、Log 等非受控管道，應盡快到來源重新產生（Reset），視為已外洩處理</li>
+      <li>App Pool Identity 選用 LocalSystem 屬於權限最大化做法，QA 與 Production 兩環境目前皆採用此方式；日後有資安強化需求可評估改為「加入 Administrators 群組」或更精細的最小權限設計</li>
+    </ul>
+  </section>
+
+  <!-- 5. 速查 -->
+  <section>
+    <h2><span class="num">5</span>常用診斷指令速查</h2>
+    <pre><code># 確認 Hosting Bundle / ASP.NET Core 版本
+Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*, HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* |
+  Where-Object { $_.DisplayName -like "*Hosting Bundle*" -or $_.DisplayName -like "*ASP.NET Core*" } |
+  Select-Object DisplayName, DisplayVersion
+
+# 確認 ANCM 模組是否正確註冊進 IIS
+Test-Path "$env:windir\System32\inetsrv\config\schema\aspnetcore_schema.xml"
+
+# 確認目前環境變數（Machine 層級）
+[System.Environment]::GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Machine")
+[System.Environment]::GetEnvironmentVariable("Authentication__Google__ClientId", "Machine")
+
+# 確認 App Pool Identity 目前設定
+Get-ItemProperty IIS:\AppPools\&lt;PoolName&gt; -Name processModel.identityType
+
+# 設定 App Pool Identity 為 LocalSystem
+Set-ItemProperty IIS:\AppPools\&lt;PoolName&gt; -Name processModel.identityType -Value LocalSystem
+
+# Recycle App Pool
+Restart-WebAppPool -Name "&lt;PoolName&gt;"
+
+# 確認 DNS 解析
+Resolve-DnsName &lt;網域&gt;
+
+# 查最新的 IIS 存取記錄
+Get-ChildItem "C:\inetpub\logs\LogFiles" -Recurse -Filter "*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 5
+
+# 本機模擬外部 Host Header 請求
+Invoke-WebRequest -Uri "http://localhost" -Headers @{Host="&lt;網域&gt;"} -UseBasicParsing
+
+# 查詢實際排程任務（跟 App 顯示結果比對）
+Get-ScheduledTask | Where-Object { $_.TaskPath -notlike "\Microsoft\*" } | Select-Object TaskName, TaskPath, State</code></pre>
+  </section>
+
+  <!-- 6. 相關文件 -->
+  <section>
+    <h2><span class="num">6</span>相關文件</h2>
+    <ul class="checklist">
+      <li><code>iis-reverse-proxy-windows-task-manager.md</code> — 原理說明與標準部署流程（本文件為其補充的「實戰疑難排解記錄」）</li>
+      <li>專案內：<code>DEPLOYMENT-IIS.md</code>、<code>ENVIRONMENT-CONFIGURATION.md</code>、<code>AUTHENTICATION.md</code>、<code>README.md</code></li>
+    </ul>
+  </section>
+
+  <footer>Windows Task Manager · IIS 部署實戰疑難排解記錄 — 由部署過程實際問題整理而成</footer>
+</div>
+</body>
+</html>

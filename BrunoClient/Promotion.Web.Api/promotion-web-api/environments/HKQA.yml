@@ -1,0 +1,8 @@
+name: HKQA
+variables:
+  - name: base-url
+    value: https://promotion-api-internal.qa1.hk.91dev.tw
+  - name: shopId
+    value: "2"
+  - name: collectionId
+    value: "222"

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案例分析：NC-CheckOtherChannelFailJob 心跳誤報事件（1999-11-30 Sentinel Bug）</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --panel:#121a2b;
+    --panel-2:#0f1626;
+    --border:#233047;
+    --text:#e7edf7;
+    --muted:#93a1bd;
+    --bad:#ef5b5b;
+    --bad-bg:rgba(239,91,91,0.10);
+    --bad-border:rgba(239,91,91,0.35);
+    --good:#33c9a3;
+    --good-bg:rgba(51,201,163,0.10);
+    --good-border:rgba(51,201,163,0.35);
+    --accent:#5b8cff;
+    --accent-bg:rgba(91,140,255,0.12);
+    --warn:#ffb24a;
+    --warn-bg:rgba(255,178,74,0.10);
+    --warn-border:rgba(255,178,74,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background:radial-gradient(1200px 600px at 10% -10%, #16223a 0%, var(--bg) 60%);
+    color:var(--text);
+    line-height:1.7;
+  }
+  .wrap{max-width:1160px;margin:0 auto;padding:48px 28px 100px;}
+  header.hero{text-align:center;margin-bottom:52px;}
+  .tag{
+    display:inline-block;padding:6px 16px;border-radius:999px;
+    background:var(--accent-bg);border:1px solid rgba(91,140,255,0.4);
+    color:#a9c1ff;font-size:13px;letter-spacing:0.5px;margin-bottom:18px;
+  }
+  h1{
+    font-size:clamp(24px,4vw,36px);margin:0 0 14px;
+    background:linear-gradient(90deg,#fff,#a9c1ff);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{color:var(--muted);max-width:780px;margin:0 auto;font-size:15px;}
+  .meta-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px;}
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:12px;
+    background:var(--panel);border:1px solid var(--border);font-size:13px;color:var(--muted);
+  }
+  .chip b{color:var(--text);}
+  .chip.err{border-color:var(--bad-border);color:#ffb0b0;}
+  section{margin-bottom:60px;}
+  h2{font-size:22px;margin:0 0 6px;display:flex;align-items:center;gap:10px;}
+  h2 .num{
+    display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;
+    background:var(--accent-bg);border:1px solid rgba(91,140,255,0.4);color:#a9c1ff;font-size:14px;font-weight:700;
+  }
+  .section-desc{color:var(--muted);font-size:14px;margin:0 0 26px;max-width:840px;}
+
+  /* Original alert card */
+  .alert-card{
+    background:linear-gradient(180deg,var(--warn-bg),var(--panel) 60%);
+    border:1px solid var(--warn-border);border-radius:16px;padding:22px 24px;
+    font-size:13.5px;
+  }
+  .alert-card .head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .alert-card .head .ico{font-size:20px;}
+  .alert-card .head .title{font-weight:700;font-size:16px;color:var(--warn);}
+  .alert-grid{display:grid;grid-template-columns:130px 1fr;gap:10px 16px;}
+  .alert-grid dt{color:var(--muted);}
+  .alert-grid dd{margin:0;color:var(--text);}
+  .alert-grid .highlight{
+    color:#ffb0b0;font-weight:700;background:rgba(239,91,91,0.12);
+    padding:2px 8px;border-radius:6px;display:inline-block;
+  }
+  .alert-grid pre{
+    margin:0;white-space:pre-wrap;background:#060b16;border:1px solid var(--border);border-radius:8px;
+    padding:10px 12px;font-family:Consolas,monospace;font-size:12.5px;color:#d8e2f5;
+  }
+
+  /* Compare columns */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:860px){.compare{grid-template-columns:1fr;}}
+  .card{border-radius:16px;padding:22px 22px 24px;border:1px solid var(--border);background:var(--panel);}
+  .card.bad{border-color:var(--bad-border);background:linear-gradient(180deg,var(--bad-bg),var(--panel) 55%);}
+  .card.good{border-color:var(--good-border);background:linear-gradient(180deg,var(--good-bg),var(--panel) 55%);}
+  .card .label{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:0.5px;
+    padding:5px 12px;border-radius:999px;margin-bottom:14px;
+  }
+  .card.bad .label{background:rgba(239,91,91,0.18);color:#ffb0b0;border:1px solid var(--bad-border);}
+  .card.good .label{background:rgba(51,201,163,0.18);color:#8ff0d9;border:1px solid var(--good-border);}
+  .card .dot{width:8px;height:8px;border-radius:50%;}
+  .card.bad .dot{background:var(--bad);}
+  .card.good .dot{background:var(--good);}
+  .card h3{margin:0 0 10px;font-size:17px;}
+  .card p.desc{color:var(--muted);font-size:13.5px;margin:0 0 16px;}
+  code.k{
+    display:block;background:#060b16;border:1px solid var(--border);border-radius:10px;padding:12px 14px;
+    font-family:Consolas,"SF Mono",Menlo,monospace;font-size:12.8px;color:#d8e2f5;margin-bottom:14px;overflow-x:auto;white-space:pre;
+  }
+  .card ul{margin:0;padding-left:20px;font-size:13.5px;color:var(--text);}
+  .card ul li{margin-bottom:6px;}
+  .card ul li b{color:#fff;}
+
+  /* Root cause chain */
+  .chain{display:flex;flex-direction:column;gap:0;}
+  .chain-step{
+    display:grid;grid-template-columns:44px 1fr;gap:16px;position:relative;padding-bottom:28px;
+  }
+  .chain-step:last-child{padding-bottom:0;}
+  .chain-step::before{
+    content:"";position:absolute;left:21px;top:44px;bottom:0;width:2px;
+    background:linear-gradient(180deg, var(--border), transparent);
+  }
+  .chain-step:last-child::before{display:none;}
+  .chain-icon{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:19px;background:var(--panel-2);border:1px solid var(--border);z-index:1;
+  }
+  .chain-icon.n1{border-color:rgba(91,140,255,0.4);}
+  .chain-icon.n2{border-color:var(--warn-border);}
+  .chain-icon.n3{border-color:var(--bad-border);}
+  .chain-icon.n4{border-color:var(--bad-border);background:rgba(239,91,91,0.15);}
+  .chain-icon.n5{border-color:var(--good-border);background:rgba(51,201,163,0.15);}
+  .chain-body{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .chain-body h4{margin:0 0 6px;font-size:14.5px;}
+  .chain-body p{margin:0;font-size:13.5px;color:var(--muted);}
+  .chain-body code{
+    background:#060b16;border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:12.5px;color:#d8e2f5;
+  }
+
+  /* Fact check box */
+  .fact-box{
+    background:var(--panel);border:1px solid var(--good-border);border-radius:14px;padding:20px 22px;margin-top:20px;
+  }
+  .fact-box .fh{display:flex;align-items:center;gap:8px;font-weight:700;color:#8ff0d9;margin-bottom:10px;font-size:14px;}
+  .fact-box .fm{font-size:13px;color:var(--muted);}
+  .fact-box a{color:#a9c1ff;}
+
+  /* Table */
+  table{
+    width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--border);
+    border-radius:14px;overflow:hidden;font-size:13.5px;
+  }
+  thead th{background:var(--panel-2);text-align:left;padding:12px 16px;font-size:12.5px;color:var(--muted);
+    letter-spacing:0.4px;border-bottom:1px solid var(--border);}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(255,255,255,0.02);}
+  td.mono{font-family:Consolas,monospace;color:#a9c1ff;font-size:12.8px;}
+
+  /* diff view */
+  .diff{background:#060b16;border:1px solid var(--border);border-radius:12px;overflow:hidden;font-family:Consolas,monospace;font-size:12.8px;}
+  .diff .line{padding:8px 16px;white-space:pre;}
+  .diff .del{background:rgba(239,91,91,0.12);color:#ffb0b0;border-left:3px solid var(--bad);}
+  .diff .add{background:rgba(51,201,163,0.12);color:#8ff0d9;border-left:3px solid var(--good);}
+  .diff .ctx{color:var(--muted);}
+  .file-tag{
+    display:inline-block;font-size:12px;color:var(--muted);background:var(--panel-2);
+    border:1px solid var(--border);padding:4px 10px;border-radius:8px;margin-bottom:10px;font-family:Consolas,monospace;
+  }
+
+  .flow-note{
+    margin-top:18px;padding:14px 18px;border-radius:12px;background:var(--accent-bg);
+    border:1px solid rgba(91,140,255,0.35);font-size:13.5px;color:#cfe0ff;
+  }
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media (max-width:900px){.summary-grid{grid-template-columns:1fr;}}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;}
+  .stat .n{font-size:24px;font-weight:800;margin-bottom:4px;}
+  .stat .n.bad{color:var(--bad);}
+  .stat .n.good{color:var(--good);}
+  .stat .t{font-size:13px;color:var(--muted);}
+
+  footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:60px;border-top:1px solid var(--border);padding-top:24px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="tag">WindowsTaskManager.Monitor · 案例分析</span>
+    <h1>心跳型排程「假心跳停止」誤報事件<br>NC-CheckOtherChannelFailJob（1999-11-30 Sentinel Bug）</h1>
+    <p class="sub">
+      一支昨天早上才新掛上去、實際上還一次都沒執行過的排程，被 Monitor 判定為「心跳已停止 14,024,745 分鐘（約 26.7 年）」而發出告警。
+      根因是 Windows Task Scheduler 底層 API 對「從未執行過」的任務，回傳的並非預期的空值，而是一個歷史悠久的特殊 sentinel 日期。
+    </p>
+    <div class="meta-chips">
+      <div class="chip">📍 位置 <b>\Notification</b></div>
+      <div class="chip">🏷️ 排程 <b>NC-CheckOtherChannelFailJob</b></div>
+      <div class="chip">🌏 環境 <b>HK / Prod</b></div>
+      <div class="chip err">⚠️ 告警類型 <b>HeartbeatStopped（誤報）</b></div>
+    </div>
+  </header>
+
+  <!-- 1. 事件現場 -->
+  <section>
+    <h2><span class="num">1</span> 事件現場：原始告警內容</h2>
+    <p class="section-desc">2026-07-30 上午，Slack 收到以下心跳型排程停止告警，觸發時直覺懷疑又是去重機制的問題，但深入追查後發現是完全不同的另一個 bug。</p>
+    <div class="alert-card">
+      <div class="head"><span class="ico">⚠️</span><span class="title">心跳型排程停止告警</span></div>
+      <dl class="alert-grid">
+        <dt>環境</dt><dd>🌏 市場 HK ／環境 Prod</dd>
+        <dt>排程名稱</dt><dd>NC-CheckOtherChannelFailJob</dd>
+        <dt>位置</dt><dd>\Notification</dd>
+        <dt>任務類型</dt><dd>一般排程</dd>
+        <dt>建立者</dt><dd>NINEYI\barlinoyeh</dd>
+        <dt>描述</dt><dd>找出區間內 4 個新 Error* 狀態的非 Line channel 推播（Push/SMS/Email/LineLon），並 Slack 通報 nc-monitor channel，每小時執行一次</dd>
+        <dt>觸發條件</dt><dd>At 12:05 AM every day — After triggered, repeat every 01:00:00 for a duration of 1.00:00:00</dd>
+        <dt>執行動作</dt><dd><code>powershell -F D:\PowerShell\NotificationCenter\CheckOtherChannelFailJob.ps1</code></dd>
+        <dt>預計執行時間</dt><dd><span class="highlight">1999-11-30 00:00:00</span> ← 第一個異常訊號</dd>
+        <dt>告警原因</dt><dd>心跳已停止（心跳已停止，距離最後一次執行已 <span class="highlight">14,024,745 分鐘</span>（閾值 120 分鐘））</dd>
+      </dl>
+    </div>
+    <div class="summary-grid" style="margin-top:22px;">
+      <div class="stat"><div class="n bad">26.7 年</div><div class="t">告警顯示的「心跳停止時間」，換算 14,024,745 分鐘</div></div>
+      <div class="stat"><div class="n bad">昨天早上</div><div class="t">這支排程實際新掛上去的時間，尚未真正執行過任何一次</div></div>
+      <div class="stat"><div class="n good">0 次真實異常</div><div class="t">排程本身完全正常，純屬 Monitor 誤判</div></div>
+    </div>
+  </section>
+
+  <!-- 2. 第一個線索：可疑的日期 -->
+  <section>
+    <h2><span class="num">2</span> 第一個線索：「預計執行時間 1999-11-30」不是巧合</h2>
+    <p class="section-desc">
+      這支任務是「昨天早上新掛的排程」，照理說「上次執行時間」應該是 <code>null</code>／從未執行，但告警卻算出一個具體、極舊的日期，
+      而且 <code>1999-11-30</code> 這組數字在後端排程監控圈裡其實是個「熟面孔」。
+    </p>
+    <div class="fact-box">
+      <div class="fh">🔍 查證結果</div>
+      <div class="fm">
+        本專案使用的 <code>Microsoft.Win32.TaskScheduler</code>（NuGet 套件，封裝 Windows Task Scheduler COM API）有一個已知行為：
+        當任務「從未執行過」時，<code>Task.LastRunTime</code> 並不會回傳 <code>DateTime.MinValue</code>，
+        而是回傳 Task Scheduler 底層 API 的特殊 sentinel 值 <code>1999-11-30 00:00:00</code>。
+        這個行為在套件官方 GitHub 已有 issue 記錄（<a href="https://github.com/dahall/TaskScheduler/issues/779" target="_blank">dahall/TaskScheduler #779</a>）。
+      </div>
+    </div>
+    <div class="flow-note">
+      🧮 驗算：<code>2026-07-30 − 1999-11-30 ≈ 26.67 年 ≈ 14,024,745 分鐘</code> —— 跟告警訊息裡的數字完全吻合，
+      證實這支排程根本不是「心跳停止」，而是「還沒有第一次執行紀錄」被誤判。
+    </div>
+  </section>
+
+  <!-- 3. 根因鏈 -->
+  <section>
+    <h2><span class="num">3</span> 根因鏈：程式碼裡漏接的一種 sentinel 值</h2>
+    <p class="section-desc">程式碼位置：<code>WindowsTaskManager.Monitor/Services/SchedulerReader.cs</code></p>
+    <div class="chain">
+      <div class="chain-step">
+        <div class="chain-icon n1">🆕</div>
+        <div class="chain-body">
+          <h4>Step 1 — 排程新掛上去，還沒觸發過第一次執行</h4>
+          <p>任務底下設有 Repetition Trigger（每小時重複），被 Monitor 判定為心跳型（Type C），但因為剛建立，<code>Task.LastRunTime</code> 屬於「從未執行」狀態。</p>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-icon n2">🧬</div>
+        <div class="chain-body">
+          <h4>Step 2 — Task Scheduler API 回傳非預期的 sentinel 日期</h4>
+          <p>底層 API 沒有回傳 <code>DateTime.MinValue</code> 或 <code>null</code>，而是回傳歷史悠久的怪異值 <code>1999-11-30 00:00:00</code>，這是 COM API 對「從未執行」狀態的內部表示方式，並非本專案自訂邏輯的產物。</p>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-icon n3">🕳️</div>
+        <div class="chain-body">
+          <h4>Step 3 — 程式碼的「從未執行」判斷只接住了 default，沒接住這個 sentinel</h4>
+          <p>原本的防呆判斷是 <code>task.LastRunTime == default ? null : task.LastRunTime</code>，這裡的 <code>default</code> 是 C# 的 <code>DateTime.MinValue</code>（<code>0001-01-01</code>），跟 Task Scheduler 實際回傳的 <code>1999-11-30</code> 是兩個不同的值 —— 判斷完全沒接住，<code>1999-11-30</code> 被當成「真實的最後執行時間」往下傳遞。</p>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-icon n4">💥</div>
+        <div class="chain-body">
+          <h4>Step 4 — 心跳判斷邏輯用這個假時間算出巨大 gap，誤判為異常</h4>
+          <p><code>CheckHeartbeatTask</code> 用 <code>gap = now − LastRunTime</code> 判斷是否心跳停止，這裡的 <code>LastRunTime</code> 已經被污染成 <code>1999-11-30</code>，算出 gap ≈ 14,024,745 分鐘，遠超過閾值 120 分鐘，於是判定「心跳已停止」並發送告警 —— 但實際上任務只是「還沒開始」，不是「壞了」。</p>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-icon n5">✅</div>
+        <div class="chain-body">
+          <h4>Step 5 — 修正：新增 sentinel 正規化，兩種「從未執行」值都視為 null</h4>
+          <p>新增 <code>NormalizeLastRunTime()</code> 輔助方法，同時檢查 <code>default</code> 與 <code>1999-11-30</code> 兩種 sentinel，套用到心跳型與單次事件型兩處計算 <code>LastRunTime</code> 的地方。修正後，剛新掛的排程會正確落入既有的 <code>plan.LastRunTime == null</code> 分支，判定為「尚無資料，本輪不判斷」，不再誤報。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 修正前後程式碼 -->
+  <section>
+    <h2><span class="num">4</span> 修正前後程式碼對照</h2>
+    <p class="section-desc">兩處計算 <code>LastRunTime</code> 的地方都套用同一個正規化方法，避免同樣的問題在單次事件型任務上也發生。</p>
+
+    <div class="file-tag">SchedulerReader.cs — 新增輔助方法</div>
+    <div class="diff" style="margin-bottom:20px;">
+      <div class="line add">+ private static DateTime? NormalizeLastRunTime(DateTime value)</div>
+      <div class="line add">+ {</div>
+      <div class="line add">+     var neverRunSentinel = new DateTime(1999, 11, 30);</div>
+      <div class="line add">+     return value == default || value == neverRunSentinel ? (DateTime?)null : value;</div>
+      <div class="line add">+ }</div>
+    </div>
+
+    <div class="file-tag">SchedulerReader.cs — 心跳型任務（GetMonitorPlan）</div>
+    <div class="diff" style="margin-bottom:20px;">
+      <div class="line del">- var lastRunTime = task.LastRunTime == default ? (DateTime?)null : task.LastRunTime;</div>
+      <div class="line add">+ var lastRunTime = NormalizeLastRunTime(task.LastRunTime);</div>
+    </div>
+
+    <div class="file-tag">SchedulerReader.cs — 單次事件型任務（GetMonitorPlan）</div>
+    <div class="diff">
+      <div class="line del">- var lastRunTimeForSingleEvent = task.LastRunTime == default ? (DateTime?)null : task.LastRunTime;</div>
+      <div class="line add">+ var lastRunTimeForSingleEvent = NormalizeLastRunTime(task.LastRunTime);</div>
+    </div>
+  </section>
+
+  <!-- 5. 與過去問題的區別 -->
+  <section>
+    <h2><span class="num">5</span> 與先前「48hr 去重」問題的區別</h2>
+    <p class="section-desc">兩起事件都是心跳型任務的誤報，容易被誤以為是同一個問題，實際上根因完全不同、修法也不同。</p>
+    <div class="compare">
+      <div class="card bad">
+        <span class="label"><span class="dot"></span>先前事件：Referrer_Promotion_Expire_SalePage_Close</span>
+        <h3>問題類型：長期異常只告警一次</h3>
+        <p class="desc">任務真的卡死了，但去重 Key 綁死在不變的 LastRunTime，導致 48hr 內只提醒一次。</p>
+        <ul>
+          <li><b>觸發前提</b>：任務曾經正常執行過，之後才卡住</li>
+          <li><b>問題本質</b>：告警去重機制設計缺陷</li>
+          <li><b>修法</b>：獨立提醒間隔 <code>HeartbeatAlertRepeatIntervalMinutes</code> + Key 拿掉時間戳</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <span class="label"><span class="dot"></span>本次事件：NC-CheckOtherChannelFailJob</span>
+        <h3>問題類型：從未執行過就被判定異常</h3>
+        <p class="desc">任務根本還沒執行過第一次，Task Scheduler API 回傳的 sentinel 值沒被正確辨識，直接誤判為「心跳停止 26.7 年」。</p>
+        <ul>
+          <li><b>觸發前提</b>：任務剛建立，一次都還沒執行過</li>
+          <li><b>問題本質</b>：「從未執行」的判斷邏輯不完整（漏接一種 sentinel 值）</li>
+          <li><b>修法</b>：<code>NormalizeLastRunTime()</code> 同時識別 <code>default</code> 與 <code>1999-11-30</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 總表 -->
+  <section>
+    <h2><span class="num">6</span> 事件總表</h2>
+    <table>
+      <thead><tr><th>項目</th><th>內容</th></tr></thead>
+      <tbody>
+        <tr><td>受影響排程</td><td class="mono">\Notification\NC-CheckOtherChannelFailJob</td></tr>
+        <tr><td>告警類型</td><td>HeartbeatStopped（誤報）</td></tr>
+        <tr><td>誤報顯示的 gap</td><td>14,024,745 分鐘（≈ 26.7 年）</td></tr>
+        <tr><td>根因</td><td>Task Scheduler API 對「從未執行」任務回傳 sentinel 值 <code class="mono">1999-11-30 00:00:00</code>，程式碼的 <code class="mono">== default</code> 判斷沒接住這個值</td></tr>
+        <tr><td>參考</td><td><a href="https://github.com/dahall/TaskScheduler/issues/779" target="_blank" style="color:#a9c1ff;">dahall/TaskScheduler GitHub issue #779</a></td></tr>
+        <tr><td>修正檔案</td><td class="mono">WindowsTaskManager.Monitor/Services/SchedulerReader.cs</td></tr>
+        <tr><td>修正方式</td><td>新增 <code class="mono">NormalizeLastRunTime()</code>，同時判斷 <code class="mono">default</code> 與 <code class="mono">1999-11-30</code> 兩種「從未執行」sentinel，套用到心跳型與單次事件型兩處</td></tr>
+        <tr><td>驗證</td><td><code class="mono">dotnet build</code> 成功，0 Warning／0 Error</td></tr>
+        <tr><td>影響範圍</td><td>所有「剛新掛上去、還沒執行過第一次」的排程（不限心跳型），修正前都可能誤報</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    根據 2026-07-30 案例調查與 SchedulerReader.cs 原始碼修正整理製作 · WindowsTaskManager.Monitor
+  </footer>
+
+</div>
+</body>
+</html>

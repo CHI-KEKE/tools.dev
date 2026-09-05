@@ -1,0 +1,7 @@
+name: tw-prod-8
+color: "#346AB2"
+variables:
+  - name: base-url
+    value: https://shop8.91dev.tw
+  - name: shopId
+    value: "8"

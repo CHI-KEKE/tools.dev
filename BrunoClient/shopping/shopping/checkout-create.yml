@@ -1,0 +1,35 @@
+info:
+  name: checkout-create
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/shopping/api/Checkout/Create?lang=zh-TW&shopId={{shopId}}"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+    - name: N1-HOST
+      value: "{{host}}"
+    - name: '[{"key":"N1-SHOP-ID","value":"10230","type":"text","uuid":"aae4aae2-0f7e-4513-bb3f-7b15c9a1a2ab"}]'
+      value: "{{shopId}}"
+  params:
+    - name: lang
+      value: zh-TW
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "cartUniqueKey":"92b3e0de-9ec6-4b49-bf4e-0d03d15efcb4"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,4 @@
+name: HKPROD
+variables:
+  - name: template-base-url
+    value: http://notification-template-api-internal.hk.91app.io

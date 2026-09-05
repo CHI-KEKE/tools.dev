@@ -1,0 +1,35 @@
+info:
+  name: carts-create
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/carts/create?lang=zh-TW&shopId={{shopId}}"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+    - name: N1-HOST
+      value: "{{host}}"
+    - name: Cookie
+      value: "{{Cookie}}"
+  params:
+    - name: lang
+      value: zh-TW
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "source": "Web"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

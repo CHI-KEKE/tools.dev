@@ -1,0 +1,4 @@
+name: pp
+variables:
+  - name: base-url
+    value: http://translation.pp.91dev.tw

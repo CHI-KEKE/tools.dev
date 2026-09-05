@@ -1,0 +1,44 @@
+info:
+  name: address-book-insert
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{base-url}}api/user/address-book-insert?lang=zh-TW&shopId={{shopId}}"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+    - name: Cookie
+      value: "{{Cookie}}"
+    - name: N1-TRACE-ID
+      value: ""
+  params:
+    - name: lang
+      value: zh-TW
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "checkoutUniqueKey": "88a1664c-af2b-43ad-953b-05aac45dc476",
+          "shippingType": "Home",
+          "zipCode": "218925",
+          "address": "coolSigapore",
+          "city": "",
+          "district": "",
+          "state": "",
+          "country": "",
+          "cellPhone": "88888888",
+          "fullName": "AllenLinAAAbccccdddaaaaaaaaaaaaaadddaaa"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

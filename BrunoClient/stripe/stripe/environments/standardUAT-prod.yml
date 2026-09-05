@@ -1,0 +1,4 @@
+name: standardUAT-prod
+variables:
+  - name: x-secret
+    value: 

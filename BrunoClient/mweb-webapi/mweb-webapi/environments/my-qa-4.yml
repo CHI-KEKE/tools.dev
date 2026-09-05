@@ -1,0 +1,7 @@
+name: my-qa-4
+color: "#2E8A54"
+variables:
+  - name: base-url
+    value: https://lilychuang2.shop.qa1.my.91dev.tw
+  - name: shopId
+    value: "4"

@@ -1,0 +1,127 @@
+info:
+  name: create-databases
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/databases"
+  headers:
+    - name: Notion-Version
+      value: "{{version}}"
+  body:
+    type: json
+    data: |
+      {
+          "parent": {
+              "type": "page_id",
+              "page_id": "2466058c3bee44c2ad2b7d8022e3114c"
+          },
+          "icon": {
+              "type": "emoji",
+              "emoji": "🐟"
+          },
+          "title": [
+              {
+                  "type": "text",
+                  "text": {
+                      "content": "Catches",
+                      "link": null
+                  }
+              }
+          ],
+          "properties": {
+              "Name": {
+                  "title": {}
+              },
+              "Species": {
+                  "select": {
+                      "options": [
+                          {
+                              "name": "Northern Pike",
+                              "color": "green"
+                          },
+                          {
+                              "name": "Walleye",
+                              "color": "red"
+                          },
+                          {
+                              "name": "Smallmouth Bass",
+                              "color": "pink"
+                          }
+                      ]
+                  }
+              },
+              "Weight (lbs)": {
+                  "number": {}
+              },
+              "Location": {
+                  "rich_text": {}
+              },
+              "Date": {
+                  "date": {}
+              }
+          }
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  {
+      "parent": {
+          "type": "page_id",
+          "page_id": "2466058c3bee44c2ad2b7d8022e3114c"
+      },
+      "icon": {
+          "type": "emoji",
+          "emoji": "🖼️"
+      },
+      "title": [
+          {
+              "type": "text",
+              "text": {
+                  "content": "Trips",
+                  "link": null
+              }
+          }
+      ],
+      "cover": {
+          "type": "external",
+          "external": {
+              "url": "https://images.unsplash.com/photo-1597956959732-9b8cb12f8960?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1332&q=80"
+          }
+      },
+      "properties": {
+          "Trip Name": {
+              "title": {}
+          },
+          "Catches": {
+              "relation": {
+                  "database_id": "2d44968c08514d5abd480ab8724d5cdf",
+                  "type": "dual_property",
+                  "dual_property": {}
+              }
+          },
+          "Total Weight Caught": {
+              "rollup": {
+                  "rollup_property_name": "Weight (lbs)",
+                  "relation_property_name": "Catches",
+                  "function": "sum"
+              }
+          },
+          "Total Fish Caught": {
+              "rollup": {
+                  "rollup_property_name": "Name",
+                  "relation_property_name": "Catches",
+                  "function": "count_values"
+              }
+          }
+      }
+  }

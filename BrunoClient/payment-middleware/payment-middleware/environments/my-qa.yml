@@ -1,0 +1,5 @@
+name: my-qa
+color: "#2E8A54"
+variables:
+  - name: base-url
+    value: https://payment-middleware-api-internal.qa1.my.91dev.tw

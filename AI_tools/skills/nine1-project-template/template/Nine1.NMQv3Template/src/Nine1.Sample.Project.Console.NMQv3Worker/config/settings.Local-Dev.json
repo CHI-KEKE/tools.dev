@@ -1,0 +1,7 @@
+{
+  // 開發用的 config ，擺放 TW 開發環境需要 override 的業務邏輯 settings 。
+  // 取得方式 (讓各服務的 TL 自己決定政策) ： 1. 可以跟著 source code repo 。  2. 不存在於 source code repo ，讓 developer 自己管理、交換。
+  "_N1CONFIG": {
+    "TestKey": "TestValue"
+  }
+}

@@ -1,0 +1,233 @@
+<!--
+元件：PostgreSQL 大象品牌風格（postgres-elephant-style）
+用途：PostgreSQL 主題的知識型技術文章（歷史沿革、設計思想、擴充機制、Vector/pgvector 等），想要直接呼應 PostgreSQL 官方品牌識別（藍色大象剪影 + 粗黑描邊 + 白底）時使用。
+實戰來源：Allen 提供 PostgreSQL 官方 Logo 截圖（深藍大象頭剪影，外層有一圈粗黑描邊，白底，"PostgreSQL" 字樣一半黑色一半官方藍），指定以此配色開發 Postgres.md。
+
+視覺語言拆解：
+  - 底色維持「近乎純白」而非淡藍或深色：background 用 #fdfdfd，只在角落點綴極淡的藍色放射狀漸層（rgba 透明度 .06~.12），呼應 Logo 本身乾淨的白底觀感，不像 mysql-dolphin-style 那樣整體染成淡藍。
+  - 主色是 PostgreSQL 官方大象藍（`--pg` #336791 → `--pg2` #1a3c56 深藍漸層），用在 hero 背景、章節徽章、時間軸數字圓圈、卡片頂部色條、連結色。
+  - 最具辨識度的元素是「粗黑描邊」：Logo 本身大象剪影外層有一圈明顯的黑色輪廓線，這個元件把它轉譯成卡片與徽章的 `border: 2.5px solid` 黑色描邊（`--outline` #1c1c1c），而不是常見的細邊框或無邊框陰影卡片，藉此致敬 Logo 的手繪剪影粗線條質感。
+  - 強調色是暖灰黑（`--outline`），只用在描邊、hero 大標題文字、eyebrow 標籤邊框，不額外發明第二個高彩度強調色，維持 Logo「藍 + 黑 + 白」三色的簡潔調性。
+  - 輔助分類色比照其他元件維持 info/warn/danger/ok 四色中性語意，另外新增 teal（青綠，補充資訊）、violet（紫，延伸分類）兩個非品牌輔助色，供三欄摘要卡片切換分類使用。
+  - 「大象剪影點綴」：hero 背景與分隔線加入 🐘 emoji 點陣或大象剪影分隔線 `pg-trunk-divider`，呼應 Logo 大象意象，純裝飾不承載語意。
+  - 卡片一律白底 + 粗黑描邊（而非細邊框）+ 柔和陰影，頂部色條預設大象藍，可切換 teal/violet 做分類。
+  - 字體維持系統字體，程式碼區塊 `pre.pg-pre` 切換成深藍夜色終端機感（深藍黑底 #0f1f2e + 亮色語法上色），與白底形成對比。
+  - 圓角偏大（14~20px），維持柔和現代感，但卡片描邊粗度（2.5px）帶出品牌識別度，是本元件與 mysql-dolphin-style／warm-paper-style 最大的視覺差異。
+
+適用情境：
+  - PostgreSQL 歷史沿革、設計哲學、擴充機制（extension/type/index method）、pgvector/Vector Database 等知識型技術文章，想要品牌感貼近 PostgreSQL 官方識別色與描邊質感。
+  - 需要在文章中放置概念說明卡片、流程步驟、案例佐證、程式碼片段，且想要與其他資料庫知識文章（如 mysql-dolphin-style）做風格區隔，改用「粗黑描邊 + 大象藍」取代「淡藍底 + 海豚藍橘」。
+
+不適合情境：
+  - 事件回顧/故障排查等需要明確「紅=急迫、琥珀=待觀察、綠=已解決」風險分級語意的文章，本風格的大象藍/黑是品牌裝飾語意，非危險分級語意，callout 仍沿用中性 info/warn/danger/ok 四色，不要把大象藍/黑誤用成風險色。
+  - 非 PostgreSQL / 非資料庫品牌相關主題，避免濫用官方識別色造成誤導，改用 warm-paper-style 或其他中性風格。
+
+包含區塊：
+  1. pg-hero：開場橫幅，大象藍漸層底 + 黑色描邊 eyebrow 標籤 + 大標題 + 說明文字 + 徽章列 + 大象點陣點綴
+  2. pg-section-head：章節標題（黑描邊圓角徽章編號 + h2），徽章可用 .accent/.teal/.violet 變化色彩區分章節分類
+  3. pg-card：白色卡片容器，粗黑描邊，通用於任何段落內容包裝
+  4. pg-callout：提示框（info/warn/danger/ok 四種中性語意色，非品牌色）
+  5. pg-summary-grid + pg-box：三欄摘要卡片網格，每張卡頂部一條色條（pg/teal/violet 三種分類）
+  6. pg-flow + pg-step：橫向流程步驟（含 .cond 條件分支樣式與箭頭連接）
+  7. pg-steps + pg-stepcard：直向時間軸步驟卡（左側圓形編號 + 卡片說明）
+  8. pg-checklist：條列核取清單（打勾圖示）
+  9. pg-evidence：案例佐證框（標籤 + 案例內容）
+  10. pre.pg-pre：深藍夜色終端機風程式碼區塊（語法上色 class：.kw/.str/.cm/.fn/.type/.num/.op）
+  11. pg-trunk-divider：大象點列分隔線，用於長文章分隔大段落
+
+同一篇文章內若要用多個章節，`<style>` 只需在第一個出現的 tab 定義一次，之後每個 tab 直接重複使用 class 即可。
+-->
+
+<style>
+.pg{
+  display:block;
+  font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'PingFang TC','Microsoft JhengHei',sans-serif;
+  background:
+    radial-gradient(700px 400px at 94% -6%, rgba(51,103,145,.10), transparent 60%),
+    radial-gradient(900px 500px at -6% 106%, rgba(28,28,28,.06), transparent 55%),
+    #fdfdfd;
+  color:#1c1f22!important;
+  line-height:1.75;
+  border-radius:20px;
+  padding:1px 0 28px;
+  margin:0 0 20px;
+  overflow:hidden;
+  --ink:#1c1f22; --sub:#54606b; --card:#ffffff; --line:#e3e6e9;
+  --pg:#336791; --pg2:#1a3c56; --outline:#1c1c1c; --teal:#0d9488; --violet:#7c6cf7; --danger:#e5484d;
+  --shadow:0 10px 30px -12px rgba(28,28,28,.16);
+}
+.pg *{box-sizing:border-box;}
+.pg a{color:var(--pg)!important;text-decoration:none;}
+.pg a:hover{text-decoration:underline;}
+.pg .pg-hero{padding:48px 6vw 34px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--pg2),var(--pg));}
+.pg .pg-hero::before{content:"🐘 · · · 🐘 · · · 🐘 · · · 🐘";position:absolute;top:14px;left:0;right:0;text-align:center;font-size:.9rem;opacity:.25;letter-spacing:.3em;color:#fff!important;pointer-events:none;}
+.pg .pg-eyebrow{display:inline-block;font-size:.78rem;letter-spacing:.16em;color:#fff!important;text-transform:uppercase;font-weight:700;margin-bottom:12px;background:rgba(0,0,0,.28);border:1.5px solid rgba(255,255,255,.55);padding:6px 14px;border-radius:999px;}
+.pg .pg-hero h1{font-size:1.7rem;margin:0 0 12px;color:#fff!important;font-weight:800;}
+.pg .pg-hero p{color:#dbe8f0!important;max-width:700px;margin:0 auto;font-size:1rem;}
+.pg .pg-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.pg .pg-badge{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.4);padding:6px 14px;border-radius:999px;font-size:.8rem;color:#f2f7fa!important;}
+.pg .pg-container{padding:0 5vw;}
+.pg section{margin-bottom:44px;}
+.pg .pg-section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.pg .pg-section-head .pg-chip{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;background:linear-gradient(135deg,var(--pg2),var(--pg));color:#fff!important;font-size:1rem;border:2px solid var(--outline);box-shadow:var(--shadow);}
+.pg .pg-section-head.teal .pg-chip{background:linear-gradient(135deg,#0d7a70,#5fd4c4);}
+.pg .pg-section-head.violet .pg-chip{background:linear-gradient(135deg,#7c6cf7,#a78bfa);}
+.pg .pg-section-head h2{margin:0;font-size:1.3rem;font-weight:800;color:var(--ink)!important;}
+.pg h3{font-size:1.08rem;margin:26px 0 10px;color:var(--ink)!important;border-left:4px solid var(--pg);padding-left:10px;}
+.pg p{color:var(--sub)!important;}
+.pg .pg-card{background:var(--card);border:2.5px solid var(--outline);border-radius:18px;box-shadow:var(--shadow);padding:18px 22px;margin:14px 0;}
+.pg table{width:auto;max-width:100%;border-collapse:separate;border-spacing:0;background:var(--card)!important;border:2.5px solid var(--outline);border-radius:16px;overflow:hidden;margin:14px 0 22px;font-size:.88rem;box-shadow:var(--shadow);}
+.pg thead th{background:#eef4f8!important;color:var(--ink)!important;text-align:left;padding:13px 16px;font-weight:800;border-bottom:2px solid var(--outline);}
+.pg tbody td{padding:13px 16px;border-bottom:1px solid var(--line);color:#2b3742!important;vertical-align:top;background:var(--card)!important;}
+.pg tbody tr:last-child td{border-bottom:none;}
+.pg tbody tr:hover td{background:#f4f8fb!important;}
+.pg tbody td strong{color:var(--ink)!important;}
+.pg tbody td code{color:#1a3c56!important;}
+.pg code{font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace;background:#eaf1f6!important;color:#1a3c56!important;padding:2px 7px;border-radius:6px;font-size:.88em;border:1px solid #d7e2ea;}
+.pg pre.pg-pre{background:#0f1f2e!important;border:2.5px solid var(--outline);border-radius:16px;padding:20px 22px;overflow-x:auto;margin:16px 0;position:relative;color:#e8f1f7!important;font-size:.85rem!important;line-height:1.7!important;font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace!important;white-space:pre!important;box-shadow:var(--shadow);}
+.pg pre.pg-pre::before{content:attr(data-lang);position:absolute;top:12px;right:16px;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#7d9bad!important;font-family:'Segoe UI',sans-serif;}
+.pg .kw{color:#7fc4ff!important;} .pg .str{color:#c3e88d!important;} .pg .cm{color:#5f8299!important;font-style:italic;} .pg .fn{color:#ffb454!important;} .pg .type{color:#7fd0ff!important;} .pg .num{color:#c3e88d!important;} .pg .op{color:#ff6b9d!important;}
+.pg .pg-callout{border-radius:16px;padding:18px 22px;margin:18px 0;border:1px solid transparent;display:flex;gap:14px;}
+.pg .pg-callout .pg-icon{font-size:1.3rem;flex:none;}
+.pg .pg-callout.info{background:#eff6ff;border-color:#bfdbfe;}
+.pg .pg-callout.warn{background:#fffbeb;border-color:#fde68a;}
+.pg .pg-callout.danger{background:#fef2f2;border-color:#fecaca;}
+.pg .pg-callout.ok{background:#ecfdf5;border-color:#a7f3d0;}
+.pg .pg-callout p{margin:0;font-size:.92rem;color:#2b3742!important;}
+.pg .pg-callout strong{color:var(--ink)!important;}
+.pg .pg-tag{display:inline-block;font-size:.72rem;font-weight:800;padding:3px 11px;border-radius:999px;letter-spacing:.02em;}
+.pg .pg-tag.danger{background:#fee2e2!important;color:#b91c1c!important;}
+.pg .pg-tag.ok{background:#dcfce7!important;color:#15803d!important;}
+.pg .pg-tag.warn{background:#fef3c7!important;color:#b45309!important;}
+.pg .pg-tag.info{background:#e0f2fe!important;color:#0369a1!important;}
+.pg .pg-tag.pg{background:#dfeaf1!important;color:#1a3c56!important;}
+.pg .pg-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0;}
+.pg .pg-summary-grid .pg-box{background:var(--card);border:2.5px solid var(--outline);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);border-top:5px solid var(--pg);position:relative;overflow:hidden;}
+.pg .pg-summary-grid .pg-box.pg{border-top-color:var(--pg);}
+.pg .pg-summary-grid .pg-box.teal{border-top-color:var(--teal);}
+.pg .pg-summary-grid .pg-box.violet{border-top-color:var(--violet);}
+.pg .pg-summary-grid .pg-box h4{margin:0 0 8px;color:var(--ink)!important;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;}
+.pg .pg-summary-grid .pg-box p{margin:0;font-size:.87rem;color:var(--sub)!important;}
+@media (max-width:780px){.pg .pg-summary-grid{grid-template-columns:1fr;}}
+.pg .pg-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0;}
+.pg .pg-flow .pg-step{background:var(--card);border:2px solid var(--outline);border-radius:12px;padding:10px 16px;font-size:.85rem;font-weight:700;color:var(--ink)!important;box-shadow:var(--shadow);}
+.pg .pg-flow .pg-step.cond{background:#fffbeb;border-color:#c99a1f;color:#b45309!important;}
+.pg .pg-flow .pg-arrow{color:var(--pg)!important;font-size:1.2rem;font-weight:900;}
+.pg .pg-steps{display:flex;flex-direction:column;gap:14px;margin:16px 0 22px;}
+.pg .pg-stepcard{background:var(--card);border:2.5px solid var(--outline);border-radius:14px;padding:16px 20px;position:relative;padding-left:60px;box-shadow:var(--shadow);}
+.pg .pg-stepcard .pg-stepnum{position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pg2),var(--pg));color:#fff!important;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;border:2px solid var(--outline);}
+.pg .pg-stepcard.cond .pg-stepnum{background:linear-gradient(135deg,#b45309,#f7b955);}
+.pg .pg-stepcard .pg-step-title{font-weight:700;color:var(--ink)!important;font-size:1rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pg .pg-stepcard p{margin:6px 0;font-size:.9rem;color:var(--sub)!important;}
+.pg .pg-checklist{list-style:none;padding:0;margin:16px 0;}
+.pg .pg-checklist li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);color:var(--sub)!important;}
+.pg .pg-checklist li:last-child{border-bottom:none;}
+.pg .pg-checklist li::before{content:"✓";flex:none;width:22px;height:22px;border-radius:7px;background:#dfeaf1;color:#1a3c56!important;font-size:.75rem;display:flex;align-items:center;justify-content:center;margin-top:2px;font-weight:900;border:1.5px solid var(--outline);}
+.pg .pg-evidence{border:2.5px solid var(--outline);background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px;margin:16px 0 22px;}
+.pg .pg-evidence .pg-evidence-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.pg .pg-evidence .pg-evidence-head .pg-tag{background:var(--pg2)!important;color:#fff!important;}
+.pg .pg-trunk-divider{display:flex;align-items:center;gap:10px;justify-content:center;margin:36px 0;color:var(--pg)!important;}
+.pg .pg-trunk-divider::before,.pg .pg-trunk-divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line) 40%,var(--line) 60%,transparent);}
+.pg .pg-trunk-divider span{font-size:1.1rem;}
+.pg footer{text-align:center;padding:30px 5vw 6px;color:var(--sub)!important;font-size:.82rem;border-top:1px solid var(--line);margin-top:8px;}
+</style>
+
+<div class="pg">
+<div class="pg-hero">
+<span class="pg-eyebrow">範例 · PostgreSQL Elephant Style</span>
+<h1>🐘 PostgreSQL 大象品牌風格範例</h1>
+<p>這是一份示範文章的開場橫幅說明，用來展示大象藍漸層底、粗黑描邊卡片與白底的整體觀感。</p>
+<div class="pg-badges">
+<span class="pg-badge">範例徽章一</span>
+<span class="pg-badge">範例徽章二</span>
+</div>
+</div>
+<div class="pg-container">
+
+<section>
+<div class="pg-section-head">
+<div class="pg-chip">01</div>
+<h2>章節標題範例</h2>
+</div>
+<p>章節說明文字，顏色使用中性藍灰 <code>--sub</code>。</p>
+
+<div class="pg-card">
+<p>這是一張白色卡片，粗黑描邊呼應 Logo 的手繪剪影輪廓，內容可以放任何段落文字或表格。</p>
+</div>
+
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td><code>ExampleField</code></td><td>範例說明文字</td></tr>
+</tbody>
+</table>
+
+<div class="pg-callout info">
+<span class="pg-icon">💡</span>
+<p><strong>提示：</strong>這是資訊性提示框，底色為淡藍，語意色與品牌色分開使用。</p>
+</div>
+
+<div class="pg-callout warn">
+<span class="pg-icon">⚠️</span>
+<p><strong>注意：</strong>這是警示提示框，底色為淡黃。</p>
+</div>
+
+<div class="pg-summary-grid">
+<div class="pg-box pg">
+<h4>分類一</h4>
+<p>說明文字。</p>
+</div>
+<div class="pg-box teal">
+<h4>分類二</h4>
+<p>說明文字。</p>
+</div>
+<div class="pg-box violet">
+<h4>分類三</h4>
+<p>說明文字。</p>
+</div>
+</div>
+
+<div class="pg-flow">
+<div class="pg-step">開始</div>
+<div class="pg-arrow">→</div>
+<div class="pg-step cond">條件判斷</div>
+<div class="pg-arrow">→</div>
+<div class="pg-step">結束</div>
+</div>
+
+<div class="pg-steps">
+<div class="pg-stepcard">
+<div class="pg-stepnum">1</div>
+<div class="pg-step-title">步驟一標題</div>
+<p>步驟說明文字。</p>
+</div>
+<div class="pg-stepcard cond">
+<div class="pg-stepnum">2</div>
+<div class="pg-step-title">步驟二標題（條件分支）</div>
+<p>步驟說明文字。</p>
+</div>
+</div>
+
+<ul class="pg-checklist">
+<li>檢查項目一</li>
+<li>檢查項目二</li>
+</ul>
+
+<div class="pg-evidence">
+<div class="pg-evidence-head">
+<span class="pg-tag">案例</span>
+<strong>範例案例編號</strong>
+</div>
+<p>案例佐證說明文字。</p>
+</div>
+
+<div class="pg-trunk-divider"><span>🐘</span></div>
+
+<pre class="pg-pre" data-lang="sql"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="type">users</span> <span class="kw">WHERE</span> id = <span class="num">1</span>; <span class="cm">-- 註解說明</span></pre>
+
+</section>
+
+<footer>整理自範例來源</footer>
+
+</div>
+</div>

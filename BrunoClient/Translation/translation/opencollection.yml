@@ -1,0 +1,41 @@
+opencollection: 1.0.0
+
+info:
+  name: translation
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  auth:
+    type: bearer
+    token: eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ4Mjg5MmZhMzJlY2QxM2E0ZTBhZWZlNjI4ZGQ5YWFlM2FiYThlMWUiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoi5p6X5a6l6L6wIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0liSGNpaGRySDkzZnZpUHJRZldGdVFETVUwZWZpXzJtR01fbWw1NGZtSlF3PXM5Ni1jIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3RyYW5zbGF0aW9uLXNlcnZpY2UtMjEyOTAyIiwiYXVkIjoidHJhbnNsYXRpb24tc2VydmljZS0yMTI5MDIiLCJhdXRoX3RpbWUiOjE3Njc3Nzg2MjQsInVzZXJfaWQiOiJOY2ROUWJSQnF2WUVCcEJtYWJQOTFRSnY2N24yIiwic3ViIjoiTmNkTlFiUkJxdllFQnBCbWFiUDkxUUp2NjduMiIsImlhdCI6MTc2Nzc3ODYyNCwiZXhwIjoxNzY3NzgyMjI0LCJlbWFpbCI6ImFsbGVubGluQG5pbmUteWkuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDM2MDY3MjkxMzc2MzM4NjMzNTEiXSwiZW1haWwiOlsiYWxsZW5saW5AbmluZS15aS5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.YS7nzSBkg2paQs9hSHN__dGiG742dnM8UjYO8L3BmucDbrHLJ_6-xJrwQpTadnEbRHFei9Lh8oqSzzqPS588cH_awrjEE_n5enoxeKNssI0FaV3XRMGUthVlwf6eR9nZPZJMfcgIqpgKPZ0iMKYGfULY9EdmRLdpPrPg4edyz2cW8V0BVj7qkF9o7PPTByvFNqLgd4_JenmcRSTZtdjk8Xkl6wWy3hF7cVTEzHe0g-lXXAAJ9tMBLbjicNSFfEqVp6EXpu-QSKrN5le1c-uzSjVFB6QM-cShS7G60l27wJY4nPwBQjSkOsTJaVS2eKBb4sBYGEe20SJxU3z3SeSvKA
+  variables:
+    - name: base-url
+      value: http://translation.qa.91dev.tw
+    - name: module-id
+      value: 5ebd00fb18fd19000152840a
+    - name: project-name
+      value: Nine1.Livebuy
+    - name: module-name
+      value: backend.TEST2
+    - name: project-id
+      value: 695e2a48d23d0c00076b873f
+    - name: tag-name
+      value: PAGE_PAGE_票券列表
+    - name: key
+      value: lottery_activity_activity_already_terminated
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

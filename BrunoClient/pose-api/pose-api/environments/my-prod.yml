@@ -1,0 +1,34 @@
+name: my-prod
+variables:
+  - name: base-url
+    value: http://pos-api.my.91app.io
+  - name: scm_api
+    value: https://api.91mai.com
+  - name: shop_Id
+    value: "15"
+  - name: token
+    value: "00000025"
+  - name: api_key
+    value: D7894185-7291-4087-98C3-78E97AC99AED
+  - name: salt_key
+    value: "714039"
+  - name: phone
+    value: "+6001153500416"
+  - name: request_id
+    value: NY0643
+  - name: machine_code
+    value: "9999"
+  - name: location_code
+    value: 91app
+  - name: employee_code
+    value: "9999"
+  - name: outermembercode
+    value: ""
+  - name: member_code
+    value: ""
+  - name: timestamp
+    value: ""
+  - name: signature
+    value: ""
+  - name: request_body
+    value: ""

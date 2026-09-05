@@ -1,0 +1,4 @@
+name: pp
+variables:
+  - name: base-url
+    value: https://salepage-service-api-internal.pp.91dev.tw

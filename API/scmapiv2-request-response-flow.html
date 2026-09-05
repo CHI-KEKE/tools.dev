@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NineYi.Scm.ApiV2 — Request / Response 通用流程</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --panel:#171a21;
+    --panel-alt:#1d212a;
+    --border:#2a2f3a;
+    --text:#e6e8ec;
+    --text-dim:#9aa1ae;
+    --accent:#e8a33d;
+    --accent-dim:#8a611f;
+    --ok:#4caf7d;
+    --err:#d9636c;
+    --code-bg:#11141a;
+    --radius:10px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(232,163,61,0.06), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(76,175,125,0.05), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Segoe UI", "PingFang TC", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+    line-height:1.6;
+    padding-bottom:80px;
+  }
+  code, pre, .mono{
+    font-family:"Cascadia Code","JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    border-bottom:1px solid var(--border);
+    padding:36px 6vw 28px;
+    background:linear-gradient(180deg, rgba(232,163,61,0.05), transparent);
+  }
+  header .eyebrow{
+    color:var(--accent);
+    font-size:13px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  header h1{
+    margin:0 0 10px;
+    font-size:clamp(24px,3.2vw,36px);
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin:0;
+    color:var(--text-dim);
+    max-width:760px;
+    font-size:15px;
+  }
+  .badge-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:18px;
+  }
+  .badge{
+    border:1px solid var(--border);
+    background:var(--panel-alt);
+    color:var(--text-dim);
+    font-size:12.5px;
+    padding:5px 11px;
+    border-radius:999px;
+  }
+  .badge b{ color:var(--text); font-weight:600; }
+
+  main{
+    padding:0 6vw;
+    max-width:1280px;
+    margin:0 auto;
+  }
+  section{
+    margin-top:52px;
+  }
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:22px;
+  }
+  .section-head .num{
+    font-family:"Cascadia Code", monospace;
+    color:var(--accent);
+    font-size:14px;
+    border:1px solid var(--accent-dim);
+    background:rgba(232,163,61,0.08);
+    padding:2px 9px;
+    border-radius:6px;
+  }
+  .section-head h2{
+    margin:0;
+    font-size:21px;
+    font-weight:700;
+  }
+  .section-head .sub{
+    color:var(--text-dim);
+    font-size:13.5px;
+    margin-left:auto;
+  }
+
+  /* ---------- Pipeline (horizontal scroll on desktop, vertical stack on mobile) ---------- */
+  .pipeline{
+    display:flex;
+    gap:0;
+    overflow-x:auto;
+    padding-bottom:14px;
+    scrollbar-width:thin;
+  }
+  .pipe-step{
+    flex:0 0 220px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px 16px 18px;
+    position:relative;
+    margin-right:28px;
+  }
+  .pipe-step::after{
+    content:"→";
+    position:absolute;
+    right:-26px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--accent-dim);
+    font-size:20px;
+  }
+  .pipe-step:last-child{ margin-right:0; }
+  .pipe-step:last-child::after{ content:none; }
+  .pipe-step .tag{
+    display:inline-block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--accent);
+    background:rgba(232,163,61,0.1);
+    border:1px solid var(--accent-dim);
+    padding:2px 8px;
+    border-radius:5px;
+    margin-bottom:10px;
+  }
+  .pipe-step h3{
+    margin:0 0 8px;
+    font-size:15px;
+    font-weight:700;
+  }
+  .pipe-step p{
+    margin:0;
+    font-size:12.8px;
+    color:var(--text-dim);
+  }
+  .pipe-step .file{
+    margin-top:10px;
+    font-size:11px;
+    color:#7d8494;
+    word-break:break-all;
+  }
+
+  /* exception branch note */
+  .exc-note{
+    margin-top:16px;
+    border-left:3px solid var(--err);
+    background:rgba(217,99,108,0.07);
+    padding:10px 16px;
+    border-radius:0 8px 8px 0;
+    font-size:13px;
+    color:#e0a8ac;
+  }
+  .exc-note b{ color:var(--err); }
+
+  /* ---------- Two column detail cards ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(340px,1fr));
+    gap:18px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px 22px;
+  }
+  .card h3{
+    margin:0 0 6px;
+    font-size:15.5px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card h3 .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--accent);
+    flex:0 0 auto;
+  }
+  .card .desc{
+    color:var(--text-dim);
+    font-size:13px;
+    margin-bottom:12px;
+  }
+  .card pre{
+    background:var(--code-bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:12.2px;
+    overflow-x:auto;
+    margin:0 0 10px;
+    color:#c9d1d9;
+  }
+  .card pre .k{ color:#e8a33d; }
+  .card pre .s{ color:#7ec699; }
+  .card pre .c{ color:#6a7383; }
+  .card .path{
+    font-size:11px;
+    color:#7d8494;
+    word-break:break-all;
+  }
+  .card ul{
+    margin:8px 0 0;
+    padding-left:18px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+  .card li{ margin-bottom:6px; }
+  .card li b{ color:var(--text); }
+
+  /* ---------- JSON response mock ---------- */
+  .response-demo{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+  @media (max-width:760px){ .response-demo{ grid-template-columns:1fr; } }
+  .response-demo .card pre{ font-size:12.5px; }
+  .status-ok{ color:var(--ok); font-weight:700;}
+  .status-err{ color:var(--err); font-weight:700;}
+
+  /* ---------- Risk table ---------- */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  thead th{
+    text-align:left;
+    background:var(--panel-alt);
+    color:var(--text-dim);
+    font-weight:600;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    padding:12px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  tbody td{
+    padding:13px 16px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+    color:var(--text-dim);
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody td.main{ color:var(--text); font-weight:600; }
+  .sev{
+    display:inline-block;
+    font-size:11px;
+    padding:2px 8px;
+    border-radius:5px;
+    font-weight:700;
+  }
+  .sev.high{ background:rgba(217,99,108,0.15); color:#f0a3a8; }
+  .sev.mid{ background:rgba(232,163,61,0.15); color:var(--accent); }
+
+  footer{
+    margin-top:60px;
+    padding:24px 6vw;
+    border-top:1px solid var(--border);
+    color:#6b7280;
+    font-size:12px;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  /* mobile pipeline stacking */
+  @media (max-width:720px){
+    .pipeline{ flex-direction:column; overflow-x:visible; }
+    .pipe-step{ flex:none; margin-right:0; margin-bottom:26px; }
+    .pipe-step::after{
+      content:"↓";
+      right:auto; left:50%; top:auto; bottom:-24px;
+      transform:translateX(-50%);
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">NineYi.Scm.ApiV2 &nbsp;/&nbsp; Architecture Notes</div>
+  <h1>Request / Response 通用處理流程</h1>
+  <p>從外部呼叫進入 IIS，到 Controller → Service → Repository → DB，再包裝回統一格式 JSON 回應的完整管線。本頁根據實際程式碼盤點整理，標註各環節對應的檔案位置。</p>
+  <div class="badge-row">
+    <span class="badge"><b>ASP.NET Web API 2</b> · .NET Framework 4.6.2</span>
+    <span class="badge"><b>Autofac</b> 依賴注入</span>
+    <span class="badge"><b>EF 5.0</b> + <b>Dapper</b></span>
+    <span class="badge"><b>FluentValidation</b></span>
+    <span class="badge"><b>ELMAH</b> + App Insights</span>
+    <span class="badge">121 Controllers · 258 Services</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ PIPELINE OVERVIEW ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>整體管線總覽</h2>
+      <span class="sub">由左至右依序執行 · 例外會在任一環節被攔截</span>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <span class="tag">Client</span>
+        <h3>外部呼叫</h3>
+        <p>供應商 / 內部系統呼叫 API，Body 包在信封格式 <code>{ "Data": "..." }</code> 內，或帶 JWT AccessToken。</p>
+      </div>
+
+      <div class="pipe-step">
+        <span class="tag">Handler</span>
+        <h3>DelegatingHandler</h3>
+        <p>拆解 <code>ApiRequestEntity.Data</code>，還原成原始 JSON 供 Model Binding 使用。</p>
+        <div class="file">Extensions/DelegatingHandlers/UnifiedResultHandler.cs</div>
+      </div>
+
+      <div class="pipe-step">
+        <span class="tag">Filter</span>
+        <h3>ActionFilter 驗證</h3>
+        <p>依 API 掛載 Token 簽章 / JWT / ModelState 驗證，並記錄 Request Log。</p>
+        <div class="file">Extensions/ActionFilters/*.cs</div>
+      </div>
+
+      <div class="pipe-step">
+        <span class="tag">Controller</span>
+        <h3>ApiController</h3>
+        <p>純轉呼叫：接參數 → 呼叫 Service → <code>return Ok(result)</code>，不含商業邏輯。</p>
+        <div class="file">WebSite/Controllers/Apis/*.cs</div>
+      </div>
+
+      <div class="pipe-step">
+        <span class="tag">Service</span>
+        <h3>BL.Services</h3>
+        <p>商業邏輯運算層，同步方法呼叫 Repository，必要時做多來源資料聚合。</p>
+        <div class="file">BusinessLogic/Services/*.cs</div>
+      </div>
+
+      <div class="pipe-step">
+        <span class="tag">Repository</span>
+        <h3>DA.Repositories</h3>
+        <p>封裝 EF DbContext / Dapper 查詢，Service 層禁止直接操作 DbContext。</p>
+        <div class="file">DataAccess/Repositories/*.cs</div>
+      </div>
+
+      <div class="pipe-step">
+        <span class="tag">Database</span>
+        <h3>SQL Server</h3>
+        <p>依領域拆分多達 12 個資料庫（WebStore / CRM / ERP / NineYiDW ...）。</p>
+      </div>
+
+      <div class="pipe-step">
+        <span class="tag">Response</span>
+        <h3>統一輸出</h3>
+        <p>回應再經 UnifiedResultHandler 包裝成固定格式 <code>ApiResultEntity</code> 回給呼叫端。</p>
+      </div>
+    </div>
+
+    <div class="exc-note">
+      <b>例外分支：</b> 任一環節拋出例外，都會被 <code>GlobalExceptionHandler</code> 攔截，依例外類型轉成統一格式錯誤 JSON，並同步寫入 ELMAH（含 ErrorId）與 Application Insights。
+    </div>
+  </section>
+
+  <!-- ============ REQUEST DETAIL ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>Request 進入細節</h2>
+    </div>
+    <div class="grid">
+
+      <div class="card">
+        <h3><span class="dot"></span>信封格式解包</h3>
+        <div class="desc">呼叫端送出的 Body 並非直接是業務 JSON，而是包一層 <code>Data</code> 欄位的字串。</div>
+        <pre><span class="c">// ApiRequestEntity.cs</span>
+<span class="k">public class</span> ApiRequestEntity {
+  <span class="k">public string</span> Data { get; set; }
+}</pre>
+        <div class="path">BusinessLogic/BE/Apis/ApiRequestEntity.cs</div>
+      </div>
+
+      <div class="card">
+        <h3><span class="dot"></span>Token 簽章驗證</h3>
+        <div class="desc">部分 API 使用自家 Token + Timestamp + Signature 機制，非標準 IIS Auth。</div>
+        <pre><span class="c">// ValidateTokenAttribute.cs</span>
+var token = Request.Params[<span class="s">"t"</span>];
+var ts    = Request.Params[<span class="s">"ts"</span>];
+var sig   = Request.Params[<span class="s">"s"</span>];
+<span class="c">// SHA512(ts + data + saltKey) == sig ?</span></pre>
+        <div class="path">Extensions/ActionFilters/ValidateTokenAttribute.cs</div>
+      </div>
+
+      <div class="card">
+        <h3><span class="dot"></span>JWT 驗證（另一種方式）</h3>
+        <div class="desc">部分 API 改用 JWT AccessToken，並比對 Body 內 ShopId 與 Payload 是否一致。</div>
+        <pre><span class="c">// ValidateJWTAttribute.cs</span>
+var payload = JwtBuilder.Create()
+  .WithAlgorithm(<span class="k">new</span> HMACSHA256Algorithm())
+  .MustVerifySignature()
+  .WithSecret(secret)
+  .Decode&lt;IDictionary&lt;string,object&gt;&gt;(accessToken);</pre>
+        <div class="path">Extensions/ActionFilters/ValidateJWTAttribute.cs</div>
+      </div>
+
+      <div class="card">
+        <h3><span class="dot"></span>Request Log 記錄</h3>
+        <div class="desc">記錄 IP / Method / URL / 參數，並讀取 Gateway 帶入的 <code>N1-TRACE-ID</code> 做跨服務追蹤。</div>
+        <pre><span class="c">// LogRequestAttribute.cs</span>
+Logger.Trace($<span class="s">"{ip} | {method} | {url} | {parameters}"</span>);
+<span class="k">if</span> (headers.TryGetValues(<span class="s">"N1-TRACE-ID"</span>, out v))
+  Logger.Trace($<span class="s">"N1-TRACE-ID : {traceId}"</span>);</pre>
+        <div class="path">Extensions/ActionFilters/LogRequestAttribute.cs</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ RESPONSE DETAIL ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>Response 統一格式</h2>
+      <span class="sub">Controller 回傳的原始資料，會再經一層包裝</span>
+    </div>
+
+    <div class="response-demo">
+      <div class="card">
+        <h3><span class="dot" style="background:var(--ok)"></span>成功回應</h3>
+        <div class="desc">Controller 呼叫 <code>this.Ok(result)</code> 後的最終輸出。</div>
+        <pre>{
+  <span class="k">"ErrorId"</span>: <span class="s">""</span>,
+  <span class="k">"Status"</span>: <span class="s">"Success"</span>,
+  <span class="k">"Data"</span>: { ...業務資料... },
+  <span class="k">"ErrorMessage"</span>: <span class="s">""</span>,
+  <span class="k">"TimeStamp"</span>: <span class="s">"2026-07-27T15:00:00"</span>
+}</pre>
+      </div>
+
+      <div class="card">
+        <h3><span class="dot" style="background:var(--err)"></span>錯誤回應</h3>
+        <div class="desc">由 <code>GlobalExceptionHandler</code> 依例外類型組出的統一格式。</div>
+        <pre>{
+  <span class="k">"ErrorId"</span>: <span class="s">"a1b2c3d4"</span>,
+  <span class="k">"Status"</span>: <span class="s">"Failure"</span>,
+  <span class="k">"Data"</span>: null,
+  <span class="k">"ErrorMessage"</span>: <span class="s">"Signature not valid"</span>,
+  <span class="k">"TimeStamp"</span>: <span class="s">"2026-07-27T15:00:00"</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="exc-note" style="margin-top:22px;">
+      <b>例外情況：</b> 有一份路徑白名單（如 <code>virtualpayment</code>、<code>realtimeshippingorder</code>、PDF 下載、<code>ops/healthcheck</code> 等）會<b>跳過</b> UnifiedResultHandler 包裝，直接回傳原始 Response——代表「統一格式」並非 100% 統一，屬於已知的不一致設計。
+    </div>
+  </section>
+
+  <!-- ============ EXCEPTION TYPES ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>例外類型對照</h2>
+      <span class="sub">GlobalExceptionHandler.cs</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>例外類型</th><th>觸發情境</th><th>回傳 StatusCode</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="main mono">ApplicationException</td><td>一般商業邏輯拋出的預期錯誤</td><td>400 BadRequest</td></tr>
+        <tr><td class="main mono">CustomApiResultException</td><td>需要自訂 Status / ErrorDetail 的情境</td><td>400 BadRequest</td></tr>
+        <tr><td class="main mono">ValidationException</td><td>FluentValidation 驗證失敗</td><td>400 BadRequest</td></tr>
+        <tr><td class="main mono">ShopMemberMergeException</td><td>會員合併流程錯誤</td><td>400 BadRequest</td></tr>
+        <tr><td class="main mono">NoMoreElmahAndCustomHttpStatusCodeException</td><td>不寫入 ELMAH，且自訂 StatusCode</td><td>自訂</td></tr>
+        <tr><td class="main mono">（清單外的例外）</td><td>未預期的系統錯誤</td><td>500 InternalServerError</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ KNOWN ISSUES ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">05</span>
+      <h2>已知設計問題</h2>
+      <span class="sub">供架構搬遷 / 重構時參考</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>問題</th><th>說明</th><th>影響</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="main">驗證機制不統一</td>
+          <td>同時存在 Token 簽章（t/ts/s）與 JWT 兩套驗證方式，依 Controller 各自掛 Attribute，沒有集中管理。</td>
+          <td><span class="sev mid">中</span></td>
+        </tr>
+        <tr>
+          <td class="main">統一輸出有白名單例外</td>
+          <td>UnifiedResultHandler 對特定路徑（PDF、金流 callback 等）直接略過包裝，格式不一致。</td>
+          <td><span class="sev mid">中</span></td>
+        </tr>
+        <tr>
+          <td class="main">全同步（無 async/await）</td>
+          <td>Controller → Service → Repository 全鏈路同步呼叫，DB 逾時會直接卡住 ThreadPool 執行緒。</td>
+          <td><span class="sev high">高</span></td>
+        </tr>
+        <tr>
+          <td class="main">單一 Repository 專案耦合 12 個資料庫</td>
+          <td>DA.Repositories 直接引用 WebStore/ERP/CRM/NineYiDW 等 12 個資料庫專案，違反單一服務單一資料庫原則。</td>
+          <td><span class="sev high">高</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>
+  <span>NineYi.Scm.ApiV2 — 內部架構文件（依實際程式碼盤點產出）</span>
+  <span>盤點時間：2026-07-27 15:54</span>
+</footer>
+
+</body>
+</html>

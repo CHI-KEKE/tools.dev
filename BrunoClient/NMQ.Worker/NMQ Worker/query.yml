@@ -1,0 +1,30 @@
+info:
+  name: query
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: https://nmqv3-dashboard-v2.hk.91app.io/api/v1/tasks?jobName=AuditPromotionRewardCoupon&limit=20&offset=0&isArchived=true
+  params:
+    - name: jobName
+      value: AuditPromotionRewardCoupon
+      type: query
+    - name: limit
+      value: "20"
+      type: query
+    - name: offset
+      value: "0"
+      type: query
+    - name: isArchived
+      value: "true"
+      type: query
+  auth:
+    type: bearer
+    token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjczMmNhOTY3MTNiMWRkMTcyMzg1MDg0Y2U5ZjQzODFhZDAwY2VjZTQiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoi5p6X5a6l6L6wIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0x5SUNoeld1OHR4WXg3ZzEzSkJkaHZwa3R1enJLMENsWTNxVi15SVNFN2hESnJKSkU9czk2LWMiLCJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbm1xLWRhc2hib2FyZCIsImF1ZCI6Im5tcS1kYXNoYm9hcmQiLCJhdXRoX3RpbWUiOjE3NjEwMzUyODksInVzZXJfaWQiOiJWOVhTcVpFaHkwVW1YWW81cFpRbEpWSWl3ZDQzIiwic3ViIjoiVjlYU3FaRWh5MFVtWFlvNXBaUWxKVklpd2Q0MyIsImlhdCI6MTc3NDM0MTcyNywiZXhwIjoxNzc0MzQ1MzI3LCJlbWFpbCI6ImFsbGVubGluQG5pbmUteWkuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDM2MDY3MjkxMzc2MzM4NjMzNTEiXSwiZW1haWwiOlsiYWxsZW5saW5AbmluZS15aS5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.G_yNBpCrLXjYVx7WGiYesgNFf9FUFzY8ZWemQ8aSY-2HMo0ySTD4fLz4wuZSNGmcWq-37Ptd8CGr32lD1OFhWJ8hhHSJUx11XsQPc_pxKMIh90J2ShNXw0luUurTNvHeU2YJSazfQsck5_o2T8TEV9FOSdljgte8DcXQaAGkoX-U3BmUCF5e9k1n_qkgK9zEK1QMOYUeYMJBjwsjN6L4jGz0At-_ROqdwoMOcl75ADTS9TuW5OUy08wDigp8Tc2r85sbfLPR04RSR4WQqsGtwKZkauP_fuSze-mQB32diqCsO8Z6gBOeLNzaE6oEfz3yKduEDPRSGp4pFauZCTr9nw
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

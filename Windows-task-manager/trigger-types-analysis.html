@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>實際 Trigger 樣態分析與監控策略</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#93c5fd; background:rgba(147,197,253,.12); border:1px solid rgba(147,197,253,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 27px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:680px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:20px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--accent-soft); color:var(--accent); font-size:14px; font-weight:700;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .source-shot {
+    background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:13px; color:#334155;
+    margin-bottom: 8px;
+  }
+  .source-shot .row { display:flex; gap:10px; padding:4px 0; border-bottom:1px dashed var(--border); }
+  .source-shot .row:last-child { border-bottom:none; }
+  .source-shot .tag { flex:0 0 90px; font-weight:700; }
+  .source-shot .detail { color:#475569; }
+
+  .grid-2 { display:grid; grid-template-columns: repeat(2,1fr); gap:16px; margin:18px 0; }
+  @media (max-width:820px){ .grid-2 { grid-template-columns:1fr; } }
+
+  .type-card {
+    border:1px solid var(--border); border-radius:12px; padding:18px 20px; background:#f8fafc;
+  }
+  .type-card .head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .type-card .head .icon {
+    width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-size:15px; color:#fff; font-weight:700;
+  }
+  .type-card h4 { margin:0; font-size:15px; }
+  .type-card .example { font-size:12.5px; color:var(--muted); margin: 4px 0 10px; font-family: Consolas, monospace; }
+  .type-card ul { padding-left:18px; font-size:13px; color:#334155; margin:8px 0 0; }
+
+  .icon.weekly { background:#7c3aed; }
+  .icon.daily-single { background:var(--ok); }
+  .icon.daily-repeat { background:var(--warn); }
+  .icon.multi { background:var(--accent); }
+
+  .badge { display:inline-block; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:999px; }
+  .badge.ok { background:var(--ok-soft); color:var(--ok); }
+  .badge.warn { background:var(--warn-soft); color:var(--warn); }
+  .badge.danger { background:var(--danger-soft); color:var(--danger); }
+  .badge.info { background:var(--accent-soft); color:var(--accent); }
+
+  /* Timeline for repetition trigger */
+  .timeline-box {
+    background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:26px 24px 34px; margin:18px 0; position:relative;
+  }
+  .timeline-title { font-size:13px; font-weight:700; color:#334155; margin-bottom:20px; }
+  .track { position:relative; height:56px; margin:0 10px; border-top:3px solid #cbd5e1; }
+  .tick { position:absolute; top:-3px; width:3px; height:12px; background:#94a3b8; }
+  .tick-label { position:absolute; top:14px; transform:translateX(-50%); font-size:11.5px; color:var(--muted); white-space:nowrap; }
+  .rep-dot {
+    position:absolute; top:-9px; transform:translateX(-50%);
+    width:16px; height:16px; border-radius:50%; background:#fde68a; border:2px solid #fff;
+  }
+  .first-dot {
+    position:absolute; top:-16px; transform:translateX(-50%); text-align:center;
+  }
+  .first-dot .dot {
+    width:26px; height:26px; border-radius:50%; background:var(--ok); color:#fff; display:flex;
+    align-items:center; justify-content:center; font-size:13px; font-weight:700; margin:0 auto; border:3px solid #fff;
+  }
+  .first-dot .label { font-size:11px; font-weight:700; color:#334155; margin-top:4px; white-space:nowrap; }
+
+  .legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; font-size:12.5px; color:#334155; }
+  .legend .item { display:flex; align-items:center; gap:6px; }
+  .legend .dot { width:14px; height:14px; border-radius:50%; display:inline-block; }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:9px 11px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+  footer { text-align:center; color:var(--muted); font-size:12.5px; margin-top:36px; }
+
+  .api-usage {
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 16px 0;
+  }
+  .api-usage .api-row {
+    display: flex; gap: 12px; padding: 12px 16px; align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+  }
+  .api-usage .api-row:last-child { border-bottom: none; }
+  .api-usage .api-row.runtimes { background: #eff6ff; }
+  .api-usage .api-row.history { background: #f0fdf4; }
+  .api-usage .api-tag {
+    flex: 0 0 130px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    text-align: center; height: fit-content;
+  }
+  .api-usage .api-row.runtimes .api-tag { background: var(--accent); color: #fff; }
+  .api-usage .api-row.history .api-tag { background: var(--ok); color: #fff; }
+  .api-usage .api-body { flex: 1; }
+  .api-usage .api-call {
+    font-family: Consolas, monospace; font-size: 12.5px; color: #1e293b; background: rgba(255,255,255,.6);
+    padding: 6px 10px; border-radius: 6px; display: inline-block; margin-bottom: 4px;
+  }
+  .api-usage .api-desc { font-size: 12.5px; color: #475569; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">實際排程截圖分析 · aaa03.png</span>
+  <h1>Windows Task Scheduler 實際存在的 Trigger 樣態</h1>
+  <p>從現有伺服器的排程清單截圖歸納出 4 種 Trigger 類型，並針對各類型設計對應的監控策略。</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">1</span>截圖原始資料摘要</h2>
+    <p class="sub">從 aaa03.png 的 Triggers 欄位觀察到的樣態</p>
+    <div class="source-shot">
+      <div class="row"><div class="tag">類型 A</div><div class="detail">At 2:30 PM every <strong>Tuesday</strong> of every week, starting 5/10/2023</div></div>
+      <div class="row"><div class="tag">類型 B</div><div class="detail">At <strong>3:00 AM every day</strong>（單純每天一次）</div></div>
+      <div class="row"><div class="tag">類型 C</div><div class="detail">At 2:01 PM every day - <strong>After triggered, repeat every 5 minutes for a duration of 1 day</strong></div></div>
+      <div class="row"><div class="tag">類型 C</div><div class="detail">At 5:30 PM every day - After triggered, repeat every <strong>10 minutes</strong> for a duration of 1 day</div></div>
+      <div class="row"><div class="tag">類型 D</div><div class="detail"><strong>Multiple triggers defined</strong>（單一任務有多組 Trigger，例：NC-ExpenseOrderSlaveCheck 同時有 10:10 AM / 4:10 PM / 10:10 PM 三組 Daily Trigger）</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>四種 Trigger 類型 × 對應監控策略</h2>
+    <div class="grid-2">
+
+      <div class="type-card">
+        <div class="head"><div class="icon weekly">W</div><h4>類型 A：Weekly（每週特定星期幾）</h4></div>
+        <div class="example">At 2:30 PM every Tuesday of every week</div>
+        <ul>
+          <li>一週只觸發 1 次</li>
+          <li><code>LookbackHours</code> 需涵蓋至少 <strong>7×24 小時</strong>，否則巡檢區間內可能抓不到任何一筆</li>
+          <li>沿用「檢查每一筆應觸發時間」邏輯即可，無特殊處理</li>
+        </ul>
+        <span class="badge info">需調整回顧區間</span>
+      </div>
+
+      <div class="type-card">
+        <div class="head"><div class="icon daily-single">D</div><h4>類型 B：Daily 單次</h4></div>
+        <div class="example">At 3:00 AM every day</div>
+        <ul>
+          <li>一天只觸發 1 次</li>
+          <li><code>LookbackHours = 24</code> 即可涵蓋</li>
+          <li>目前程式邏輯已可正確處理</li>
+        </ul>
+        <span class="badge ok">現有邏輯適用</span>
+      </div>
+
+      <div class="type-card">
+        <div class="head"><div class="icon daily-repeat">R</div><h4>類型 C：Daily + 高頻重複</h4></div>
+        <div class="example">At 2:01 PM every day, repeat every 5 min for 1 day</div>
+        <ul>
+          <li>一天可能觸發 <strong>近 288 次</strong>（每 5 分鐘一次）</li>
+          <li><code>GetRunTimes()</code> 會把每次重複都展開回傳，逐一比對不切實際</li>
+          <li><strong>採用方案：只檢查該 Trigger 當天「第一次啟動時間」</strong>（例：2:01 PM），忽略後續重複實例</li>
+        </ul>
+        <span class="badge warn">需特殊處理：忽略 Repetition</span>
+      </div>
+
+      <div class="type-card">
+        <div class="head"><div class="icon multi">M</div><h4>類型 D：Multiple Triggers（一任務多組獨立 Trigger）</h4></div>
+        <div class="example">10:10 AM / 4:10 PM / 10:10 PM（各自獨立 Daily Trigger）</div>
+        <ul>
+          <li>同一任務底下有多組各自獨立的 Trigger（非同一 Trigger 的重複）</li>
+          <li>每一組都要各自被檢查，不能只取最後一筆</li>
+          <li>對應前次討論修正：<code>GetExpectedRunTimes</code> 要回傳全部而非只取最後一筆</li>
+        </ul>
+        <span class="badge warn">需特殊處理：逐一檢查</span>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>類型 B 圖解：Daily 單次</h2>
+    <p class="sub">情境：每天固定 3:00 AM 觸發一次，最簡單的樣態</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">昨天 00:00 ──────────────────────────────────────────────→ 今天 08:00（巡檢當下）</div>
+      <div class="track">
+        <div class="tick" style="left:2%;"></div>
+        <div class="tick-label" style="left:2%;">昨天 00:00</div>
+        <div class="tick" style="left:98%;"></div>
+        <div class="tick-label" style="left:98%;">今天 08:00</div>
+
+        <div class="first-dot" style="left:15%;">
+          <div class="dot">✓</div>
+          <div class="label">昨天 3:00 AM<br>唯一應觸發點</div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:var(--ok);"></span> 24 小時內只有 1 個應觸發時間點，直接比對即可</div>
+    </div>
+
+    <div class="api-usage">
+      <div class="api-row runtimes">
+        <div class="api-tag">① GetRunTimes</div>
+        <div class="api-body">
+          <div class="api-call">task.GetRunTimes(昨天00:00, 今天08:00, 1000)</div>
+          <div class="api-desc">回傳：<code>[ 昨天 03:00 ]</code> —— 只有 1 筆理論應觸發時間</div>
+        </div>
+      </div>
+      <div class="api-row history">
+        <div class="api-tag">② GetHistory</div>
+        <div class="api-body">
+          <div class="api-call">GetHistory(taskPath, since: 昨天 02:45)</div>
+          <div class="api-desc">查 Event Log，找 02:45~03:15 附近是否有 EventID 200/201 紀錄，比對這筆是否真的執行成功</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note ok">
+      <strong>結論：</strong>這是最單純的情況，<code>LookbackHours = 24</code> 剛好涵蓋，目前程式邏輯（無論是否修正）都能正確處理，不需特殊調整。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>類型 A 圖解：Weekly（每週特定星期幾）</h2>
+    <p class="sub">情境：At 2:30 PM every Tuesday of every week — 一週只觸發 1 次</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">本週一 ── 二 ── 三 ── 四 ── 五 ── 六 ── 日（今天，巡檢當下）</div>
+      <div class="track">
+        <div class="tick" style="left:2%;"></div>
+        <div class="tick-label" style="left:2%;">週一 00:00</div>
+        <div class="tick" style="left:98%;"></div>
+        <div class="tick-label" style="left:98%;">今天（週日）</div>
+
+        <div class="first-dot" style="left:24%;">
+          <div class="dot">✓</div>
+          <div class="label">週二 2:30 PM<br>本週唯一觸發點</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-usage">
+      <div class="api-row runtimes">
+        <div class="api-tag">① GetRunTimes</div>
+        <div class="api-body">
+          <div class="api-call">task.GetRunTimes(週一00:00, 今天08:00, 1000)</div>
+          <div class="api-desc">回傳：<code>[ 週二 14:30 ]</code> —— 但如果區間只設 24 小時（昨天~今天），會是 <code>[]</code>（空清單），完全抓不到這筆！</div>
+        </div>
+      </div>
+      <div class="api-row history">
+        <div class="api-tag">② GetHistory</div>
+        <div class="api-body">
+          <div class="api-call">GetHistory(taskPath, since: 週二 14:15)</div>
+          <div class="api-desc">查 Event Log，找週二 14:15~14:45 附近是否有對應執行紀錄</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>關鍵問題：</strong>如果 <code>LookbackHours</code> 只設 24 小時，往前只能看到「昨天」，
+      根本抓不到「這週二」那筆應觸發時間 —— <code>GetExpectedLastRunTime</code> 會直接回傳 <code>null</code>，
+      導致這個任務完全不會被檢查到！<br>
+      <strong>修正：</strong>回顧區間至少要設定 <strong>168 小時（7 天）</strong>，才能確保每種週期的任務都落在檢查範圍內。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span>類型 D 圖解：Multiple Triggers（一任務多組獨立 Trigger）</h2>
+    <p class="sub">情境：NC-ExpenseOrderSlaveCheck 同時有 3 組獨立 Daily Trigger：10:10 AM / 4:10 PM / 10:10 PM</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">昨天 00:00 ──────────────────────────────────────────────→ 今天 08:00（巡檢當下）</div>
+      <div class="track">
+        <div class="tick" style="left:2%;"></div>
+        <div class="tick-label" style="left:2%;">昨天 00:00</div>
+        <div class="tick" style="left:98%;"></div>
+        <div class="tick-label" style="left:98%;">今天 08:00</div>
+
+        <div class="first-dot" style="left:20%;">
+          <div class="dot" style="background:var(--danger);">✕</div>
+          <div class="label">昨天 10:10 AM<br>應觸發 #1</div>
+        </div>
+        <div class="first-dot" style="left:55%;">
+          <div class="dot" style="background:var(--danger);">✕</div>
+          <div class="label">昨天 4:10 PM<br>應觸發 #2</div>
+        </div>
+        <div class="first-dot" style="left:90%;">
+          <div class="dot">✓</div>
+          <div class="label">昨天 10:10 PM<br>應觸發 #3（最後一筆）</div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:var(--ok);"></span> 若沿用「只取最後一筆」的舊邏輯，只有這一筆會被檢查</div>
+      <div class="item"><span class="dot" style="background:var(--danger);"></span> 另外 2 筆完全不會被驗證，即使漏排也不會告警</div>
+    </div>
+
+    <div class="api-usage">
+      <div class="api-row runtimes">
+        <div class="api-tag">① GetRunTimes</div>
+        <div class="api-body">
+          <div class="api-call">task.GetRunTimes(昨天00:00, 今天08:00, 1000)</div>
+          <div class="api-desc">實際回傳：<code>[ 昨天10:10, 昨天16:10, 昨天22:10 ]</code> —— API 本身有回傳全部 3 筆，是程式邏輯只取 <code>[^1]</code>（最後一筆）才漏掉前 2 筆</div>
+        </div>
+      </div>
+      <div class="api-row history">
+        <div class="api-tag">② GetHistory ×3</div>
+        <div class="api-body">
+          <div class="api-call">GetHistory(taskPath, since: 昨天00:00) 查一次，對 3 筆各自比對最接近的紀錄</div>
+          <div class="api-desc">同一次 GetHistory 查詢結果，拿來跟 10:10 / 16:10 / 22:10 這 3 個時間點分別比對，各自獨立判斷</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <strong>修正：</strong>必須逐一走訪這個任務底下的每一組 Trigger（10:10 AM、4:10 PM、10:10 PM 各自是獨立 Trigger），
+      分別計算各自的應觸發時間並各自比對執行歷史，而不是把整個 Task 的 <code>GetRunTimes()</code> 結果只取最後一筆。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span>類型 C 圖解：高頻重複型只檢查「第一次啟動時間」</h2>
+    <p class="sub">情境：2:01 PM 開始，之後每 5 分鐘重複一次，持續 1 天</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">當天 00:00 ──────────────────────────────────────────────→ 23:59</div>
+      <div class="track">
+        <div class="tick" style="left:2%;"></div>
+        <div class="tick-label" style="left:2%;">00:00</div>
+        <div class="tick" style="left:98%;"></div>
+        <div class="tick-label" style="left:98%;">23:59</div>
+
+        <!-- repetition dots (visual only, faded) -->
+        <div class="rep-dot" style="left:58.5%;"></div>
+        <div class="rep-dot" style="left:60%;"></div>
+        <div class="rep-dot" style="left:61.5%;"></div>
+        <div class="rep-dot" style="left:63%;"></div>
+        <div class="rep-dot" style="left:64.5%;"></div>
+        <div class="rep-dot" style="left:66%;"></div>
+        <div class="rep-dot" style="left:67.5%;"></div>
+        <div class="rep-dot" style="left:69%;"></div>
+        <div class="rep-dot" style="left:70.5%;"></div>
+        <div class="rep-dot" style="left:72%;"></div>
+        <div class="rep-dot" style="left:73.5%;"></div>
+        <div class="rep-dot" style="left:75%;"></div>
+
+        <!-- first occurrence -->
+        <div class="first-dot" style="left:58.5%;">
+          <div class="dot">✓</div>
+          <div class="label">2:01 PM<br>唯一檢查點</div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:var(--ok);"></span> 2:01 PM 起始時間 — 唯一納入漏排/失敗判斷的時間點</div>
+      <div class="item"><span class="dot" style="background:#fde68a;"></span> 之後每 5 分鐘的重複實例 — 忽略，不逐一比對</div>
+    </div>
+
+    <div class="api-usage">
+      <div class="api-row runtimes">
+        <div class="api-tag">① GetRunTimes</div>
+        <div class="api-body">
+          <div class="api-call">trigger（清空 Repetition 後）.GetRunTimes(當天00:00, 當天23:59)</div>
+          <div class="api-desc">若直接對整個 Task 呼叫 GetRunTimes，會展開回傳近 288 筆（每 5 分鐘一筆）；
+            改成先複製 Trigger 並清空 <code>Repetition.Interval</code>，才會只回傳 <code>[ 14:01 ]</code> 這一筆起始時間</div>
+        </div>
+      </div>
+      <div class="api-row history">
+        <div class="api-tag">② GetHistory</div>
+        <div class="api-body">
+          <div class="api-call">GetHistory(taskPath, since: 13:46)</div>
+          <div class="api-desc">只確認 14:01 附近「有沒有開始執行過」，不逐一比對後續 5 分鐘一次的重複實例</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note ok">
+      <strong>採用策略：</strong>忽略 Trigger 的 <code>Repetition</code> 設定展開出的重複實例，只用 Trigger 本身的
+      <code>StartBoundary</code>（起始時間規則，例如「每天 2:01 PM」）去計算應觸發時間並檢查。
+      這樣可以大幅降低誤判與效能負擔，同時抓到最關鍵的起點：「這個高頻任務今天到底有沒有開始跑」。
+    </div>
+
+    <h3>實作方向</h3>
+    <pre><code>// 對每一個 Trigger 各別處理，而非直接呼叫 Task.GetRunTimes()（會展開所有重複實例）
+foreach (var trigger in task.Definition.Triggers)
+{
+    if (trigger.Repetition.Interval != TimeSpan.Zero)
+    {
+        // 高頻重複型：暫時複製一份、清空 Repetition，只計算「起始時間」本身
+        var clone = trigger.Clone();
+        clone.Repetition.Interval = TimeSpan.Zero;
+        clone.Repetition.Duration = TimeSpan.Zero;
+        // 用只含這個 trigger 的暫存 TaskDefinition 呼叫 GetRunTimes，取得起始時間清單
+    }
+    else
+    {
+        // 一般型（Daily 單次 / Weekly）：直接計算應觸發時間
+    }
+}</code></pre>
+  </section>
+
+  <section>
+    <h2><span class="num">7</span>整合後的完整判斷策略表</h2>
+    <table>
+      <tr><th>Trigger 類型</th><th>LookbackHours 建議</th><th>應觸發時間計算方式</th><th>特殊處理</th></tr>
+      <tr>
+        <td>Weekly</td>
+        <td>≥ 168 小時（7 天）</td>
+        <td>逐一檢查區間內所有應觸發時間</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>Daily 單次</td>
+        <td>24 小時</td>
+        <td>逐一檢查區間內所有應觸發時間</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>Daily + 高頻重複</td>
+        <td>24 小時</td>
+        <td>只取該 Trigger 的 <strong>起始時間</strong>，忽略 Repetition 展開的實例</td>
+        <td>需清空 Repetition 後計算</td>
+      </tr>
+      <tr>
+        <td>Multiple Triggers</td>
+        <td>依各組 Trigger 週期而定</td>
+        <td>每組 Trigger 各自獨立計算與檢查</td>
+        <td>不可只取「最後一筆」，需逐組處理</td>
+      </tr>
+    </table>
+
+    <div class="note warn">
+      <strong>下一步：</strong>目前 <code>SchedulerReader.GetExpectedLastRunTime()</code> 是對整個 <code>Task</code> 呼叫
+      <code>GetRunTimes()</code>，這會把所有 Trigger（含重複實例）混在一起展開，無法區分「該檢查全部」或「只檢查起始點」。
+      需要改為<strong>逐一走訪 <code>task.Definition.Triggers</code></strong>，依上表策略分別處理，再合併成最終的應檢查時間清單。
+    </div>
+  </section>
+
+  <footer>Windows Task Manager · Trigger 樣態分析與監控策略設計</footer>
+</div>
+
+</body>
+</html>

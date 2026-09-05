@@ -1,0 +1,22 @@
+info:
+  name: cloud-sidebar-menu
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{base-url}}/api/home/cloud-sidebar-menu?shopId=2"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  params:
+    - name: shopId
+      value: "2"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

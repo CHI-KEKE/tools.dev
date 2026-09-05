@@ -1,0 +1,89 @@
+meta {
+  name: POS API（三把Key）_TW_QA
+}
+
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  api_host: http://pos-api.qa.91dev.tw
+  scm_api: https://api.91mai.com
+  shop_Id: 10230
+  token: 85932145
+  api_key: 071311bf-c8ff-45a4-b907-c3887a31e1d6
+  salt_key: 7d7d4add
+  phone: +886988542534
+  request_id: NY0643
+  machine_code: NY0643
+  location_code: 12314
+  employee_code: 00001
+  outermembercode: WEN0000128
+  member_code: 70001899F1
+  timestamp: 
+  signature: 
+  request_body: {"OuterMemberCode":"","MemberCode":"","CellPhone":"+886977156238","UsingChannelType":"Offline"}
+  usingChannelType: Offline
+  : http://pos-api.qa.91dev.tw
+}
+
+script:pre-request {
+  const phone = bru.getCollectionVar("phone");
+  const outermembercode = bru.getCollectionVar("outermembercode");
+  const membercode = bru.getCollectionVar("member_code");
+  const shopId = parseInt(bru.getCollectionVar("shop_id"));
+  const usingChannelType = bru.getCollectionVar("usingChannelType");
+  
+  // 修改request-body
+  var body = {
+      "OuterMemberCode": outermembercode,
+      "MemberCode": membercode,
+      "CellPhone": phone,
+      "UsingChannelType":usingChannelType
+  }
+  
+  var body_data = JSON.stringify(body)
+  
+  // 取得Timestamp
+  await bru.sendRequest({
+      url: 'https://api.91mai.com' + '/scm/v1/Utils/GetCurrentTime',
+      method: 'POST',
+      headers: {
+          'content-type': 'application/json',
+      }
+  }, async function(err, response) {
+      const timestamp = response.data
+      // console.log("取得Timestamp : " + timestamp)
+  //     pm.collectionVariables.set("timestamp", timestamp);
+  
+      var body =  body_data.toLowerCase();
+      // 取得Signature
+      var content = "ts=" + bru.getCollectionVar("timestamp") + "&data=" + body + "&sk=" + bru.getCollectionVar("salt_key")
+  
+      console.log("取得Signature : " + content)
+      await bru.sendRequest({
+          url: 'https://api.91mai.com' + '/scm/v1/Sample/GetEncryptData',
+          method: 'POST',
+          headers: {
+              "Content-Type": "multipart/form-data",
+              },
+          data: {
+              "key": bru.getCollectionVar("api_key"),
+              "content": content
+          }
+      }, async function(err, response) {
+          const signature = response.data.Data
+  //         pm.collectionVariables.set("signature", signature);
+      });
+  });
+  
+  request_body = body_data
+  // console.log("4. 取得request_body:" + request_body)
+  // pm.collectionVariables.set("request_body", request_body);
+  
+  function interpolate (value) {
+      const {Property} = require('pm-collection');
+  //     return Property.replaceSubstitutions(value, pm.collectionVariables.toObject());
+  }
+  
+}

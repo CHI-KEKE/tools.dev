@@ -1,0 +1,7 @@
+info:
+  name: promotion
+  type: folder
+  seq: 16
+
+request:
+  auth: inherit

@@ -1,0 +1,62 @@
+info:
+  name: query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/trade/v1/query"
+  body:
+    type: form-urlencoded
+    data:
+      - name: mchid
+        value: "{{MCHID}}"
+      - name: syssn
+        value: "{{SYSSN}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## pm prescript
+
+
+  const crypto = require('crypto-js');
+
+  const app_code = '*******'
+  const client_key = '*******'
+
+  const mchid = '*******'
+  const syssn = '202006230500010979'
+
+  var payload = {
+    'mchid': mchid,
+    'syssn': syssn
+  };
+
+  // Signature Generation
+  const ordered = {};
+  Object.keys(payload).sort().forEach(function (key) {
+    ordered[key] = payload[key]
+  });
+  console.log(ordered)
+
+  var str = [];
+  for (var p in ordered)
+    if (ordered.hasOwnProperty(p)) {
+      str.push((p) + "=" + (ordered[p]));
+    }
+  var string = str.join("&") + client_key;
+  console.log(string)
+
+  var hashed = crypto.MD5(string, client_key)
+  console.log(hashed)
+
+  postman.setEnvironmentVariable("SIGNATURE", hashed)
+  postman.setEnvironmentVariable("APP_CODE", app_code)
+  postman.setEnvironmentVariable("MCHID", mchid)
+  postman.setEnvironmentVariable("SYSSN", syssn)

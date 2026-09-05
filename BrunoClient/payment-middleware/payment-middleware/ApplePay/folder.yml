@@ -1,0 +1,21 @@
+info:
+  name: ApplePay
+  type: folder
+  seq: 1
+
+request:
+  headers:
+    - name: X-Secret
+      value: 
+  auth: inherit
+  variables:
+    - name: flow
+      value: DestinationCharge
+    - name: pay-method
+      value: pm_1S5FsAEUxCsaikE2L2kGbSGe
+    - name: acct
+      value: aaas
+    - name: amount
+      value: "4"
+    - name: transaction_id
+      value: pi_3TDFi6BNLlm5Q2Wr1prUSKcm

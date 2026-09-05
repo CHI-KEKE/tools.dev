@@ -1,0 +1,37 @@
+info:
+  name: list-by-ids
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/list-by-ids?lang=en-US"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  params:
+    - name: lang
+      value: en-US
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "IdList" :[7133,7131,
+      7129,
+      7128,
+      7135,
+      7121]
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

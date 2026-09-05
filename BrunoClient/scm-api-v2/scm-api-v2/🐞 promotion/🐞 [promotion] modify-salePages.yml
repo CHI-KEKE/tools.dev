@@ -1,0 +1,42 @@
+info:
+  name: 🐞 [promotion] modify-salePages
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/ModifyPromotionSalePages?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "Id": 40410,
+        "ModifyType": "Add",
+        "SalePageIds":[1557559],
+        "ShopId":10230
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  {
+    "Id": 7009,
+    "ModifyType": "Add",
+    "SalePageIds":[62184],
+    "ShopId":2
+  }

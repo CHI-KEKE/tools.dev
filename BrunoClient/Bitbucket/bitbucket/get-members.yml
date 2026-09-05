@@ -1,0 +1,18 @@
+info:
+  name: get-members
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{base-url}}/workspaces/{{Workspace}}/members"
+  auth:
+    type: basic
+    username: kevindeng@91app.com
+    password: '"ATATT3xFfGF0hC8o8E5m3Mf8mSTJdbtO58JEJMvxI3WJRtRVfo2jmUEt3nUg1AhBG9H_--dheQQ7T8wmjYZmrkZi1O3SHczFTTMdz2geSMmWmU6mJuBahL5iKnW8rpxxHBP9W5nvQEhboDLJFgl9WyupV0ndOzKZIuS6eliYQMcUTfxGMjaRreE=9A5EE906'
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

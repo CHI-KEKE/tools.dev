@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Review API — 實作規劃書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0d0a;
+    --bg-2: #12140f;
+    --panel: #15170f;
+    --line: #2a2e21;
+    --line-soft: #1e2117;
+    --ink: #ece7d9;
+    --ink-dim: #9a9787;
+    --ink-faint: #625f52;
+    --accent: #b8ff5a;
+    --accent-dim: #7fae3f;
+    --amber: #ffb84d;
+    --red: #ff6b5e;
+    --blue: #82c8ff;
+    --serif: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', 'Consolas', monospace;
+  }
+  *{box-sizing:border-box;}
+  ::selection{ background: var(--accent); color:#0b0d0a; }
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 85% -10%, rgba(184,255,90,0.08), transparent 60%),
+      radial-gradient(ellipse 700px 400px at -5% 30%, rgba(255,184,77,0.05), transparent 60%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.7;
+    position: relative;
+  }
+  body::before{
+    content:""; position: fixed; inset:0; pointer-events:none; opacity: 0.05; z-index: 5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  a{color:var(--accent); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  code{ font-family: var(--mono); }
+
+  header.masthead{
+    position: relative; padding: 90px 8vw 70px; border-bottom: 1px solid var(--line); overflow:hidden;
+  }
+  header.masthead::after{
+    content:""; position:absolute; right:-10%; top:-30%; width:600px; height:600px;
+    background: radial-gradient(circle, rgba(184,255,90,0.10), transparent 65%); filter: blur(10px); pointer-events:none;
+  }
+  .kicker{
+    display:inline-flex; align-items:center; gap:10px; font-size:12px; letter-spacing:0.22em; text-transform:uppercase;
+    color: var(--accent); border:1px solid var(--line); padding: 6px 14px; border-radius: 100px;
+    background: rgba(184,255,90,0.05); animation: fadeUp .7s ease both;
+  }
+  .kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--accent); box-shadow:0 0 8px var(--accent); animation: pulse 2s infinite;}
+  @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.3} }
+  h1.title{
+    font-family: var(--serif); font-optical-sizing: auto; font-weight: 600;
+    font-size: clamp(2.4rem, 5vw, 4.2rem); line-height: 1.05; margin: 26px 0 18px;
+    letter-spacing: -0.01em; color: var(--ink); animation: fadeUp .8s ease .08s both;
+  }
+  h1.title em{ font-style: italic; color: var(--accent); }
+  .subtitle{ max-width: 680px; color: var(--ink-dim); font-size: 15.5px; line-height: 1.75; animation: fadeUp .8s ease .16s both; }
+  .status-chip{
+    margin-top: 34px; display:inline-flex; align-items:center; gap:14px;
+    background: var(--panel); border: 1px solid var(--line); padding: 14px 20px; border-radius: 10px;
+    font-size: 13.5px; animation: fadeUp .8s ease .24s both; box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+  .badge{ background: var(--amber); color:#0b0d0a; font-weight:700; padding: 3px 10px; border-radius:5px; letter-spacing:0.04em; font-size:12px; }
+  @keyframes fadeUp{ from{opacity:0; transform: translateY(16px);} to{opacity:1; transform:translateY(0);} }
+
+  .layout{ display:grid; grid-template-columns: 250px 1fr; max-width: 1320px; margin: 0 auto; }
+  nav.toc{
+    position: sticky; top: 0; align-self: start; height: 100vh; overflow-y:auto;
+    padding: 48px 24px 48px 8vw; border-right: 1px solid var(--line);
+  }
+  nav.toc .toc-label{ font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color: var(--ink-faint); margin-bottom: 18px; }
+  nav.toc ol{ list-style:none; margin:0; padding:0; counter-reset: sec; }
+  nav.toc li{ counter-increment: sec; margin-bottom: 4px; }
+  nav.toc a{ display:flex; gap:10px; color: var(--ink-dim); font-size: 13px; padding: 8px 10px; border-radius: 6px; transition: all .15s ease; }
+  nav.toc a::before{ content: counter(sec, decimal-leading-zero); color: var(--ink-faint); font-weight:600; }
+  nav.toc a:hover, nav.toc a.active{ color: var(--accent); background: rgba(184,255,90,0.06); text-decoration:none; }
+
+  main{ padding: 60px 6vw 120px 6vw; max-width: 980px; }
+  section{ margin-bottom: 84px; scroll-margin-top: 30px; }
+  .section-head{ display:flex; align-items:baseline; gap: 18px; margin-bottom: 26px; padding-bottom: 16px; border-bottom: 1px solid var(--line-soft); }
+  .section-num{ font-family: var(--serif); font-style: italic; color: var(--accent-dim); font-size: 15px; }
+  h2{ font-family: var(--serif); font-weight: 600; font-size: 1.85rem; margin: 0; color: var(--ink); }
+  h3{ font-family: var(--serif); font-weight: 600; font-size: 1.15rem; color: var(--ink); margin: 36px 0 14px; }
+  p{ color: var(--ink-dim); max-width: 72ch; }
+  strong{ color: var(--ink); }
+
+  .table-wrap{ border:1px solid var(--line); border-radius: 12px; overflow:hidden; margin: 18px 0 8px; }
+  table{ width:100%; border-collapse:collapse; font-size: 13px; }
+  thead th{
+    text-align:left; background: var(--bg-2); color: var(--accent); font-weight:600; padding: 12px 16px;
+    border-bottom: 1px solid var(--line); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  tbody td{ padding: 13px 16px; border-bottom: 1px solid var(--line-soft); color: var(--ink-dim); vertical-align: top; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background: rgba(184,255,90,0.03); }
+  td code{ background: rgba(184,255,90,0.08); color: var(--accent); padding: 2px 7px; border-radius: 5px; font-size: 12px; border: 1px solid rgba(184,255,90,0.15); }
+
+  .callout{ display:flex; gap: 14px; padding: 18px 20px; border-radius: 10px; border: 1px solid; margin: 22px 0; font-size: 13.5px; }
+  .callout p{ margin:0; color: inherit; max-width:none; }
+  .callout.warn{ border-color: rgba(255,184,77,0.35); background: rgba(255,184,77,0.06); color:#ffd699; }
+  .callout.note{ border-color: rgba(184,255,90,0.3); background: rgba(184,255,90,0.05); color: #d7ffa8; }
+  .callout.risk{ border-color: rgba(255,107,94,0.35); background: rgba(255,107,94,0.06); color:#ffb3ab; }
+  .callout .icon{ font-size: 16px; line-height:1; }
+
+  /* phase timeline */
+  .timeline{ position:relative; padding-left: 46px; margin-top: 30px; }
+  .timeline::before{
+    content:""; position:absolute; left:17px; top:8px; bottom:8px; width:2px;
+    background: linear-gradient(var(--accent-dim), var(--line));
+  }
+  .phase{ position:relative; margin-bottom: 30px; }
+  .phase::before{
+    content: attr(data-n); position:absolute; left:-46px; top:0; width:34px; height:34px;
+    border-radius:50%; background: var(--bg-2); border: 1px solid var(--accent-dim); color: var(--accent);
+    display:flex; align-items:center; justify-content:center; font-family: var(--serif); font-style:italic; font-size:14px;
+  }
+  .phase .phase-card{
+    border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px;
+    background: linear-gradient(180deg, var(--panel), var(--bg-2));
+  }
+  .phase h4{ font-family: var(--serif); font-size: 1.25rem; margin: 0 0 6px; color: var(--ink); }
+  .phase .phase-sub{ font-size: 11.5px; color: var(--ink-faint); text-transform:uppercase; letter-spacing:0.08em; margin-bottom: 10px; }
+  .phase ul{ margin: 10px 0 0; padding-left: 18px; }
+  .phase li{ color: var(--ink-dim); font-size: 13px; margin-bottom: 6px; }
+  .phase li code{ background: rgba(184,255,90,0.08); color: var(--accent); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+  .phase-risk{
+    margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 12px;
+    background: rgba(255,184,77,0.08); color: var(--amber); border: 1px solid rgba(255,184,77,0.25);
+  }
+  .phase-note{
+    margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 12px;
+    background: rgba(184,255,90,0.06); color: #d7ffa8; border: 1px solid rgba(184,255,90,0.22);
+  }
+
+  /* decision cards */
+  .decisions{ display:grid; gap: 14px; margin: 20px 0; }
+  .decision{
+    border:1px solid var(--line); border-radius: 12px; padding: 18px 22px;
+    background: var(--panel); display:grid; grid-template-columns: 200px 1fr; gap: 20px; align-items:start;
+  }
+  @media (max-width: 720px){ .decision{ grid-template-columns: 1fr; } }
+  .decision .q{ color: var(--ink-faint); font-size: 12px; letter-spacing:0.04em; }
+  .decision .a{ color: var(--accent); font-weight:600; font-size: 14px; margin-top: 4px; }
+  .decision .why{ color: var(--ink-dim); font-size: 13px; }
+
+  .codeblock{
+    background: #0e100a; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 18px 0;
+    box-shadow: 0 20px 50px -30px rgba(0,0,0,0.8);
+  }
+  .codeblock .bar{ display:flex; align-items:center; gap:8px; padding: 10px 16px; background: var(--bg-2); border-bottom: 1px solid var(--line); }
+  .codeblock .bar .light{ width:9px; height:9px; border-radius:50%; }
+  .codeblock .bar .label{ margin-left: 8px; font-size: 11px; color: var(--ink-faint); letter-spacing: 0.05em; }
+  .codeblock pre{ margin:0; padding: 20px; overflow-x:auto; font-size: 12.5px; line-height: 1.75; color: var(--ink-dim); }
+  .codeblock .k{ color: var(--blue); }
+  .codeblock .s{ color: var(--accent); }
+  .codeblock .c{ color: var(--ink-faint); font-style: italic; }
+  .codeblock .n{ color: var(--amber); }
+
+  .checklist{ counter-reset: step; list-style:none; padding:0; margin:20px 0 0; }
+  .checklist li{
+    counter-increment: step; display:flex; gap:16px; padding: 14px 0; border-bottom: 1px solid var(--line-soft);
+    color: var(--ink-dim); font-size: 13.5px; align-items:flex-start;
+  }
+  .checklist li:last-child{ border-bottom:none; }
+  .checklist li::before{
+    content: counter(step); flex-shrink:0; width: 26px; height:26px; border-radius:50%;
+    border: 1px solid var(--accent-dim); color: var(--accent); display:flex; align-items:center; justify-content:center;
+    font-family: var(--serif); font-style:italic; font-size:12.5px; margin-top:1px;
+  }
+  .checklist li strong{ color: var(--ink); }
+
+  footer{ text-align:center; padding: 50px 6vw 70px; color: var(--ink-faint); font-size: 12px; letter-spacing: 0.04em; }
+
+  @media (max-width: 900px){
+    .layout{ grid-template-columns: 1fr; }
+    nav.toc{ display:none; }
+    main{ padding: 40px 6vw 100px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <span class="kicker"><span class="dot"></span> NineYi.Ai.CodeReview · Implementation Blueprint</span>
+  <h1 class="title">Simple<em>Review</em><br>實作規劃書</h1>
+  <p class="subtitle">
+    在既有 Webhook-based Code Review 架構上，新增一支同步式、供 Copilot CLI / CI 直接呼叫的
+    <code>POST /api/review/diff</code> 端點。本文件記錄命名/架構決策、分層實作計畫、
+    共用邏輯抽出方式（RuleMatcher）與風險控管——尚未動手實作程式碼。
+  </p>
+  <div class="status-chip">
+    <span class="badge">PLANNING</span>
+    <span>Draft v1 · 2026-07-29</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="toc-label">目錄</div>
+    <ol>
+      <li><a href="#background">背景與現況落差</a></li>
+      <li><a href="#decisions">設計決策</a></li>
+      <li><a href="#phases">分層實作計畫</a></li>
+      <li><a href="#config">設定檔調整</a></li>
+      <li><a href="#testing">測試計畫</a></li>
+      <li><a href="#todo">待辦拆解</a></li>
+      <li><a href="#risk">風險與注意事項</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="background">
+      <div class="section-head"><span class="section-num">i.</span><h2>背景與現況落差</h2></div>
+      <p>
+        先前分析的 <code>DirectReviewController</code> / <code>IRuleRepository</code>（DB 驅動規則）等程式碼，
+        在目前這版程式庫中<strong>已不存在</strong>。現況已改為：
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>項目</th><th>現況</th></tr></thead>
+          <tbody>
+            <tr><td>規則來源</td><td>設定檔驅動：<code>CodeReviewConfig.Rules</code>（<code>List&lt;RuleEntry&gt;</code>），對應 <code>_N1CONFIG:CodeReview</code></td></tr>
+            <tr><td>Dify 呼叫方式</td><td>目前只有 <code>ReviewCodeAsync</code>，內部已經是打 Dify <strong>Chat API</strong>（<code>/v1/chat-messages</code>，與 <code>DifySettings.ApiEndpoint</code> 預設值一致），但輸入/輸出資料契約綁死「單一檔案、逐行回貼 PR 留言」場景（非另一支 Workflow API，先前規劃書誤植已更正）</td></tr>
+            <tr><td>Webhook 流程</td><td><code>PullRequestReviewService.StartAsync</code> 已有完整「依 repo 找 Rule → 逐檔呼叫 Dify → 回貼 Git 平台」邏輯，規則比對邏輯目前是其內部 <code>private</code> 方法</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>因此這次是<strong>從目前架構出發新增功能</strong>，而非修改舊的 DirectReview 程式碼。</p>
+    </section>
+
+    <section id="decisions">
+      <div class="section-head"><span class="section-num">ii.</span><h2>設計決策</h2></div>
+
+      <div class="decisions">
+        <div class="decision">
+          <div><div class="q">CONTROLLER 命名</div><div class="a">ReviewController</div></div>
+          <div class="why">路由 <code>api/review</code>，比照既有 <code>WebhookController</code>（一個 Controller、多個 Action）模式，未來新增審查相關端點不必再開新 Controller。</div>
+        </div>
+        <div class="decision">
+          <div><div class="q">ACTION 命名</div><div class="a">POST /api/review/diff</div></div>
+          <div class="why">語意對應 body 裡的 <code>diffContent</code>；避免 <code>direct</code> 與 Controller 語意重複，也避免 quick/full 各開一個 Action 導致 Action 隨審查尺度增加而膨脹。</div>
+        </div>
+        <div class="decision">
+          <div><div class="q">taskingFlow 型別</div><div class="a">enum ReviewScope { Quick, Full }</div></div>
+          <div class="why">字串改為強型別，避免打錯字、Swagger 可自動列出合法值；未來加 <code>Deep</code> 只需加一個 enum 值。</div>
+        </div>
+        <div class="decision">
+          <div><div class="q">Rule 依 SCOPE 篩選</div><div class="a">RuleEntry.ApplicableScopes</div></div>
+          <div class="why"><code>List&lt;ReviewScope&gt;</code>，<strong>空清單＝僅 Full 適用（保守預設）</strong>，Quick 需明確加入白名單（如 <code>["Quick","Full"]</code>）才會被觸發；只需異動想納入 Quick 的 Rule，其餘既有 Rule 不用動。</div>
+        </div>
+        <div class="decision">
+          <div><div class="q">規則比對邏輯</div><div class="a">抽出共用 IRuleMatcher</div></div>
+          <div class="why">Webhook 流程與新 Diff Review 流程共用同一套「依 repo/scope/file pattern 找 Rule」邏輯，避免兩邊分岔維護。</div>
+        </div>
+        <div class="decision">
+          <div><div class="q">Dify 呼叫方式</div><div class="a">新增 ChatReviewAsync</div></div>
+          <div class="why">端點沒有換，一樣是 <code>/v1/chat-messages</code>。新增理由是<strong>資料契約不同</strong>：<code>ReviewCodeAsync</code> 綁死單一檔名＋單檔 diff 輸入，並把 <code>answer</code> 切成 <code>[MUST]/[SHOULD]/[MAY]</code> 結構化 Comment（供回貼 PR 行內留言）；新方法要送整段多檔 diff＋context，且直接回傳原始 <code>answer</code> 文字，不做標籤切割。</div>
+        </div>
+        <div class="decision">
+          <div><div class="q">兩個核心 SERVICE 命名</div><div class="a">CodeReviewService（新）／PullRequestReviewService（既有改名）</div></div>
+          <div class="why">「Code Review」是最通用的核心領域動作，新的 Diff 審查最貼近這個通用動作，接手這個名字；既有服務除了審查程式碼還背負 PR 實體的抓取／比對／回貼留言／DB 寫入等副作用，屬於「操作 PR 實體」的特化應用，改名為 <code>PullRequestReviewService</code> 更精準——強調操作對象而非 Webhook 這個觸發管道，未來即使改成手動重跑也不用再改名。</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="phases">
+      <div class="section-head"><span class="section-num">iii.</span><h2>分層實作計畫</h2></div>
+
+      <div class="timeline">
+
+        <div class="phase" data-n="0">
+          <div class="phase-card">
+            <div class="phase-sub">Domain</div>
+            <h4>基礎型別</h4>
+            <ul>
+              <li>新增 <code>Domain/Enums/ReviewScopeEnum.cs</code>：<code>enum ReviewScope { Quick = 1, Full = 2 }</code></li>
+              <li><code>Application/Config/RuleEntry.cs</code> 新增 <code>ApplicableScopes</code>（<code>List&lt;ReviewScope&gt;</code>）。<strong>語意：空清單＝僅 Full 適用</strong>，需明確加入 <code>Quick</code> 才會在快速審查時觸發</li>
+              <li><code>Domain/Interfaces/IDifyService.cs</code> 新增 <code>ChatReviewAsync</code> 方法 + <code>DifyChatReviewRequest</code> / <code>DifyChatReviewResult</code> DTO — <strong>同一支</strong> <code>/v1/chat-messages</code>，差異在輸入（整段多檔 diff＋context）與輸出（原始 <code>answer</code> 文字，不做 MUST/SHOULD/MAY 切割）</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="phase" data-n="1">
+          <div class="phase-card">
+            <div class="phase-sub">Application · Refactor</div>
+            <h4>既有服務改名 + 抽出共用 RuleMatcher</h4>
+            <div class="phase-note">💬 <strong>命名討論結論：</strong>維持 <code>IRuleMatcher</code> 不拆分、不改名。它同時承擔「依 repo+scope 篩選規則清單」（組合式決策）與「單一檔名對 pattern 的布林比對」（純粹 matcher）兩種粒度，要求在介面上補齊 XML 註解說明各方法職責邊界。<strong>本階段額外新增改名任務</strong>：<code>ICodeReviewService</code>/<code>CodeReviewService</code> → <code>IPullRequestReviewService</code>/<code>PullRequestReviewService</code>，把「CodeReviewService」名字讓給新的 Diff Review 服務，是本規劃書唯一牽動既有生產程式碼命名的異動（規模與本 session 稍早的 <code>GitPlatformType</code>→<code>GitPlatformTypeEnum</code> 重構相當），建議與 RuleMatcher 抽取同一個 PR 完成。</div>
+            <ul>
+              <li>改名 <code>ICodeReviewService</code>/<code>CodeReviewService</code> → <code>IPullRequestReviewService</code>/<code>PullRequestReviewService</code>（方法簽章不變）</li>
+              <li><code>Api/Controllers/WebhookController.cs</code> 建構子注入型別同步改為 <code>IPullRequestReviewService</code></li>
+              <li><code>Application/DependencyInjection.cs</code> 註冊型別同步改為 <code>AddScoped&lt;IPullRequestReviewService, PullRequestReviewService&gt;()</code></li>
+              <li>新增 <code>IRuleMatcher</code>：<code>GetApplicableRules(repoFullName, scope?)</code>、<code>IsFilePatternMatch(...)</code>（皆補上 XML 文件註解）</li>
+              <li>新增 <code>RuleMatcher</code>：搬移 <code>PullRequestReviewService</code> 現有的 <code>GetApplicableRules</code> / <code>IsRepoMatch</code> / <code>IsFrontendRule</code> / <code>ExcludeFrontendRulesForNmqRepo</code> / <code>IsFilePatternMatch</code>；scope 篩選邏輯：<code>null</code>→不篩選（Webhook 相容），<code>Full</code>→空清單或包含 Full 皆可，<code>Quick</code>→必須明確包含 Quick</li>
+              <li><code>PullRequestReviewService</code> 改注入 <code>IRuleMatcher</code>，移除搬走的 private 方法</li>
+              <li>DI 註冊：<code>AddSingleton&lt;IRuleMatcher, RuleMatcher&gt;()</code></li>
+            </ul>
+            <div class="phase-risk">⚠ 改名牽動既有生產程式碼（介面、DI 註冊、Controller 注入），加上 RuleMatcher 抽取皆屬「搬移/改名不改邏輯」，但仍需迴歸驗證 Webhook 流程行為完全一致，並確認無日誌監控/儀表板告警綁死舊類別名稱</div>
+          </div>
+        </div>
+
+        <div class="phase" data-n="2">
+          <div class="phase-card">
+            <div class="phase-sub">Application</div>
+            <h4>Diff Review 服務與 DTO</h4>
+            <div class="phase-note">💬 <strong>命名與分層討論結論：</strong>獨立為 <code>ICodeReviewService</code>/<code>CodeReviewService</code>（接手核心領域名字），不合併進 <code>PullRequestReviewService</code>、也不省略此層讓 Controller 直接呼叫 <code>IDifyService</code>。對照實際程式碼，<code>PullRequestReviewService.ExecuteReviewAsync</code> 的 PR Title Gate／抓 diff／回貼 PR 等步驟 Diff Review 完全用不到，合併不會共用到任何程式碼；「Code Review」是通用核心動作，「PullRequest」則強調操作 PR 實體的特化副作用，兩者是「通用能力 vs 特化應用」的命名分工，不是構詞對稱遊戲。本階段只定義 <code>ReviewAsync</code> 一個方法，未來擴充方法待實際需求出現再評估（YAGNI）。</div>
+            <ul>
+              <li>新增 <code>Application/DTOs/DiffReviewDto.cs</code>：<code>DiffReviewRequest</code> / <code>ReviewContext</code> / <code>FileFullContent</code> / <code>DiffReviewResponse</code> / <code>DiffReviewAnswer</code></li>
+              <li>新增 <code>ICodeReviewService</code> / <code>CodeReviewService</code>：驗證必填 → 透過 <code>IRuleMatcher</code> 找 Rule → 組 ContextSummary → 平行呼叫 <code>ChatReviewAsync</code> → 彙整回傳</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="phase" data-n="3">
+          <div class="phase-card">
+            <div class="phase-sub">Infrastructure</div>
+            <h4>Dify Chat API 實作</h4>
+            <ul>
+              <li><code>DifyService.cs</code> 實作 <code>ChatReviewAsync</code>：POST 至同一支 <code>{ApiEndpoint}</code>（<code>/v1/chat-messages</code>，與 <code>ReviewCodeAsync</code> 相同端點），直接回傳原始 <code>answer</code> 文字（不做結構化切割）</li>
+              <li>沿用現有 <code>ReviewCodeAsync</code> 的 HttpClient / 認證 / 錯誤處理 / 耗時量測慣例</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="phase" data-n="4">
+          <div class="phase-card">
+            <div class="phase-sub">Api</div>
+            <h4>Controller 與 DI 註冊</h4>
+            <ul>
+              <li>新增 <code>Api/Controllers/ReviewController.cs</code>：<code>[Route("api/[controller]")]</code>，<code>[HttpPost("diff")]</code></li>
+              <li>DI 註冊：<code>AddScoped&lt;ICodeReviewService, CodeReviewService&gt;()</code></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="config">
+      <div class="section-head"><span class="section-num">iv.</span><h2>設定檔調整</h2></div>
+      <p>
+        實際設定檔位於 <code>config/settings.json</code> 的 <code>_N1CONFIG:CodeReview:Rules</code>，目前共 23 條 Rule，全部預設 <code>ApplyToRepos: ["*"]</code>。
+        <strong>Quick 檔位採白名單制</strong>：只有明確加上 <code>ApplicableScopes</code> 且包含 <code>"Quick"</code> 的 Rule，才會在 <code>Scope=Quick</code> 時被觸發；未標記的 Rule 空清單視為「僅 Full 適用」。
+      </p>
+      <p>本次只需異動 <strong>2 條 Rule</strong>（<code>StandardBackend</code>、<code>CustomRuleBackend</code>），其餘 21 條完全不用修改：</p>
+      <div class="codeblock">
+        <div class="bar">
+          <span class="light" style="background:#ff5f57"></span>
+          <span class="light" style="background:#febc2e"></span>
+          <span class="light" style="background:#28c840"></span>
+          <span class="label">config/settings.json</span>
+        </div>
+        <pre>{
+  <span class="k">"Name"</span>: <span class="s">"StandardBackend"</span>,
+  <span class="k">"DifyApiKey"</span>: <span class="s">"app-ZiyaCPCjqiTaN8YEAsMTZU8e"</span>,
+  <span class="k">"FilePatterns"</span>: <span class="s">"*.cs"</span>,
+  <span class="k">"ApplyToRepos"</span>: [<span class="s">"*"</span>],
+  <span class="k">"IsActive"</span>: <span class="n">true</span>,
+  <span class="k">"IsFrontendRule"</span>: <span class="n">false</span>,
+  <span class="k">"ApplicableScopes"</span>: [<span class="s">"Quick"</span>, <span class="s">"Full"</span>]
+},
+{
+  <span class="k">"Name"</span>: <span class="s">"CustomRuleBackend"</span>,
+  <span class="k">"DifyApiKey"</span>: <span class="s">"app-CzdjFhacdnhKZ9z3vGZdL9DL"</span>,
+  <span class="k">"FilePatterns"</span>: <span class="s">"*.cs"</span>,
+  <span class="k">"ApplyToRepos"</span>: [<span class="s">"*"</span>],
+  <span class="k">"IsActive"</span>: <span class="n">true</span>,
+  <span class="k">"IsFrontendRule"</span>: <span class="n">false</span>,
+  <span class="k">"ApplicableScopes"</span>: [<span class="s">"Quick"</span>, <span class="s">"Full"</span>]
+}</pre>
+      </div>
+      <div class="callout note">
+        <span class="icon">✓</span>
+        <p>其餘 21 條（<code>Exception</code>、<code>InfoSecurity</code>、<code>CodeMentorPro</code>、<code>Performance</code>、<code>FrontendStandard</code>、<code>NMQ</code> 等）維持原樣、不加 <code>ApplicableScopes</code>：依新語意只在 <code>Scope=Full</code>（或 Webhook 流程，不受此篩選影響）時套用，<strong>Quick 模式下不會被觸發</strong>，對應「Quick 只跑兩條核心規則」的設計目標。</p>
+      </div>
+      <div class="callout warn">
+        <span class="icon">⚠</span>
+        <p>若未來想調整 Quick 涵蓋的 Rule，只需要在對應 Rule 上加/改 <code>ApplicableScopes</code>，不用動程式碼。</p>
+      </div>
+    </section>
+
+    <section id="testing">
+      <div class="section-head"><span class="section-num">v.</span><h2>測試計畫</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>類型</th><th>內容</th></tr></thead>
+          <tbody>
+            <tr><td>單元測試</td><td><code>RuleMatcher</code>：依 repo/scope/file pattern 篩選是否正確；NMQ 前端規則排除邏輯是否維持原行為</td></tr>
+            <tr><td>單元測試</td><td><code>CodeReviewService</code>：必填欄位驗證、找不到 Rule 時回傳訊息、多 Rule 平行呼叫彙整、單一 Rule 失敗不影響其他結果</td></tr>
+            <tr><td>迴歸驗證</td><td>重構 <code>PullRequestReviewService</code> 後，用既有測試案例或手動觸發一次 PR 確認行為一致</td></tr>
+            <tr><td>整合測試</td><td>實際呼叫 <code>POST /api/review/diff</code>：找不到 repo（400）、找不到符合 scope 的 Rule（400）、正常成功（200）、Dify 逾時/失敗（單一 Rule 失敗但整體仍 200）</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="todo">
+      <div class="section-head"><span class="section-num">vi.</span><h2>待辦拆解（依相依順序）</h2></div>
+      <ol class="checklist">
+        <li><strong>ReviewScopeEnum</strong> + <code>RuleEntry.ApplicableScopes</code></li>
+        <li><strong>IDifyService.ChatReviewAsync</strong> + DTO</li>
+        <li><strong>既有服務改名</strong>：<code>ICodeReviewService</code>/<code>CodeReviewService</code> → <code>IPullRequestReviewService</code>/<code>PullRequestReviewService</code>（含 <code>WebhookController</code>、DI 註冊同步修改）</li>
+        <li>抽出 <strong>IRuleMatcher / RuleMatcher</strong>，重構 <code>PullRequestReviewService</code> 改用它（與上一步同一輪迴歸驗證）</li>
+        <li><strong>DiffReviewDto</strong></li>
+        <li><strong>ICodeReviewService / CodeReviewService</strong>（新服務）</li>
+        <li><strong>DifyService.ChatReviewAsync</strong> 實作</li>
+        <li><strong>ReviewController</strong>（<code>POST /api/review/diff</code>）+ DI 註冊</li>
+        <li>設定檔補上 <code>ApplicableScopes</code>（僅 <code>StandardBackend</code>、<code>CustomRuleBackend</code> 兩條）</li>
+        <li>單元測試 + 整合測試</li>
+      </ol>
+    </section>
+
+    <section id="risk">
+      <div class="section-head"><span class="section-num">vii.</span><h2>風險與注意事項</h2></div>
+      <div class="callout risk">
+        <span class="icon">▲</span>
+        <p><strong>重構風險：</strong>Phase 1 動到既有 Webhook 流程使用的私有方法，雖是搬移不改邏輯，仍需迴歸驗證，避免影響現行生產中的 Webhook 審查功能。</p>
+      </div>
+      <div class="callout risk">
+        <span class="icon">▲</span>
+        <p><strong>既有服務改名風險：</strong><code>CodeReviewService</code>→<code>PullRequestReviewService</code> 是本規劃書唯一牽動既有生產程式碼命名的異動，需完整檢查是否有日誌監控關鍵字、儀表板告警規則、或其他未被 grep 到的文字引用綁死舊類別名稱；建議與 RuleMatcher 抽取合併在同一個 PR 送出，一次性完成迴歸驗證。</p>
+      </div>
+      <div class="callout warn">
+        <span class="icon">⚠</span>
+        <p><strong>Dify Chat API 額度／逾時：</strong>多 Rule 平行呼叫會同時消耗多個 Dify App 額度，需確認現有 <code>DifySettings</code>（timeout、重試策略）是否需要針對 Chat API 另外調整。</p>
+      </div>
+      <div class="callout warn">
+        <span class="icon">⚠</span>
+        <p><strong>ApplicableScopes 預設語意：</strong>務必清楚記載「空清單＝僅 Full 適用，Quick 需明確白名單」，避免設定檔維護者誤以為空清單代表「全部 scope 皆適用」而誤觸發 Quick。</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>NineYi.Ai.CodeReview.v2 · Simple Review Implementation Blueprint · 2026-07-29</footer>
+
+<script>
+  const links = document.querySelectorAll('nav.toc a');
+  const sections = [...document.querySelectorAll('main section')];
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        links.forEach(l => l.classList.remove('active'));
+        const id = e.target.getAttribute('id');
+        const active = document.querySelector(`nav.toc a[href="#${id}"]`);
+        if(active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => io.observe(s));
+</script>
+
+</body>
+</html>

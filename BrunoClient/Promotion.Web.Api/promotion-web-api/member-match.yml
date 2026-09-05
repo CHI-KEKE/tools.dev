@@ -1,0 +1,25 @@
+info:
+  name: member-match
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{base-url}}/api/member-collections/member-match"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+         "MemberId":32374,
+         "MemberCollectionIdList":["79af0823-da08-406d-b571-d989572455aa"]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

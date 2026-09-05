@@ -1,0 +1,8 @@
+name: hk-product
+variables:
+  - name: base-url
+    value: https://salepage-service-api-internal.hk.91app.io
+  - name: collectionId
+    value: f_424356233225580544
+  - name: shopId
+    value: "15"

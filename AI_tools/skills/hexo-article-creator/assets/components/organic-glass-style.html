@@ -1,0 +1,146 @@
+<!--
+元件：有機自然風 + 毛玻璃卡片（organic-glass-style）
+用途：品牌／自然／生態／永續主題的裝飾性排版，或想要跳脫「病歷表/時間軸」資訊語意、改走輕盈品牌感的文章
+這是一種「視覺風格」（配色/字體/質感），不是固定的排版公式，同一篇文章內仍要依內容的性質選擇對的呈現方式，不要不管內容形態一律套卡片網格：
+  - 內容彼此獨立、沒有先後順序（分類、並列方案、對照組）→ 用 earth-card-grid
+  - 內容有明確先後順序、講的是一個隨時間演進的流程（步驟 1 導致步驟 2、事件時序）→ 用 earth-step-flow 或 earth-line-steps，不要硬拆成並排的卡片網格，那樣會讓讀者誤以為每張卡是互相獨立、可以任意排序的並列項目
+包含五種可獨立使用、也可在同一篇文章內搭配的區塊：
+  1. organic-hero：大標題橫幅（開場區塊，深綠漸層底 + 散落葉片裝飾）
+  2. glass-feature-row：毛玻璃感的橫向特色列（圖示 + 標題 + 說明，適合並列比較 2-4 個概念，項目之間可用 gf-arrow 表示轉換關係）
+  3. earth-card-grid：大地色塊卡片網格（每張卡各自一種自然色，適合條列彼此獨立的分類/方案，不適合表達有先後順序的流程）
+  4. earth-step-flow：大地色塊步驟流程（同樣的自然色塊質感，但改成上下堆疊＋中間箭頭連接，用於表達有先後順序的步驟/流程/時序，視覺較重）
+  5. earth-line-steps：極簡編號時間軸（左側一條直線貫穿＋圓圈編號，標題用自然色系螢光筆畫記，虛線連到右側說明文字；視覺較輕盈，適合條列較多步驟時避免頁面太重）
+配色語意（跟 writing-rules.md 第 4 點的「危險/警示/成功」語意不同）：
+  這套是「自然分類」裝飾語意，不代表風險程度 → leaf(綠)=核心重點、clay(棕)=次要對照、sand(沙金)=補充延伸
+  只適合品牌/科普/知識類的裝飾性內容，若文章情境是事件回顧/故障排查等需要清楚危險分級，仍應改用 vertical-timeline 等既有元件的紅/琥珀/綠語意
+-->
+
+<style>
+.organic-hero { position:relative; overflow:hidden; border-radius:16px; padding:36px 40px; margin:24px 0 30px; background:linear-gradient(135deg, #2f4a3e 0%, #3f5c47 45%, #6b5a44 100%); color:#f5f1e6; }
+.organic-hero .oh-leaf { position:absolute; font-size:2.6rem; opacity:0.32; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); pointer-events:none; }
+.organic-hero .oh-leaf.l1 { top:-10px; right:60px; transform:rotate(15deg); }
+.organic-hero .oh-leaf.l2 { top:40px; right:6px; font-size:2rem; transform:rotate(-20deg); }
+.organic-hero .oh-leaf.l3 { bottom:-14px; right:120px; font-size:2.2rem; opacity:0.22; transform:rotate(35deg); }
+.organic-hero .oh-tag { display:inline-block; font-size:.72rem; letter-spacing:2px; text-transform:uppercase; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3); padding:3px 12px; border-radius:20px; margin-bottom:14px; }
+.organic-hero .oh-title { margin:0 0 10px; font-size:1.4rem; font-weight:700; color:#f5f1e6; position:relative; z-index:1; }
+.organic-hero .oh-desc { max-width:80%; font-size:.92rem; line-height:1.85; color:#e4e6dc; position:relative; z-index:1; }
+.organic-hero .oh-desc code { background:rgba(255,255,255,.18); padding:1px 6px; border-radius:3px; color:#fdf6e3; }
+
+.earth-step-flow { display:flex; flex-direction:column; gap:2px; margin:16px 0 26px; }
+.earth-step-flow .es-step { border-radius:14px; padding:16px 20px 18px; color:#fbfaf6; box-shadow:0 6px 14px rgba(0,0,0,.12); }
+.earth-step-flow .es-step.leaf { background:linear-gradient(160deg,#5f8a56,#3f6146); }
+.earth-step-flow .es-step.clay { background:linear-gradient(160deg,#8a6a52,#5c4433); }
+.earth-step-flow .es-step.sand { background:linear-gradient(160deg,#c7a869,#a2854f); }
+.earth-step-flow .es-head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.earth-step-flow .es-badge { display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:22px; padding:0 8px; border-radius:11px; background:rgba(255,255,255,.24); font-size:.7rem; font-weight:700; flex-shrink:0; }
+.earth-step-flow .es-title { font-weight:700; font-size:.96rem; }
+.earth-step-flow .es-desc { font-size:.82rem; line-height:1.75; color:rgba(255,255,255,.94); margin-top:4px; }
+.earth-step-flow .es-desc code { background:rgba(255,255,255,.2); padding:1px 6px; border-radius:3px; color:#fff8ea; font-size:.85em; }
+.earth-step-flow .es-arrow { text-align:center; font-size:1.15rem; color:#8a8272; opacity:.75; margin:2px 0; }
+
+.earth-line-steps { position:relative; margin:22px 0 30px; padding-left:56px; }
+.earth-line-steps::before { content:''; position:absolute; left:19px; top:4px; bottom:4px; width:2px; background:linear-gradient(180deg, #5f8a56, #a2854f); opacity:.55; }
+.earth-line-steps .ls-step { position:relative; margin-bottom:26px; }
+.earth-line-steps .ls-step:last-child { margin-bottom:0; }
+.earth-line-steps .ls-num { position:absolute; left:-56px; top:0; width:38px; height:38px; border-radius:50%; background:#fbfaf6; display:flex; align-items:center; justify-content:center; font-family:'Courier New', Consolas, monospace; font-weight:700; font-size:.82rem; z-index:2; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+.earth-line-steps .ls-step.leaf .ls-num { border:2px solid #3f6146; color:#3f6146; }
+.earth-line-steps .ls-step.clay .ls-num { border:2px solid #5c4433; color:#5c4433; }
+.earth-line-steps .ls-step.sand .ls-num { border:2px solid #a2854f; color:#8a6a3f; }
+.earth-line-steps .ls-body { display:flex; align-items:center; flex-wrap:wrap; gap:10px; min-height:38px; }
+.earth-line-steps .ls-title { font-weight:700; font-size:.95rem; color:#2f4f4f; padding:1px 3px; background-repeat:no-repeat; background-position:0 68%; background-size:100% 42%; }
+.earth-line-steps .ls-step.leaf .ls-title { background-image:linear-gradient(rgba(95,138,86,.38), rgba(95,138,86,.38)); }
+.earth-line-steps .ls-step.clay .ls-title { background-image:linear-gradient(rgba(138,106,82,.4), rgba(138,106,82,.4)); }
+.earth-line-steps .ls-step.sand .ls-title { background-image:linear-gradient(rgba(199,168,105,.5), rgba(199,168,105,.5)); }
+.earth-line-steps .ls-connector { flex:1 1 30px; height:0; border-bottom:1.5px dashed #c9c3ae; min-width:24px; }
+.earth-line-steps .ls-desc { font-size:.82rem; color:#5a5648; line-height:1.6; }
+.earth-line-steps .ls-desc code { background:#eef0eb; padding:1px 6px; border-radius:3px; color:#8a6a3f; font-size:.85em; }
+
+.glass-feature-row { display:flex; flex-wrap:wrap; gap:18px; background:linear-gradient(135deg, rgba(47,74,62,.92), rgba(63,92,71,.9)); border-radius:14px; padding:24px 26px; margin:18px 0 28px; }
+.glass-feature-row .gf-item { flex:1 1 150px; text-align:center; color:#eef0e6; }
+.glass-feature-row .gf-icon { width:46px; height:46px; margin:0 auto 10px; border-radius:50%; border:1.5px solid rgba(255,255,255,.55); display:flex; align-items:center; justify-content:center; font-size:1.25rem; }
+.glass-feature-row .gf-title { font-weight:700; font-size:.9rem; margin-bottom:6px; }
+.glass-feature-row .gf-desc { font-size:.78rem; line-height:1.65; color:#cfd6c6; }
+.glass-feature-row .gf-desc code { background:rgba(255,255,255,.2); padding:1px 5px; border-radius:3px; color:#fdf6e3; }
+.glass-feature-row .gf-arrow { flex:0 0 auto; align-self:center; font-size:1.35rem; color:#e8dcb8; opacity:.85; }
+
+.earth-card-grid { display:flex; flex-wrap:wrap; gap:16px; margin:16px 0 26px; }
+.earth-card { flex:1 1 220px; border-radius:14px; padding:20px 20px 22px; color:#fbfaf6; box-shadow:0 6px 14px rgba(0,0,0,.12); }
+.earth-card.leaf { background:linear-gradient(160deg,#5f8a56,#3f6146); }
+.earth-card.clay { background:linear-gradient(160deg,#8a6a52,#5c4433); }
+.earth-card.sand { background:linear-gradient(160deg,#c7a869,#a2854f); }
+.earth-card .ec-badge { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.22); font-size:.78rem; font-weight:700; margin-bottom:10px; }
+.earth-card .ec-title { font-weight:700; font-size:.96rem; margin-bottom:6px; }
+.earth-card .ec-desc { font-size:.82rem; line-height:1.75; color:rgba(255,255,255,.94); }
+.earth-card .ec-desc code { background:rgba(255,255,255,.2); padding:1px 6px; border-radius:3px; color:#fff8ea; font-size:.85em; }
+</style>
+
+<div class="organic-hero">
+<span class="oh-leaf l1">🍃</span><span class="oh-leaf l2">🍂</span><span class="oh-leaf l3">🍃</span>
+<div class="oh-tag">章節標籤</div>
+<div class="oh-title">開場大標題</div>
+<div class="oh-desc">用一段白話說明這個章節在講什麼情境，字數不用多，抓住重點即可。</div>
+</div>
+
+<div class="glass-feature-row">
+<div class="gf-item">
+<div class="gf-icon">①</div>
+<div class="gf-title">概念一</div>
+<div class="gf-desc">說明文字，術語用 <code>code</code> 包起來</div>
+</div>
+<div class="gf-arrow">→</div>
+<div class="gf-item">
+<div class="gf-icon">②</div>
+<div class="gf-title">概念二</div>
+<div class="gf-desc">說明文字</div>
+</div>
+</div>
+
+<div class="earth-card-grid">
+<div class="earth-card leaf">
+<div class="ec-badge">1</div>
+<div class="ec-title">重點卡片標題</div>
+<div class="ec-desc">內容描述，術語用 <code>code</code> 包起來</div>
+</div>
+<div class="earth-card clay">
+<div class="ec-badge">2</div>
+<div class="ec-title">次要對照卡片</div>
+<div class="ec-desc">內容描述</div>
+</div>
+<div class="earth-card sand">
+<div class="ec-badge">3</div>
+<div class="ec-title">補充延伸卡片</div>
+<div class="ec-desc">內容描述</div>
+</div>
+</div>
+
+<div class="earth-step-flow">
+<div class="es-step leaf">
+<div class="es-head"><span class="es-badge">STEP 1</span><span class="es-title">流程第一步標題</span></div>
+<div class="es-desc">描述這一步發生了什麼，術語用 <code>code</code> 包起來</div>
+</div>
+<div class="es-arrow">↓</div>
+<div class="es-step clay">
+<div class="es-head"><span class="es-badge">STEP 2</span><span class="es-title">流程第二步標題</span></div>
+<div class="es-desc">描述這一步是前一步造成的結果</div>
+</div>
+<div class="es-arrow">↓</div>
+<div class="es-step sand">
+<div class="es-head"><span class="es-badge">STEP 3</span><span class="es-title">流程最後一步／結果</span></div>
+<div class="es-desc">描述最終狀態或結論</div>
+</div>
+</div>
+
+<div class="earth-line-steps">
+<div class="ls-step leaf">
+<div class="ls-num">01</div>
+<div class="ls-body"><span class="ls-title">流程第一步標題</span><span class="ls-connector"></span><span class="ls-desc">簡短補充說明</span></div>
+</div>
+<div class="ls-step clay">
+<div class="ls-num">02</div>
+<div class="ls-body"><span class="ls-title">流程第二步標題</span><span class="ls-connector"></span><span class="ls-desc">簡短補充說明</span></div>
+</div>
+<div class="ls-step sand">
+<div class="ls-num">03</div>
+<div class="ls-body"><span class="ls-title">流程最後一步／結果</span><span class="ls-connector"></span><span class="ls-desc">簡短補充說明</span></div>
+</div>
+</div>

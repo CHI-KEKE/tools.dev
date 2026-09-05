@@ -1,0 +1,42 @@
+info:
+  name: 加購品
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/api/cart-extra-purchase/batch-create"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |2-
+         {
+           "promotionEngineId": 40274,
+           "cartExtraPurchaseConditionList": [
+             {
+               "salepageId": 1557389,
+               "saleProductSkuId": 2168578,
+               "reachPiece": 3,
+               "reachPrice": 0,
+               "cartExtraPurchasePrice": 2.0,
+               "sort": 1
+             },
+             {
+               "salepageId": 1557390,
+               "saleProductSkuId": 2168579,
+               "reachPiece": 3,
+               "reachPrice": 0,
+               "cartExtraPurchasePrice": 5.0,
+               "sort": 2
+             }
+           ]
+         }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

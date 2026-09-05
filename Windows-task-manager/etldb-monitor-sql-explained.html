@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>EtlDB Monitor 告警 SQL 白話解說</title>
+<style>
+    :root {
+        --bg: #0f1115;
+        --card-bg: #171a21;
+        --border: #2a2e37;
+        --text: #e6e8ec;
+        --muted: #9096a3;
+        --danger: #e5484d;
+        --danger-bg: rgba(229,72,77,0.12);
+        --warning: #f5a524;
+        --warning-bg: rgba(245,165,36,0.12);
+        --success: #2fbf71;
+        --success-bg: rgba(47,191,113,0.12);
+        --info: #4c9eeb;
+        --info-bg: rgba(76,158,235,0.12);
+        --accent: #7c6cf0;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: "Segoe UI", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        padding: 0 0 60px 0;
+    }
+    header {
+        padding: 48px 40px 32px;
+        background: linear-gradient(135deg, #1b1f2a 0%, #12141a 100%);
+        border-bottom: 1px solid var(--border);
+    }
+    header h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: 0.3px; }
+    header p.subtitle { margin: 0; color: var(--muted); font-size: 15px; }
+    .container { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+    section { margin-top: 40px; }
+    h2 { font-size: 20px; border-left: 4px solid var(--accent); padding-left: 12px; margin-bottom: 16px; }
+    h3 { font-size: 16px; color: var(--text); margin: 24px 0 10px; }
+    p { color: #c8cbd3; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+    code, .mono {
+        font-family: "Cascadia Code", Consolas, monospace;
+        background: #0c0d11; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; color: #ffd479; border: 1px solid #24262e;
+    }
+    pre {
+        background: #0c0d11; border: 1px solid #24262e; border-radius: 8px; padding: 16px 18px;
+        overflow-x: auto; font-family: "Cascadia Code", Consolas, monospace; font-size: 13px; color: #d9dce3;
+    }
+    pre .k { color: #7fb0ff; }
+    pre .s { color: #ffd479; }
+    pre .c { color: #6b7280; font-style: italic; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 6px; }
+    thead th {
+        text-align: left; background: #1d2029; color: var(--muted); font-weight: 600; font-size: 12.5px;
+        text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 12px; border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    tbody td { padding: 12px 12px; border-bottom: 1px solid var(--border); vertical-align: top; color: #d7d9de; }
+    tbody tr:hover { background: #1a1d25; }
+    .badge {
+        display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px;
+        font-size: 12.5px; font-weight: 600; white-space: nowrap;
+    }
+    .badge.success { background: var(--success-bg); color: var(--success); }
+    .badge.warn { background: var(--warning-bg); color: var(--warning); }
+    .badge.danger { background: var(--danger-bg); color: var(--danger); }
+    .badge.info { background: var(--info-bg); color: var(--info); }
+    .flow { display: flex; flex-direction: column; gap: 0; margin-top: 10px; }
+    .flow .step {
+        position: relative; padding: 14px 18px 14px 42px; border: 1px solid var(--border); border-radius: 8px;
+        margin-bottom: 8px; background: #14161d;
+    }
+    .flow .step::before {
+        content: attr(data-n); position: absolute; left: 12px; top: 12px; width: 20px; height: 20px; border-radius: 50%;
+        background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .flow .step .title { font-weight: 600; margin-bottom: 4px; }
+    .flow .step .desc { color: var(--muted); font-size: 13.5px; }
+    .flow .step.outcome-success { border-left: 3px solid var(--success); }
+    .flow .step.outcome-warn { border-left: 3px solid var(--warning); }
+    .flow .step.outcome-danger { border-left: 3px solid var(--danger); }
+    .flow .step.outcome-info { border-left: 3px solid var(--info); }
+    .note { background: var(--info-bg); border: 1px solid rgba(76,158,235,0.35); border-radius: 8px; padding: 12px 16px; font-size: 13.5px; color: #cfe4fb; margin: 14px 0; }
+    .note.warn { background: var(--warning-bg); border-color: rgba(245,165,36,0.35); color: #ffe3b0; }
+    .note.danger { background: var(--danger-bg); border-color: rgba(229,72,77,0.35); color: #ffd0d1; }
+    footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 60px; }
+
+    /* pipeline diagram */
+    .pipeline { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+    .pipeline .box {
+        flex: 1; min-width: 190px; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; background: #14161d;
+    }
+    .pipeline .box .box-title { font-weight: 700; font-size: 13.5px; margin-bottom: 6px; color: var(--accent); }
+    .pipeline .box .box-desc { font-size: 12.5px; color: var(--muted); }
+    .pipeline .arrow { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 20px; padding: 0 2px; }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } .pipeline { flex-direction: column; } .pipeline .arrow { transform: rotate(90deg); } }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="container" style="padding:0;">
+        <h1>EtlDB Monitor 告警 SQL 白話解說</h1>
+        <p class="subtitle">拆解目前 Grafana Dashboard 用來偵測 ETL Flow「失敗」與「漏排」並發送 Slack 告警的 T-SQL 查詢，逐段說明它在做什麼、為什麼這樣寫</p>
+    </div>
+</header>
+
+<div class="container">
+
+    <section>
+        <h2>1. 一句話總結</h2>
+        <div class="card">
+            <p style="font-size:16px; color:#fff;">這段 SQL 會針對「登記在監控清單裡的每一個 ETL Flow」，檢查它最近有沒有在<strong>該有的執行週期內</strong>跑過一次、而且跑的<strong>結果不是失敗</strong>；只要「沒跑」或「跑了但失敗」，就輸出一個 <code>0</code>（異常），其餘輸出 <code>1</code>（健康），交給 Grafana 依照這個 0/1 訊號畫圖並在持續異常時發 Slack 告警。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. 整體資料流（4 個階段）</h2>
+        <div class="pipeline">
+            <div class="box">
+                <div class="box-title">① 決定要監控誰</div>
+                <div class="box-desc">從 <code>EtlFlowMonitor</code> 設定表，篩出「這台伺服器」＋「這個告警群組」底下登記要監控的 Flow 清單，並取得每個 Flow 自己的「應該多久跑一次（Frequency）」</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box">
+                <div class="box-title">② 找每個 Flow 最近一次執行</div>
+                <div class="box-desc">在「Frequency + 10 分鐘緩衝」的時間窗內，找該 Flow 最新一筆 <code>EtlFlowTask</code>；找不到就是 <code>NULL</code>（代表沒跑過 = 漏排嫌疑）</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box">
+                <div class="box-title">③ 判斷健康或異常</div>
+                <div class="box-desc">狀態是 Finish/Pass/Ready/Running 且有資料 → 健康(1)；狀態是 Error，或窗口內完全查無資料 → 異常(0)</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="box">
+                <div class="box-title">④ 輸出成 Grafana 時間序列</div>
+                <div class="box-desc">把 0/1 結果、時間、Flow Id/Name 包裝成 Grafana 看得懂的格式，讓 Grafana Alert Rule 去判斷「持續異常多久」就發送 Slack</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. 逐段拆解</h2>
+
+        <div class="card">
+            <h3>Step 1：篩選監控名單 <span class="badge info">白名單機制</span></h3>
+            <pre><span class="c">-- 找出這個告警群組要監控的 Flow</span>
+<span class="k">SELECT DISTINCT</span> EtlFlowMonitor_ShopEtlFlowId
+<span class="k">FROM</span> EtlFlowMonitor
+<span class="k">WHERE</span> ShopEtlFlow_AlertGroups = <span class="s">@alertGroups</span>
+
+<span class="c">-- 再篩出跑在這台伺服器的</span>
+<span class="k">WHERE</span> EtlFlowMonitor_Server = <span class="s">@serverName</span></pre>
+            <p><code>EtlFlowMonitor</code> 是一張「登記表」：每一列代表「某個 Flow 需要被監控、屬於哪個團隊(<code>AlertGroups</code>)負責、跑在哪台機器、預期多久跑一次(<code>Frequency</code>)」。這一步就是先把「不歸這次告警群組/伺服器管」的 Flow 排除掉，只留下要檢查的清單，並隨身帶著每個 Flow 自己的 <code>Frequency</code>（單位：秒）。</p>
+            <div class="note">白名單的好處：不是每個 Flow 都要被監控告警（有些是一次性任務、測試用途），所以要先在 <code>EtlFlowMonitor</code> 手動登記才會被這套邏輯檢查到。</div>
+        </div>
+
+        <div class="card">
+            <h3>Step 2：找每個 Flow 最近一次執行紀錄 <span class="badge warn">漏排偵測的關鍵</span></h3>
+            <pre><span class="k">WHERE</span> EtlFlowTask_CreatedDateTime >= DATEADD(<span class="k">SECOND</span>, -Frequency - <span class="s">600</span>, GETDATE())
+  <span class="k">AND</span> EtlFlowTask_CreatedDateTime <= DATEADD(<span class="k">SECOND</span>,  Frequency + <span class="s">600</span>, GETDATE())</pre>
+            <p>白話翻譯：「找這個 Flow 在<strong>過去 (應有週期 + 10分鐘緩衝) 這段時間內</strong>有沒有建立過任何一次執行紀錄」。10 分鐘緩衝是為了容忍排程本身的延遲抖動，避免誤判。</p>
+            <p>重點在後面用 <code>RIGHT JOIN #tmpMonitorFlow</code>（監控名單）去接 <code>EtlFlowTask</code>（實際執行紀錄）：<strong>就算這個時間窗內完全沒有任何一筆執行紀錄，這個 Flow 依然會出現在結果中，只是欄位全部是 NULL</strong>。這正是偵測「漏排」最直接的寫法——用 join 的方向去保留「查無資料」的那一列，而不是額外寫一段「有沒有漏排」的判斷式。</p>
+            <div class="note">如果同一個時間窗內有多筆執行紀錄（例如同一個 Flow 短時間內跑了兩次），會取 <code>StatusUpdatedDateTime</code> 最新的那一筆代表目前狀態。</div>
+        </div>
+
+        <div class="card">
+            <h3>Step 3：健康 / 異常判斷 <span class="badge danger">把「失敗」和「漏排」合併成同一個訊號</span></h3>
+            <pre><span class="k">CASE WHEN</span> FlowStatus <span class="k">IN</span> (<span class="s">'Finish'</span>,<span class="s">'Pass'</span>,<span class="s">'Ready'</span>,<span class="s">'Running'</span>)
+      <span class="k">AND</span> UpdatedDateTime <span class="k">IS NOT NULL</span>
+     <span class="k">THEN</span> <span class="s">1</span>   <span class="c">-- 健康</span>
+     <span class="k">ELSE</span> <span class="s">0</span>        <span class="c">-- 異常</span>
+<span class="k">END</span></pre>
+            <table>
+                <thead><tr><th>結果值</th><th>什麼情況會出現</th><th>意義</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge success">1（健康）</span></td>
+                        <td>窗口內找得到執行紀錄，且狀態是 Finish／Pass／Ready／Running</td>
+                        <td>已完成、被中斷但非失敗、正在排隊等執行、正在執行中 — 都不算異常</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge danger">0（異常，原因A）</span></td>
+                        <td>狀態是 <code>Error</code></td>
+                        <td>真的執行失敗</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge danger">0（異常，原因B）</span></td>
+                        <td>窗口內完全沒有任何執行紀錄（<code>UpdatedDateTime IS NULL</code>）</td>
+                        <td>該跑的時候沒有跑 = 漏排</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>這就是這段 SQL 最聰明的地方：<strong>不需要寫兩套告警規則分別處理「失敗」和「漏排」</strong>，通通壓縮成同一個 0/1 訊號，Grafana 那邊只要盯著這個訊號就好。</p>
+        </div>
+
+        <div class="card">
+            <h3>Step 4：包裝成 Grafana 看得懂的格式</h3>
+            <pre><span class="k">SELECT</span>
+    status_value <span class="k">AS</span> value,
+    event_time   <span class="k">AS</span> time,
+    CONCAT(<span class="s">'id='</span>,   EtlFlowId)   <span class="k">AS</span> tag1,
+    CONCAT(<span class="s">'name='</span>, EtlFlowName) <span class="k">AS</span> tag2</pre>
+            <p><code>value</code>／<code>time</code> 是 Grafana 時間序列圖表要的標準欄位；<code>tag1</code>／<code>tag2</code> 把 Flow 的 Id 和名稱編碼成字串，讓 Grafana 依照 tag 把每個 Flow 拆成獨立的一條線。之後 Grafana 的 Alert Rule 只要設定「當某條線的 <code>value</code> 持續等於 0 超過 N 分鐘」就觸發，並透過 Alertmanager 發送到 Slack。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. 圖解：一個 Flow 被判定「漏排」的流程</h2>
+        <div class="card">
+            <div class="flow">
+                <div class="step outcome-info" data-n="1">
+                    <div class="title">Flow 登記在 EtlFlowMonitor，Frequency = 3600 秒（應該每小時跑一次）</div>
+                    <div class="desc">屬於 <code>sg-es</code> 告警群組、跑在 <code>SG-HK-PushWK11</code></div>
+                </div>
+                <div class="step outcome-warn" data-n="2">
+                    <div class="title">實際上這個 Flow 已經 2 小時沒有跑了</div>
+                    <div class="desc">可能是 Windows Task Scheduler 本身沒有觸發、或前置條件不滿足被跳過</div>
+                </div>
+                <div class="step outcome-danger" data-n="3">
+                    <div class="title">SQL 檢查「過去 (3600+600) 秒內」有沒有 EtlFlowTask</div>
+                    <div class="desc">完全查無資料 → <code>UpdatedDateTime = NULL</code></div>
+                </div>
+                <div class="step outcome-danger" data-n="4">
+                    <div class="title">判定 status_value = 0，event_time = 現在時間</div>
+                    <div class="desc">輸出給 Grafana；因為每次重新查詢都會用「現在時間」當作這個 0 的時間點，這條線會持續往右延伸，直到 Grafana 判斷「已經異常超過設定的持續時間」才真正發出告警</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>5. 值得留意的幾個限制</h2>
+        <div class="card">
+            <table>
+                <thead><tr><th>限制</th><th>說明</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>重試中的暫時 Error 可能被誤判</td>
+                        <td>如果 Flow 正在自動重試中途（尚未耗盡重試次數），DB 上會短暫顯示 Error，這段 SQL 沒有特別排除這種暫時態，會馬上輸出 0；實務上要靠 Grafana Alert 的「持續 N 分鐘才觸發」機制去吸收這種短暫抖動</td>
+                    </tr>
+                    <tr>
+                        <td>緩衝時間固定 600 秒，不管每個 Flow 重試設定多長</td>
+                        <td>如果某個 Flow 的重試間隔設定超過 10 分鐘，有可能在它還在合理重試中就被判定漏排/異常</td>
+                    </tr>
+                    <tr>
+                        <td>只看 Flow 整體層級</td>
+                        <td>看不出是哪一個步驟(TaskSlave)失敗，要進一步除錯還是得回頭查 <code>EtlFlowTask_Id</code> 的詳細記錄</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    EtlDB Monitor 告警 SQL 白話解說　·　依 Grafana Dashboard 查詢語法分析
+</footer>
+
+</body>
+</html>

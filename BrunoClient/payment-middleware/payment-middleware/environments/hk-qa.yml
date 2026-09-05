@@ -1,0 +1,5 @@
+name: hk-qa
+color: "#CE4F3B"
+variables:
+  - name: base-url
+    value: https://payment-middleware-api-internal.qa1.hk.91dev.tw

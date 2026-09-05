@@ -1,0 +1,25 @@
+info:
+  name: get-mobile-appSettings
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{base-url}}/webapi/AppNotification/GetMobileAppSettings/{{shopId}}?lang=zh-TW&shopId=2&r=t"
+  params:
+    - name: lang
+      value: zh-TW
+      type: query
+    - name: shopId
+      value: "2"
+      type: query
+    - name: r
+      value: t
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

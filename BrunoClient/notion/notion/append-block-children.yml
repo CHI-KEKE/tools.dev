@@ -1,0 +1,53 @@
+info:
+  name: append-block-children
+  type: http
+  seq: 10
+
+http:
+  method: PATCH
+  url: "{{base-url}}/blocks/{{block-id}}/children"
+  body:
+    type: json
+    data: |-
+      {
+        "children": [
+          {
+            "object": "block",
+            "type": "heading_2",
+            "heading_2": {
+              "rich_text": [
+                {
+                  "type": "text",
+                  "text": {
+                    "content": "是在哭甚麼"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "object": "block",
+            "type": "paragraph",
+            "paragraph": {
+              "rich_text": [
+                {
+                  "type": "text",
+                  "text": {
+                    "content": "哭阿",
+                    "link": {
+                      "url": "https://en.wikipedia.org/wiki/Lacinato_kale"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

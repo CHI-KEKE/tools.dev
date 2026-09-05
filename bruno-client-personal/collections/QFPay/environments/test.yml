@@ -1,0 +1,4 @@
+name: test
+variables:
+  - name: base-url
+    value: https://test-openapi-th.qfapi.com

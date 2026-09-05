@@ -1,0 +1,59 @@
+## Variable
+@host = http://translation.qa.91dev.tw
+#http://translation.qa.91dev.tw
+#https://translation.pp.91dev.tw
+#https://translation.io.91app.com
+#http://localhost:5001
+# NineYi.Sms NineYi.NMQV2 NineYi.WebStore.MallAndApi
+@project = Nine1.Chat.Web.Api
+
+@module = backend.service.salespage
+# Network XHR getAccountInfo idToken
+# @token = Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk1MWRkZTkzMmViYWNkODhhZmIwMDM3YmZlZDhmNjJiMDdmMDg2NmIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoi6YSn5Yex5a6JIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hLS9BT2gxNEdpWDRfVU84TWtkZ2JYN0N6X1pnQlliNE9QeFF1d2VUQkZIcmdvLSIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS90cmFuc2xhdGlvbi1zZXJ2aWNlLTIxMjkwMiIsImF1ZCI6InRyYW5zbGF0aW9uLXNlcnZpY2UtMjEyOTAyIiwiYXV0aF90aW1lIjoxNzMyMjYyMzM3LCJ1c2VyX2lkIjoib2Z1anRaNnZHRGFSR1c1QUZwZ1AwOGxLZ2kzMyIsInN1YiI6Im9mdWp0WjZ2R0RhUkdXNUFGcGdQMDhsS2dpMzMiLCJpYXQiOjE3NTQ1NTIxMjYsImV4cCI6MTc1NDU1NTcyNiwiZW1haWwiOiJrZXZpbmRlbmdAbmluZS15aS5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjEwNDgyMzY3MTg0NTU1NzUyOTQ5NiJdLCJlbWFpbCI6WyJrZXZpbmRlbmdAbmluZS15aS5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.Bked1LhDbz0HeWU7j2V43gFB0JdpYsWWI2fA-dU6eLeUbpRNPL4pQ95uiVHR3XFQWOYzuvfQtx3fvo5fsKZD3IPKXUQMda8nBHC0anLSNLMcI3NjKNoO65uX281IpSgCG2lqMVUkrcDGnFPQ-_vvToghITj_jHsnLBHRB3yPOto9j0ShRXGe5CPc5JTVXBcRqDf4bTGh7f11oHIZAN_5x_WpFtn8d9x9PK3apmU8OtkUut-YG_Xdve2k6BvpFXQyRldeiqQu14iW3qALOSnDSSqDowRTL2dcQHnGZ0F-seisetO0QjfUHbIVJ3q4xOf_Vzj9gKA6gBf4DLQ9BuKphg
+@token1 = Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ4Mjg5MmZhMzJlY2QxM2E0ZTBhZWZlNjI4ZGQ5YWFlM2FiYThlMWUiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoi5p6X5a6l6L6wIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0liSGNpaGRySDkzZnZpUHJRZldGdVFETVUwZWZpXzJtR01fbWw1NGZtSlF3PXM5Ni1jIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3RyYW5zbGF0aW9uLXNlcnZpY2UtMjEyOTAyIiwiYXVkIjoidHJhbnNsYXRpb24tc2VydmljZS0yMTI5MDIiLCJhdXRoX3RpbWUiOjE3Njc3Nzg2MjQsInVzZXJfaWQiOiJOY2ROUWJSQnF2WUVCcEJtYWJQOTFRSnY2N24yIiwic3ViIjoiTmNkTlFiUkJxdllFQnBCbWFiUDkxUUp2NjduMiIsImlhdCI6MTc2Nzc3ODYyNCwiZXhwIjoxNzY3NzgyMjI0LCJlbWFpbCI6ImFsbGVubGluQG5pbmUteWkuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDM2MDY3MjkxMzc2MzM4NjMzNTEiXSwiZW1haWwiOlsiYWxsZW5saW5AbmluZS15aS5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.YS7nzSBkg2paQs9hSHN__dGiG742dnM8UjYO8L3BmucDbrHLJ_6-xJrwQpTadnEbRHFei9Lh8oqSzzqPS588cH_awrjEE_n5enoxeKNssI0FaV3XRMGUthVlwf6eR9nZPZJMfcgIqpgKPZ0iMKYGfULY9EdmRLdpPrPg4edyz2cW8V0BVj7qkF9o7PPTByvFNqLgd4_JenmcRSTZtdjk8Xkl6wWy3hF7cVTEzHe0g-lXXAAJ9tMBLbjicNSFfEqVp6EXpu-QSKrN5le1c-uzSjVFB6QM-cShS7G60l27wJY4nPwBQjSkOsTJaVS2eKBb4sBYGEe20SJxU3z3SeSvKA
+@newProject = Nine1.Livebuy
+@newModule = backend.general
+@newModuleId = 5ebd00fb18fd19000152840a
+
+### Add Project
+POST {{host}}/api/v3/projects
+Content-Type: application/json
+Authorization: {{token1}}
+
+{
+    "project": "{{newProject}}",
+    "locales":[
+      { "locale":"zh-TW" },
+      { "locale":"en-US" },
+      { "locale":"zh-HK" },
+      { "locale":"ms-MY" },
+      { "locale":"zh-CN" },
+      { "locale":"ja-JP" },
+      { "locale":"th-TH" }
+   ]
+}
+
+### Sync Project
+POST {{host}}/api/v3/projects/EVoucherService/sync
+Content-Type: application/json
+Authorization: {{token}}
+
+### Delete Project
+
+DELETE {{host}}/api/v3/projects/695e2a48d23d0c00076b873f
+Content-Type: application/json
+Authorization: {{token1}}
+
+### get GetProjects
+GET {{host}}/api/v3/projects
+
+### get project
+GET {{host}}/api/v3/projects/{{newProject}}
+
+#["System","ToBeVerified","Team","Page","Epic"]
+
+
+
+### sync project
+POST {{host}}/api/v3/projects/{{project}}/sync
+Content-Type: application/json

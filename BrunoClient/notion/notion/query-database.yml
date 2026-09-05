@@ -1,0 +1,60 @@
+info:
+  name: query-database
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/databases/2d44968c08514d5abd480ab8724d5cdf/query"
+  headers:
+    - name: Notion-Version
+      value: "{{version}}"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |+
+  https://api.notion.com/v1/databases/cb4ef8f575bd41d0a5b4aed1d493126b/query
+
+
+  ## rich_text
+
+  {
+    "filter": {
+      "property": "Location",
+      "rich_text": {
+        "contains": "S"
+      }
+    }
+  }
+
+
+  ## relation
+  {
+    "filter": {
+      "property": "Catches",
+      "relation": {
+        "contains": "2d44968c08514d5abd480ab8724d5cdf"
+      }
+    }
+  }
+
+  ## rolloup
+
+  {
+    "filter": {
+      "property": "Total Weight Caught",
+      "rollup": {
+          "number": {
+            "is_not_empty": true
+          }
+      }
+    }
+  }
+

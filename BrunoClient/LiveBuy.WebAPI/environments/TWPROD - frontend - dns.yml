@@ -1,0 +1,10 @@
+name: TWPROD - frontend - dns
+variables:
+  - name: wss-url
+    value: wss://frontend-websocket.91app/91applive
+  - name: base-url
+    value: ""
+  - name: shopId
+    value: "8"
+  - name: k8s-public-url
+    value: https://91app-live.91app.io

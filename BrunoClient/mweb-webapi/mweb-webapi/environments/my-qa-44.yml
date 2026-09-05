@@ -1,0 +1,7 @@
+name: my-qa-44
+color: "#2E8A54"
+variables:
+  - name: base-url
+    value: https://toyshop.shop.dev.91dev.tw
+  - name: shopId
+    value: "44"

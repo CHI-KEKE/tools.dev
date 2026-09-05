@@ -1,0 +1,20 @@
+info:
+  name: add-key
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v3/modules/{{module-id}}/translations"
+  body:
+    type: json
+    data: '{"key":"testkevindeng123s","texts":[{"locale":"en-UK","text":"safasf"}]}'
+  auth:
+    type: bearer
+    token: ""
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

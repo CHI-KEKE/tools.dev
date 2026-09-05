@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NineYi.Scm.ApiV2 — 架構設計問題盤點</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --panel:#171a21;
+    --panel-alt:#1d212a;
+    --border:#2a2f3a;
+    --text:#e6e8ec;
+    --text-dim:#9aa1ae;
+    --accent:#e8a33d;
+    --accent-dim:#8a611f;
+    --ok:#4caf7d;
+    --err:#d9636c;
+    --err-dim:#5c2a2e;
+    --warn:#e8a33d;
+    --info:#5b9bd5;
+    --code-bg:#11141a;
+    --radius:10px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(217,99,108,0.06), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(232,163,61,0.05), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Segoe UI","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+    line-height:1.6;
+    padding-bottom:80px;
+  }
+  code, pre, .mono{ font-family:"Cascadia Code","JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace; }
+
+  header{
+    border-bottom:1px solid var(--border);
+    padding:36px 6vw 28px;
+    background:linear-gradient(180deg, rgba(217,99,108,0.06), transparent);
+  }
+  header .eyebrow{
+    color:var(--err);
+    font-size:13px; letter-spacing:.12em; text-transform:uppercase; font-weight:600; margin-bottom:8px;
+  }
+  header h1{ margin:0 0 10px; font-size:clamp(24px,3.2vw,36px); font-weight:700; letter-spacing:-0.01em; }
+  header p{ margin:0; color:var(--text-dim); max-width:780px; font-size:15px; }
+
+  /* summary stat row */
+  .stat-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px;
+    margin-top:26px;
+  }
+  .stat{
+    border:1px solid var(--border);
+    background:var(--panel-alt);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .stat .n{ font-size:26px; font-weight:800; color:var(--text); }
+  .stat .n.high{ color:var(--err); }
+  .stat .n.mid{ color:var(--accent); }
+  .stat .n.low{ color:var(--info); }
+  .stat .l{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+
+  main{ padding:0 6vw; max-width:1280px; margin:0 auto; }
+  section{ margin-top:56px; }
+  .section-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
+  .section-head .num{
+    font-family:"Cascadia Code",monospace; color:var(--err); font-size:14px;
+    border:1px solid var(--err-dim); background:rgba(217,99,108,0.08); padding:2px 9px; border-radius:6px;
+  }
+  .section-head h2{ margin:0; font-size:21px; font-weight:700; }
+  .section-head .sub{ color:var(--text-dim); font-size:13.5px; margin-left:auto; }
+
+  /* issue card */
+  .issue-grid{ display:grid; grid-template-columns:1fr; gap:16px; }
+  .issue{
+    border:1px solid var(--border);
+    background:var(--panel);
+    border-radius:var(--radius);
+    padding:20px 24px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:18px;
+  }
+  .issue .sev-badge{
+    width:52px; height:52px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:13px; flex:0 0 auto;
+    border:1px solid;
+  }
+  .sev-badge.high{ background:rgba(217,99,108,0.12); color:var(--err); border-color:var(--err-dim); }
+  .sev-badge.mid{ background:rgba(232,163,61,0.12); color:var(--accent); border-color:var(--accent-dim); }
+  .sev-badge.low{ background:rgba(91,155,213,0.12); color:var(--info); border-color:#2e4d63; }
+
+  .issue h3{ margin:0 0 6px; font-size:16.5px; font-weight:700; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .issue h3 .tag{
+    font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--text-dim); border:1px solid var(--border); padding:2px 8px; border-radius:5px;
+  }
+  .issue .evidence{
+    color:var(--text-dim); font-size:13.5px; margin:6px 0 12px;
+  }
+  .issue pre{
+    background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+    padding:11px 14px; font-size:12px; overflow-x:auto; margin:0 0 10px; color:#c9d1d9;
+  }
+  .issue pre .k{ color:#e8a33d; } .issue pre .s{ color:#7ec699; } .issue pre .c{ color:#6a7383; } .issue pre .n{ color:#d9636c; }
+  .issue .path{ font-size:11px; color:#7d8494; margin-bottom:10px; word-break:break-all; }
+  .issue .impact{
+    margin-top:8px;
+    border-left:3px solid var(--accent-dim);
+    padding:8px 14px;
+    background:rgba(232,163,61,0.05);
+    border-radius:0 8px 8px 0;
+    font-size:13px;
+    color:#d9c69a;
+  }
+  .issue .impact b{ color:var(--accent); }
+
+  /* dependency mini-diagram */
+  .dep-diagram{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:14px 0 6px;
+  }
+  .dep-node{
+    border:1px solid var(--border); background:var(--panel-alt); border-radius:8px;
+    padding:8px 12px; font-size:12px; color:var(--text-dim);
+  }
+  .dep-node.center{ border-color:var(--err-dim); color:var(--err); background:rgba(217,99,108,0.08); font-weight:700; }
+  .dep-arrow{ color:#4b525f; font-size:14px; }
+
+  /* recommendation table */
+  table{
+    width:100%; border-collapse:collapse; font-size:13.5px;
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+  }
+  thead th{
+    text-align:left; background:var(--panel-alt); color:var(--text-dim); font-weight:600; font-size:12px;
+    text-transform:uppercase; letter-spacing:.04em; padding:12px 16px; border-bottom:1px solid var(--border);
+  }
+  tbody td{ padding:13px 16px; border-bottom:1px solid var(--border); vertical-align:top; color:var(--text-dim); }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody td.main{ color:var(--text); font-weight:600; }
+  .prio{ display:inline-block; font-size:11px; padding:2px 8px; border-radius:5px; font-weight:700; }
+  .prio.p0{ background:rgba(217,99,108,0.15); color:#f0a3a8; }
+  .prio.p1{ background:rgba(232,163,61,0.15); color:var(--accent); }
+  .prio.p2{ background:rgba(91,155,213,0.15); color:var(--info); }
+
+  footer{
+    margin-top:60px; padding:24px 6vw; border-top:1px solid var(--border);
+    color:#6b7280; font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width:640px){
+    .issue{ grid-template-columns:1fr; }
+    .issue .sev-badge{ width:auto; height:auto; padding:4px 10px; display:inline-flex; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">NineYi.Scm.ApiV2 &nbsp;/&nbsp; Architecture Review</div>
+  <h1>API 站台架構設計問題盤點</h1>
+  <p>依據實際程式碼掃描結果整理的架構層級問題清單，涵蓋巨石結構、資料庫耦合、程式碼品質、部署維運與跨切面關注點，供評估「逐步搬遷新服務架構」的優先順序參考。</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="n">28</div><div class="l">專案數量（含測試）</div></div>
+    <div class="stat"><div class="n">121</div><div class="l">Controller 全擠一個站台</div></div>
+    <div class="stat"><div class="n">258</div><div class="l">Service 類別集中一個專案</div></div>
+    <div class="stat"><div class="n high">12</div><div class="l">Repository 耦合的資料庫數</div></div>
+    <div class="stat"><div class="n high">152</div><div class="l">單一 DI 檔案的註冊筆數</div></div>
+    <div class="stat"><div class="n mid">9</div><div class="l">Jenkinsfile 部署腳本</div></div>
+    <div class="stat"><div class="n high">0</div><div class="l">BL.Services 內 async 用法</div></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ 1. STRUCTURE ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>結構層問題 — 巨石與耦合</h2>
+      <span class="sub">Architecture &amp; Coupling</span>
+    </div>
+
+    <div class="issue-grid">
+
+      <div class="issue">
+        <div class="sev-badge high">高</div>
+        <div>
+          <h3>巨石單體（Monolith）過於肥大 <span class="tag">Structure</span></h3>
+          <div class="evidence">121 個 Controller、258 個 Service 全部塞在同一個 WebSite / BL.Services 專案，橫跨會員、訂單、物流、行銷、金流、通路等完全不同的業務領域。</div>
+          <div class="path">WebSite/WebSite/Controllers/**  ·  BusinessLogic/Services/**</div>
+          <div class="impact"><b>影響：</b>任何一支 API 變更都要重新編譯、部署整站，回歸測試範圍被迫放大，故障也無法隔離——一支 API 拖慢 ThreadPool，其餘 120 支跟著遭殃。</div>
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="sev-badge high">高</div>
+        <div>
+          <h3>單一 Repository 專案耦合 12 個資料庫 <span class="tag">Data Coupling</span></h3>
+          <div class="evidence"><code>DA.Repositories</code> 直接引用 12 個不同資料庫專案，違反「一個服務只碰自己資料庫」的微服務原則。</div>
+          <div class="dep-diagram">
+            <div class="dep-node center">DA.Repositories</div>
+            <span class="dep-arrow">→</span>
+            <div class="dep-node">WebStoreDB</div>
+            <div class="dep-node">ErpDB(AR)</div>
+            <div class="dep-node">CrmDB(AR/Temp)</div>
+            <div class="dep-node">InfoDB</div>
+            <div class="dep-node">AppDB</div>
+            <div class="dep-node">AudienceDB</div>
+            <div class="dep-node">AuthExternalDB</div>
+            <div class="dep-node">ChannelDB</div>
+            <div class="dep-node">NineYiDW</div>
+            <div class="dep-node">NotificationDB</div>
+            <div class="dep-node">TraceDB</div>
+          </div>
+          <div class="path">DataAccess/Repositories/NineYi.Scm.ApiV2.DA.Repositories.csproj</div>
+          <div class="impact"><b>影響：</b>未來想把任何一個領域拆成獨立服務，都會被資料庫耦合綁死，是遷移新架構最大的技術障礙。</div>
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="sev-badge mid">中</div>
+        <div>
+          <h3>DI 註冊集中在單一巨型檔案 <span class="tag">DI / God File</span></h3>
+          <div class="evidence"><code>ServiceModule.cs</code> 一支檔案就有 152 筆 <code>RegisterType</code> 註冊，每次新增服務都要改這支共用檔案。</div>
+          <pre><span class="c">// CrossLayer/Modules/BL/ServiceModule.cs（節錄）</span>
+builder.RegisterType&lt;OmoKeyPromptsService&gt;().As&lt;IOmoKeyPromptsService&gt;();
+builder.RegisterType&lt;CrmOrderService&gt;().As&lt;ICrmOrderService&gt;();
+<span class="c">// ... 共 152 筆 ...</span></pre>
+          <div class="path">CrossLayer/Modules/BL/ServiceModule.cs</div>
+          <div class="impact"><b>影響：</b>可讀性差、合併衝突機率高，也缺乏依領域分組的模組化註冊方式。</div>
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="sev-badge mid">中</div>
+        <div>
+          <h3>缺乏清楚的領域邊界（Bounded Context） <span class="tag">DDD</span></h3>
+          <div class="evidence">專案結構是「技術分層」（Controllers / Services / Repositories）而非「領域分層」，<code>BL.BE</code> 共用實體被 13 個專案引用。</div>
+          <div class="impact"><b>影響：</b>容易演變成大泥球（Big Ball of Mud），改一個欄位可能波及多個看似無關的業務功能。</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 2. CODE / RUNTIME ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>程式碼與執行期問題</h2>
+      <span class="sub">Code Quality &amp; Runtime Pattern</span>
+    </div>
+
+    <div class="issue-grid">
+
+      <div class="issue">
+        <div class="sev-badge high">高</div>
+        <div>
+          <h3>全面同步（Sync-only），無 async/await <span class="tag">Runtime</span></h3>
+          <div class="evidence">掃描 <code>BL.Services</code> 完全沒有 <code>async</code>/<code>await</code>/<code>Task&lt;&gt;</code> 的正規使用；反而出現 Sync-over-Async 反模式。</div>
+          <pre><span class="c">// OmoKeyPromptsService.cs</span>
+keyPromptTasks.Add(Task.Run(() =&gt; {
+  <span class="k">return</span> keyPrompt.GetKeyPrompt(request);
+}));
+<span class="n">Task.WhenAll(keyPromptTasks).Wait();</span>  <span class="c">// ⚠️ 阻塞等待</span></pre>
+          <div class="path">BusinessLogic/Services/OmoKeyPrompts/OmoKeyPromptsService.cs</div>
+          <div class="impact"><b>影響：</b>DB 逾時或慢查詢時會佔用大量 ThreadPool 執行緒，其他請求被迫排隊延遲，逾時風險被放大（已有實際 Production 錯誤案例佐證）。</div>
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="sev-badge mid">中</div>
+        <div>
+          <h3>索引資訊不受版本控管 <span class="tag">Database</span></h3>
+          <div class="evidence">EF Fluent Mapping（<code>CrmSalesOrderConfiguration.cs</code>）只定義欄位對應，完全沒有 Index 相關設定；索引全部只存在 SQL Server，repo 內無法追蹤或審查。</div>
+          <div class="path">DataAccess/CrmDB/Tables/CrmSalesOrderConfiguration.cs</div>
+          <div class="impact"><b>影響：</b>無法透過 Code Review 把關索引異動，實際已發生因缺乏合適複合索引導致 SQL 逾時（Execution Timeout Expired）的 Production 事件。</div>
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="sev-badge low">低</div>
+        <div>
+          <h3>查詢後在記憶體中做迴圈勾稽 <span class="tag">Performance</span></h3>
+          <div class="evidence">先 <code>ToList()</code> 撈出全部資料，再用 LINQ 迴圈逐筆比對正負向訂單，資料量大時有 O(n²) 風險。</div>
+          <div class="path">BusinessLogic/Services/OmoKeyPrompts/GetMemberOmoOrderKeyPrompt.cs</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 3. CROSS-CUTTING ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>跨切面關注點不一致</h2>
+      <span class="sub">Cross-Cutting Concerns</span>
+    </div>
+
+    <div class="issue-grid">
+
+      <div class="issue">
+        <div class="sev-badge mid">中</div>
+        <div>
+          <h3>驗證機制並存兩套，未集中管理 <span class="tag">Auth</span></h3>
+          <div class="evidence">同時存在 <code>ValidateTokenAttribute</code>（t/ts/s 簽章）與 <code>ValidateJWTAttribute</code>（JWT），依 Controller 各自掛 Attribute，沒有統一管線。</div>
+          <div class="path">Extensions/ActionFilters/ValidateTokenAttribute.cs · ValidateJWTAttribute.cs</div>
+          <div class="impact"><b>影響：</b>新 API 開發時容易選錯或漏掛驗證方式；稽核與安全檢視成本高。</div>
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="sev-badge low">低</div>
+        <div>
+          <h3>統一輸出格式存在「例外白名單」 <span class="tag">Consistency</span></h3>
+          <div class="evidence"><code>UnifiedResultHandler</code> 對 PDF 下載、金流 callback 等特定路徑直接略過包裝，格式不是真正 100% 統一。</div>
+          <div class="path">Extensions/DelegatingHandlers/UnifiedResultHandler.cs</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 4. DEVOPS ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>技術棧與維運問題</h2>
+      <span class="sub">Tech Stack &amp; DevOps</span>
+    </div>
+
+    <div class="issue-grid">
+
+      <div class="issue">
+        <div class="sev-badge high">高</div>
+        <div>
+          <h3>技術棧老舊 <span class="tag">Tech Debt</span></h3>
+          <div class="evidence">.NET Framework 4.6.2（2016 年釋出）+ EntityFramework 5.0.0（2012 年釋出），無法容器化跑在 Linux 容器（無 Dockerfile）。</div>
+          <div class="impact"><b>影響：</b>缺乏新語言特性與長期安全更新，維運方式與公司新服務（如已採用 .NET 10 + Docker + K8s 的 nine1.regularpurchase.v2）世代脫節。</div>
+        </div>
+      </div>
+
+      <div class="issue">
+        <div class="sev-badge mid">中</div>
+        <div>
+          <h3>部署流程分裂、複雜 <span class="tag">CI/CD</span></h3>
+          <div class="evidence">根目錄有 9 個獨立 Jenkinsfile（Build / Deploy / BlueGreenDeploy(Fallback) / FinishRelease / CreatePPBranch / MultiMarket(PP) 等）。</div>
+          <div class="impact"><b>影響：</b>部署邏輯分散在多套腳本，維運複雜度高，缺乏像 Helm values 統一管理多市場/多環境設定的做法。</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ RECOMMENDATION ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">05</span>
+      <h2>建議優先順序</h2>
+      <span class="sub">不搬遷也能先做的 vs. 需搭配架構搬遷</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>優先度</th><th>項目</th><th>建議做法</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="prio p0">P0</span></td>
+          <td class="main">SQL 索引補強</td>
+          <td>不需搬遷架構即可執行，成本低、效果立即，先解決已發生的 Production 逾時事件。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p0">P0</span></td>
+          <td class="main">移除 Sync-over-Async 反模式</td>
+          <td>將 <code>Task.Run().Wait()</code> 改為真正的 <code>async/await</code>，降低 ThreadPool 阻塞連鎖風險。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p1">P1</span></td>
+          <td class="main">依領域拆分獨立服務（Strangler Fig）</td>
+          <td>優先挑選耦合度低、獨立性高的模組（如定期購 RegularOrder），逐步搬到新架構，資料庫先共用、邏輯先分離。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p1">P1</span></td>
+          <td class="main">統一驗證機制</td>
+          <td>新架構統一改用單一驗證策略（如純 JWT + Gateway 層驗證），避免新舊兩套並存。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p2">P2</span></td>
+          <td class="main">DI 註冊模組化</td>
+          <td>依領域拆分 Autofac Module，取代單一 152 筆的 ServiceModule.cs。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p2">P2</span></td>
+          <td class="main">容器化 + 統一部署管線</td>
+          <td>比照新站台導入 Docker + Helm + GitLab CI，逐步汰換多套 Jenkinsfile。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>
+  <span>NineYi.Scm.ApiV2 — 架構設計問題盤點（依實際程式碼掃描產出）</span>
+  <span>盤點時間：2026-07-27 15:57</span>
+</footer>
+
+</body>
+</html>

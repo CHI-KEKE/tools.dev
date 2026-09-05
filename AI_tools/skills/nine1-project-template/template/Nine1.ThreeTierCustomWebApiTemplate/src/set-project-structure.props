@@ -1,0 +1,8 @@
+<Project>
+    <PropertyGroup>
+        <!-- <CustomParameter>isModuleStruct</CustomParameter> -->
+        <!-- <CustomParameter Name="isFlatStruct" Value="true" /> -->
+
+        <isFlatStruct>true</isFlatStruct>
+    </PropertyGroup>
+</Project>

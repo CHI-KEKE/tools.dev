@@ -1,0 +1,45 @@
+info:
+  name: template-update
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{template-base-url}}/api/Templates/Update"
+  body:
+    type: json
+    data: |-
+      {
+          "templateKey": "ShortMessage/MWeb_Registration_VerifyCode_Template/-1/zh-CN",
+          "parameters": [
+                          {
+                              "name": "sys_shop_name",
+                              "type": "System",
+                              "length": 30
+                          },
+                          {
+                              "name": "Code",
+                              "type": "Custom",
+                              "length": 5
+                          },
+                          {
+                              "name": "sys_sms_display_name",
+                              "type": "System",
+                              "length": 65535
+                          }
+                      ],
+          "template": {
+              "IsPriority": "true",
+              "SMSType": "會員註冊",
+              "Title": "",
+              "Content": "{{sys_sms_display_name}}：您的验证码是{{Code}}，欢迎使用！"
+          },
+          "editor": "AllenLin"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

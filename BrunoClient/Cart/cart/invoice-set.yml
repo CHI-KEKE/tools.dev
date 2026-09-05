@@ -1,0 +1,36 @@
+info:
+  name: invoice-set
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/api/Checkout/invoice-set"
+  headers:
+    - name: Cookie
+      value: ""
+    - name: N1-SHOP-ID
+      value: ""
+    - name: N1-MEMBER-ID
+      value: ""
+  body:
+    type: json
+    data: |
+      {
+        "payUniqueKey": "fabd39d8-6cb2-4d34-b56b-bd3180e7e205",
+        "title": null,
+        "registrationNo": null,
+        "email": null,
+        "invoiceTypeDef": "Electronic",
+        "carrierTypeDef": "PublicWelfare",
+        "carrierCode": "000",
+        "publicWelfareName": "社團法人世界和平會",
+        "shopId": 10230
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

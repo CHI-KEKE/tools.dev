@@ -1,0 +1,85 @@
+info:
+  name: payment
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/trade/v1/payment"
+  body:
+    type: form-urlencoded
+    data:
+      - name: mchid
+        value: "{{MCHID}}"
+      - name: txamt
+        value: "{{TXAMT}}"
+      - name: txcurrcd
+        value: "{{TXCURRCD}}"
+      - name: pay_type
+        value: "{{PAYTYPE}}"
+      - name: out_trade_no
+        value: "{{OUTTRADENO}}"
+      - name: txdtm
+        value: "{{TXDTM}}"
+      - name: auth_code
+        value: "{{AUTHCODE}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## pm prescript
+
+  const crypto = require('crypto-js');
+
+  const app_code = '*******'
+  const client_key = '*******'
+
+  const pay_type = '802901'
+  const txamt = '1'
+  const txcurrcd = 'THB'
+  const mchid = '*******'
+  const out_trade_no = String(Math.round(Math.random() * 1000000000))
+  const txdtm = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+  //const auth_code = 'APTH7309962819735668'
+
+  var payload = {
+    'pay_type': pay_type,
+    'txamt': txamt,
+    'txcurrcd': txcurrcd,
+    'mchid': mchid,
+    'out_trade_no': out_trade_no,
+    'txdtm': txdtm
+  };
+
+  // Signature Generation
+  const ordered = {};
+  Object.keys(payload).sort().forEach(function (key) {
+    ordered[key] = payload[key]
+  });
+  console.log(ordered)
+
+  var str = [];
+  for (var p in ordered)
+    if (ordered.hasOwnProperty(p)) {
+      str.push((p) + "=" + (ordered[p]));
+    }
+  var string = str.join("&") + client_key;
+  console.log(string)
+
+  var hashed = crypto.MD5(string, client_key)
+  console.log(hashed)
+
+  postman.setEnvironmentVariable("SIGNATURE", hashed)
+  postman.setEnvironmentVariable("APP_CODE", app_code)
+  postman.setEnvironmentVariable("MCHID", mchid)
+  postman.setEnvironmentVariable("PAYTYPE", pay_type)
+  postman.setEnvironmentVariable("TXAMT", txamt)
+  postman.setEnvironmentVariable("TXCURRCD", txcurrcd)
+  postman.setEnvironmentVariable("OUTTRADENO", out_trade_no)
+  postman.setEnvironmentVariable("TXDTM", txdtm)
+  //postman.setEnvironmentVariable("AUTHCODE", auth_code)

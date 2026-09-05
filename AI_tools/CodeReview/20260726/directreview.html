@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DirectReview API — 技術規格書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0d0a;
+    --bg-2: #12140f;
+    --panel: #15170f;
+    --line: #2a2e21;
+    --line-soft: #1e2117;
+    --ink: #ece7d9;
+    --ink-dim: #9a9787;
+    --ink-faint: #625f52;
+    --accent: #b8ff5a;
+    --accent-dim: #7fae3f;
+    --amber: #ffb84d;
+    --red: #ff6b5e;
+    --serif: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', 'Consolas', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  ::selection{ background: var(--accent); color:#0b0d0a; }
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 85% -10%, rgba(184,255,90,0.08), transparent 60%),
+      radial-gradient(ellipse 700px 400px at -5% 30%, rgba(255,184,77,0.05), transparent 60%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.7;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* grain overlay */
+  body::before{
+    content:"";
+    position: fixed; inset:0;
+    pointer-events:none;
+    opacity: 0.05;
+    z-index: 5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  a{color:var(--accent); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  code{ font-family: var(--mono); }
+
+  /* ===== Header / masthead ===== */
+  header.masthead{
+    position: relative;
+    padding: 90px 8vw 70px;
+    border-bottom: 1px solid var(--line);
+    overflow:hidden;
+  }
+  header.masthead::after{
+    content:"";
+    position:absolute; right:-10%; top:-30%;
+    width:600px; height:600px;
+    background: radial-gradient(circle, rgba(184,255,90,0.10), transparent 65%);
+    filter: blur(10px);
+    pointer-events:none;
+  }
+  .kicker{
+    display:inline-flex; align-items:center; gap:10px;
+    font-size:12px; letter-spacing:0.22em; text-transform:uppercase;
+    color: var(--accent);
+    border:1px solid var(--line);
+    padding: 6px 14px;
+    border-radius: 100px;
+    background: rgba(184,255,90,0.05);
+    animation: fadeUp .7s ease both;
+  }
+  .kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--accent); box-shadow:0 0 8px var(--accent); animation: pulse 2s infinite;}
+  @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  h1.title{
+    font-family: var(--serif);
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(2.6rem, 5.5vw, 4.6rem);
+    line-height: 1.02;
+    margin: 26px 0 18px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    animation: fadeUp .8s ease .08s both;
+  }
+  h1.title em{
+    font-style: italic;
+    color: var(--accent);
+  }
+  .subtitle{
+    max-width: 640px;
+    color: var(--ink-dim);
+    font-size: 15.5px;
+    line-height: 1.75;
+    animation: fadeUp .8s ease .16s both;
+  }
+  .endpoint-chip{
+    margin-top: 34px;
+    display:inline-flex; align-items:center; gap:14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    animation: fadeUp .8s ease .24s both;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+  .method-post{
+    background: var(--accent); color:#0b0d0a; font-weight:700;
+    padding: 3px 10px; border-radius:5px; letter-spacing:0.04em; font-size:12.5px;
+  }
+  @keyframes fadeUp{ from{opacity:0; transform: translateY(16px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ===== layout ===== */
+  .layout{
+    display:grid;
+    grid-template-columns: 250px 1fr;
+    gap: 0;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+  nav.toc{
+    position: sticky; top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y:auto;
+    padding: 48px 24px 48px 8vw;
+    border-right: 1px solid var(--line);
+  }
+  nav.toc .toc-label{
+    font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color: var(--ink-faint);
+    margin-bottom: 18px;
+  }
+  nav.toc ol{ list-style:none; margin:0; padding:0; counter-reset: sec; }
+  nav.toc li{ counter-increment: sec; margin-bottom: 4px; }
+  nav.toc a{
+    display:flex; gap:10px;
+    color: var(--ink-dim);
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    transition: all .15s ease;
+  }
+  nav.toc a::before{
+    content: counter(sec, decimal-leading-zero);
+    color: var(--ink-faint);
+    font-weight:600;
+  }
+  nav.toc a:hover, nav.toc a.active{
+    color: var(--accent);
+    background: rgba(184,255,90,0.06);
+    text-decoration:none;
+  }
+
+  main{ padding: 60px 6vw 120px 6vw; max-width: 980px; }
+
+  section{ margin-bottom: 84px; scroll-margin-top: 30px; }
+
+  .section-head{
+    display:flex; align-items:baseline; gap: 18px;
+    margin-bottom: 26px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .section-num{
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--accent-dim);
+    font-size: 15px;
+  }
+  h2{
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.85rem;
+    margin: 0;
+    color: var(--ink);
+  }
+  h3{
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--ink);
+    margin: 36px 0 14px;
+  }
+  p{ color: var(--ink-dim); max-width: 72ch; }
+  strong{ color: var(--ink); }
+
+  /* ===== diagram / ascii flow ===== */
+  .flow{
+    background: var(--panel);
+    border:1px solid var(--line);
+    border-radius: 12px;
+    padding: 28px 30px;
+    overflow-x: auto;
+    position: relative;
+  }
+  .flow::before{
+    content: "flow.txt";
+    position:absolute; top:0; right:0;
+    font-size:10px; color:var(--ink-faint);
+    padding: 6px 12px; letter-spacing:0.08em;
+    border-left:1px solid var(--line); border-bottom:1px solid var(--line);
+    border-radius: 0 12px 0 8px;
+  }
+  .flow pre{ margin:0; color: var(--ink-dim); font-size: 13px; white-space:pre; }
+  .flow .hl{ color: var(--accent); font-weight:600; }
+  .flow .hl2{ color: var(--amber); }
+
+  /* ===== tables ===== */
+  .table-wrap{
+    border:1px solid var(--line);
+    border-radius: 12px;
+    overflow:hidden;
+    margin: 18px 0 8px;
+  }
+  table{ width:100%; border-collapse:collapse; font-size: 13.5px; }
+  thead th{
+    text-align:left;
+    background: var(--bg-2);
+    color: var(--accent);
+    font-weight:600;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  tbody td{
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink-dim);
+    vertical-align: top;
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background: rgba(184,255,90,0.03); }
+  td code, p code, li code{
+    background: rgba(184,255,90,0.08);
+    color: var(--accent);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    border: 1px solid rgba(184,255,90,0.15);
+  }
+  .req{ color: var(--red); font-weight:700; }
+  .opt{ color: var(--ink-faint); }
+
+  /* ===== code blocks ===== */
+  .codeblock{
+    background: #0e100a;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 18px 0;
+    box-shadow: 0 20px 50px -30px rgba(0,0,0,0.8);
+  }
+  .codeblock .bar{
+    display:flex; align-items:center; gap:8px;
+    padding: 10px 16px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .codeblock .bar .light{ width:9px; height:9px; border-radius:50%; }
+  .codeblock .bar .label{
+    margin-left: 8px; font-size: 11px; color: var(--ink-faint); letter-spacing: 0.05em;
+  }
+  .codeblock pre{
+    margin:0; padding: 20px; overflow-x:auto;
+    font-size: 12.8px; line-height: 1.75; color: var(--ink-dim);
+  }
+  .codeblock .k{ color:#82c8ff; } /* keys */
+  .codeblock .s{ color: var(--accent); } /* strings */
+  .codeblock .c{ color: var(--ink-faint); font-style: italic; } /* comment */
+  .codeblock .n{ color: var(--amber); } /* numbers/bool */
+
+  /* ===== callout ===== */
+  .callout{
+    display:flex; gap: 14px;
+    padding: 18px 20px;
+    border-radius: 10px;
+    border: 1px solid;
+    margin: 22px 0;
+    font-size: 13.5px;
+  }
+  .callout p{ margin:0; color: inherit; max-width:none; }
+  .callout.warn{ border-color: rgba(255,184,77,0.35); background: rgba(255,184,77,0.06); color:#ffd699; }
+  .callout.note{ border-color: rgba(184,255,90,0.3); background: rgba(184,255,90,0.05); color: #d7ffa8; }
+  .callout .icon{ font-size: 16px; line-height:1; }
+
+  /* ===== proposal cards (quick/full) ===== */
+  .pair{
+    display:grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    margin: 22px 0;
+  }
+  @media (max-width: 720px){ .pair{ grid-template-columns:1fr; } }
+  .card{
+    border:1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px;
+    background: linear-gradient(180deg, var(--panel), var(--bg-2));
+    position:relative;
+    overflow:hidden;
+  }
+  .card.quick{ border-color: rgba(255,184,77,0.35); }
+  .card.full{ border-color: rgba(184,255,90,0.35); }
+  .card .tag{
+    display:inline-block; font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    padding: 4px 10px; border-radius: 6px; margin-bottom: 14px; font-weight:700;
+  }
+  .card.quick .tag{ background: rgba(255,184,77,0.15); color: var(--amber); }
+  .card.full .tag{ background: rgba(184,255,90,0.15); color: var(--accent); }
+  .card h4{
+    font-family: var(--serif); font-size: 1.5rem; margin: 0 0 10px; color: var(--ink);
+  }
+  .card p{ font-size: 13px; color: var(--ink-dim); }
+  .card .meta{ margin-top:16px; font-size: 12px; color: var(--ink-faint); }
+  .card .meta b{ color: var(--ink-dim); }
+
+  /* ===== comparison badge table icons ===== */
+  .yes{ color: var(--accent); } .no{ color: var(--ink-faint); }
+
+  /* ===== footer summary ===== */
+  .finale{
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 40px 44px;
+    background:
+      radial-gradient(ellipse 500px 300px at 100% 0%, rgba(184,255,90,0.08), transparent 70%),
+      var(--panel);
+    position: relative;
+  }
+  .finale h2{ margin-bottom: 20px; }
+  .finale ol{ counter-reset: step; list-style:none; padding:0; margin:0; }
+  .finale li{
+    counter-increment: step;
+    display:flex; gap:18px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink-dim);
+    font-size: 14px;
+  }
+  .finale li:last-child{ border-bottom:none; }
+  .finale li::before{
+    content: counter(step);
+    flex-shrink:0;
+    width: 30px; height:30px;
+    border-radius:50%;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--serif); font-style:italic; font-size:14px;
+  }
+  .finale li strong{ color:var(--ink); }
+
+  footer{
+    text-align:center; padding: 50px 6vw 70px;
+    color: var(--ink-faint); font-size: 12px; letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 900px){
+    .layout{ grid-template-columns: 1fr; }
+    nav.toc{ display:none; }
+    main{ padding: 40px 6vw 100px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <span class="kicker"><span class="dot"></span> NineYi.Ai.CodeReview · Internal API Spec</span>
+  <h1 class="title">Direct<em>Review</em><br>API 規格書</h1>
+  <p class="subtitle">
+    同步式 diff 審查端點——不透過 Webhook、不落地資料庫、不與 Git 平台互動。
+    專為 Copilot CLI / CI Script 設計的輕量審查通道，本文件涵蓋請求／回應規格、
+    與既有 Webhook 流程的差異比較，以及 <code>taskingFlow</code> 命名優化提案。
+  </p>
+  <div class="endpoint-chip">
+    <span class="method-post">POST</span>
+    <span>/api/review/direct</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="toc-label">目錄</div>
+    <ol>
+      <li><a href="#overview">這支 API 是什麼</a></li>
+      <li><a href="#diff">與 Webhook 流程的差異</a></li>
+      <li><a href="#request">Request 規格</a></li>
+      <li><a href="#taskingflow">taskingFlow 命名提案</a></li>
+      <li><a href="#response">Response 規格</a></li>
+      <li><a href="#summary">重點整理</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="overview">
+      <div class="section-head"><span class="section-num">i.</span><h2>這支 API 是什麼</h2></div>
+      <p>
+        <code>DirectReviewController</code> 是既有「Webhook-based Code Review」流程之外，另外提供的一條
+        <strong>輕量、同步、無狀態</strong>審查通道。呼叫端直接把整段 diff 內容 POST 給 Server，
+        Server 依 <code>repositoryName</code> 查出對應的審查規則（Rule），<strong>平行</strong>呼叫每條規則對應的
+        Dify Chat App，等全部回應完成後彙整成清單，一次性同步回傳。
+      </p>
+
+      <div class="flow">
+        <pre>Client (Copilot CLI / CI)
+      │  diff + repoName + taskingFlow
+      ▼
+<span class="hl">DirectReviewController</span>  (POST /api/review/direct)
+      ▼
+<span class="hl">DirectReviewService</span>.ReviewAsync()
+      │
+      ├─ 1. 依 RepositoryName + TaskingFlow 查詢 Rules   <span class="hl2">(IRuleRepository)</span>
+      ├─ 2. 組 ContextSummary（branch / workItem / author / 完整檔案內容）
+      ├─ 3. 對每條 Rule <span class="hl">平行</span>呼叫 Dify Chat API            <span class="hl2">(IDifyService.ChatReviewAsync)</span>
+      └─ 4. Task.WhenAll 彙整 → DirectReviewResponse
+      ▼
+回傳 JSON 結果給呼叫端（不寫 DB、不回貼 PR comment）</pre>
+      </div>
+    </section>
+
+    <section id="diff">
+      <div class="section-head"><span class="section-num">ii.</span><h2>與既有 Webhook 流程的差異</h2></div>
+      <p>兩者共用「Rules 資料來源」與「Dify 服務物件」，但<strong>沒有共用核心審查邏輯</strong>——彼此是兩條互不影響的程式碼路徑。</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>面向</th><th>Webhook 流程</th><th>Direct Review</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>觸發方式</td><td>Git 平台 Webhook（PR 建立/更新）</td><td>呼叫端主動 POST diff</td></tr>
+            <tr><td>Dify API</td><td>Workflow API，<b>逐檔案</b>呼叫</td><td>Chat API，<b>整段 diff 一次</b>呼叫</td></tr>
+            <tr><td>執行順序</td><td>序列處理</td><td><span class="yes">平行</span>（Task.WhenAll）</td></tr>
+            <tr><td>Git 平台互動</td><td>取檔案清單、回貼 comment</td><td class="no">無</td></tr>
+            <tr><td>Hot Keyword 掃描</td><td class="yes">有</td><td class="no">無</td></tr>
+            <tr><td>資料庫寫入</td><td>ReviewLog / FileLog / UsageLog / Statistics</td><td class="no">無</td></tr>
+            <tr><td>回傳內容</td><td>結構化 Comment（行號/嚴重度/分類）</td><td>純文字 Answer</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="request">
+      <div class="section-head"><span class="section-num">iii.</span><h2>Request 規格</h2></div>
+
+      <h3>DirectReviewRequest</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code>repositoryName</code></td><td>string</td><td class="req">必填</td><td>Repository 名稱，支援 FullName / Name / 結尾比對。例如 <code>nine1.live.buy</code></td></tr>
+            <tr><td><code>taskingFlow</code></td><td>string</td><td class="opt">選填</td><td>觸發流程標籤，對應 <code>Rule.FlowTags</code>，決定跑哪組規則（見第 iv 節）</td></tr>
+            <tr><td><code>diffContent</code></td><td>string</td><td class="req">必填</td><td>Git diff 內容（如 <code>git diff --staged</code> 輸出）</td></tr>
+            <tr><td><code>reviewContext</code></td><td>object</td><td class="opt">選填</td><td>補充給 AI 的上下文，減少誤判</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>reviewContext（DirectReviewContext）</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code>branch</code></td><td>string?</td><td>Git branch 名稱</td></tr>
+            <tr><td><code>workItemId</code></td><td>string?</td><td>Work Item / VSTS Task ID</td></tr>
+            <tr><td><code>author</code></td><td>string?</td><td>提交者 email</td></tr>
+            <tr><td><code>fullFileContents</code></td><td>array</td><td>異動檔案的完整內容，提供完整 method 上下文</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="codeblock">
+        <div class="bar">
+          <span class="light" style="background:#ff5f57"></span>
+          <span class="light" style="background:#febc2e"></span>
+          <span class="light" style="background:#28c840"></span>
+          <span class="label">request.json</span>
+        </div>
+        <pre>{
+  <span class="k">"repositoryName"</span>: <span class="s">"nine1.live.buy"</span>,
+  <span class="k">"taskingFlow"</span>: <span class="s">"review-only"</span>,
+  <span class="k">"diffContent"</span>: <span class="s">"=== STAGED DIFF (C# RELATED) ===\ndiff --git a/src/..."</span>,
+  <span class="k">"reviewContext"</span>: {
+    <span class="k">"branch"</span>: <span class="s">"feature/VSTS12345-my-feature"</span>,
+    <span class="k">"workItemId"</span>: <span class="s">"12345"</span>,
+    <span class="k">"author"</span>: <span class="s">"developer@91app.com"</span>,
+    <span class="k">"fullFileContents"</span>: [
+      { <span class="k">"filePath"</span>: <span class="s">"src/Services/MyService.cs"</span>, <span class="k">"content"</span>: <span class="s">"..."</span> }
+    ]
+  }
+}</pre>
+      </div>
+    </section>
+
+    <section id="taskingflow">
+      <div class="section-head"><span class="section-num">iv.</span><h2>taskingFlow — 審查規則的「檔位」</h2></div>
+      <p>
+        用來決定「這次呼叫要跑哪一組 Rule」，而不是跑該 Repository 底下<strong>全部</strong>的 Rule。
+        底層對應 <code>Rule.FlowTags</code>（逗號分隔字串）；<code>FlowTags</code> 為空的 Rule 視為所有流程皆適用，永遠會被納入。
+      </p>
+
+      <div class="callout warn">
+        <span class="icon">⚠</span>
+        <p><strong>命名問題：</strong>現況值為 <code>review-only</code> / <code>full</code>，兩者不是同一維度的對稱詞（full 的反義應是「精簡」而非「只做審查」），呼叫端得回頭查註解才能理解涵蓋範圍。</p>
+      </div>
+
+      <h3>提案：改用 quick / full</h3>
+      <div class="pair">
+        <div class="card quick">
+          <span class="tag">Quick</span>
+          <h4>quick</h4>
+          <p>快速檢查，只跑核心必要規則。對應現有 <code>review-only</code>：Custom + Standard 兩個 Dify App。</p>
+          <div class="meta"><b>取代：</b> review-only</div>
+        </div>
+        <div class="card full">
+          <span class="tag">Full</span>
+          <h4>full</h4>
+          <p>完整審查，跑所有適用此 Repository 的規則。與現況完全相同，不需變動任何資料。</p>
+          <div class="meta"><b>沿用：</b> full（無需異動）</div>
+        </div>
+      </div>
+
+      <div class="callout note">
+        <span class="icon">✓</span>
+        <p><strong>選擇理由：</strong> ① 對稱好懂，不用查文件就能猜出行為差異　② full 沿用現值，相容性高　③ 可延伸為 quick → full → deep 等更多檔位。</p>
+      </div>
+
+      <p style="font-size:12.5px; color:var(--ink-faint);">
+        📌 本文件僅為設計提案，尚未變更程式碼。若確認採用，需同步調整
+        <code>DirectReviewRequest.TaskingFlow</code> 預設值、<code>Rule.FlowTags</code> 既有資料，
+        與 <code>IRuleRepository.GetByRepositoryNameAndFlowAsync</code> 的比對邏輯及相關註解。
+      </p>
+    </section>
+
+    <section id="response">
+      <div class="section-head"><span class="section-num">v.</span><h2>Response 規格</h2></div>
+      <p><code>200 OK</code>：至少一個 Rule 成功　·　<code>400 Bad Request</code>：參數錯誤或找不到 Rules　·　<code>500</code>：未預期例外</p>
+
+      <h3>DirectReviewResponse</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code>isSuccess</code></td><td>bool</td><td>只要有任一 Rule 成功即為 true</td></tr>
+            <tr><td><code>answers</code></td><td>array</td><td>每條 Rule 的審查結果</td></tr>
+            <tr><td><code>totalDurationMs</code></td><td>int</td><td>全部平行呼叫的總耗時（毫秒）</td></tr>
+            <tr><td><code>errorMessage</code></td><td>string?</td><td>錯誤訊息（找不到 Rule / 參數錯誤 / 例外）</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>answers[] — DirectReviewAnswer</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>欄位</th><th>型別</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><code>reviewer</code></td><td>string</td><td>對應 Rule.Name</td></tr>
+            <tr><td><code>answer</code></td><td>string</td><td>Dify Chat App 回答原文；失敗時為 <code>[ERROR] ...</code></td></tr>
+            <tr><td><code>isSuccess</code></td><td>bool</td><td>該 Rule 呼叫是否成功</td></tr>
+            <tr><td><code>durationMs</code></td><td>int</td><td>該 Rule 呼叫耗時</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="codeblock">
+        <div class="bar">
+          <span class="light" style="background:#ff5f57"></span>
+          <span class="light" style="background:#febc2e"></span>
+          <span class="light" style="background:#28c840"></span>
+          <span class="label">response.json</span>
+        </div>
+        <pre>{
+  <span class="k">"isSuccess"</span>: <span class="n">true</span>,
+  <span class="k">"answers"</span>: [
+    {
+      <span class="k">"reviewer"</span>: <span class="s">"Custom Rule"</span>,
+      <span class="k">"answer"</span>: <span class="s">"整體變更看起來合理，建議在 MyService.cs 第 42 行加上 null 檢查。"</span>,
+      <span class="k">"isSuccess"</span>: <span class="n">true</span>,
+      <span class="k">"durationMs"</span>: <span class="n">3120</span>
+    },
+    {
+      <span class="k">"reviewer"</span>: <span class="s">"Standard Rule"</span>,
+      <span class="k">"answer"</span>: <span class="s">"[ERROR] Dify API timeout"</span>,
+      <span class="k">"isSuccess"</span>: <span class="n">false</span>,
+      <span class="k">"durationMs"</span>: <span class="n">15000</span>
+    }
+  ],
+  <span class="k">"totalDurationMs"</span>: <span class="n">15020</span>,
+  <span class="k">"errorMessage"</span>: <span class="n">null</span>
+}</pre>
+      </div>
+    </section>
+
+    <section id="summary">
+      <div class="finale">
+        <h2>重點整理</h2>
+        <ol>
+          <li><strong>接收：</strong>一段 diff 字串 + repositoryName（+ 可選的 taskingFlow、context）。</li>
+          <li><strong>查規則：</strong>依 repositoryName（+ taskingFlow 篩選）找出對應的 Dify Rule 清單。</li>
+          <li><strong>平行呼叫：</strong>對每條 Rule 同時打各自的 Dify Chat App，不是依序一個個打。</li>
+          <li><strong>彙整回傳：</strong>等所有呼叫結束，把每條 Rule 的純文字回答彙整成清單一次回傳，全程不寫資料庫、不與 Git 平台互動。</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>NineYi.Ai.CodeReview.v2 · DirectReview API Spec · 2026-07-27</footer>
+
+<script>
+  const links = document.querySelectorAll('nav.toc a');
+  const sections = [...document.querySelectorAll('main section')];
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        links.forEach(l => l.classList.remove('active'));
+        const id = e.target.getAttribute('id');
+        const active = document.querySelector(`nav.toc a[href="#${id}"]`);
+        if(active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => io.observe(s));
+</script>
+
+</body>
+</html>

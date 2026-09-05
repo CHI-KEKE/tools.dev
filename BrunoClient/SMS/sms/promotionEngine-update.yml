@@ -1,0 +1,160 @@
+info:
+  name: promotionEngine-update
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/PromotionEngine/UpdatePromotionEngine"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+          "Id":7594,
+          "Quota":"18",
+          "VerificationToken" :"8e19dfdc42097f43878fc0f2c6cb56738599ae0b8c2c50c54f515016177f1a8ec4b379fb4392d4ed77e9505f90fec9f18e6109135ad8d241e7f054af9067646b",
+          "Accumulated": false,
+          "AgreeContent": "",
+          "AddOnsRuleList": [],
+          "BatchUploadFileGuid": null,
+          "BatchUploadFileName": null,
+          "BinCodeFileName": "",
+          "CalculateTypeDef": "Compatible",
+          "CanUseECoupon": true,
+          "ChannelType": "All",
+          "Code": "",
+          "CustomCampaignCode": "",
+          "DisplaySetting": "",
+          "DiscountRuleList": [],
+          "EndDateTime": "2026-12-11T16:00:00.000Z",
+          "ExcludeTargetIdList": [],
+          "ExcludeProductSkuOuterIdList": [],
+          "ExcludeTargetTypeDef": "None",
+          "GiftRuleList": [],
+          "Image": null,
+          "IncludeTargetIdList": [
+              3185
+          ],
+          "IncludeProductSkuOuterIdList": [
+              "allentest003"
+          ],
+          "IncludeTargetRegionIdList": [],
+          "IsAddOnsThresholdEligible": false,
+          "IsCyclable": true,
+          "IsDisplayInShoppingCart": true,
+          "IsFromDuplicate": false,
+          "IsLimitedAddOnsPurchaseQty": false,
+          "IsMultiLevel": false,
+          "IsOverPromotionTagLimit": false,
+          "IsOverPromotionProductSkuOuterIdTagLimit": false,
+          "IsPermanentPromotion": false,
+          "IsRegular": false,
+          "MemberTierList": [],
+          "MemberCollectionId": null,
+          "MustTargetType": "",
+          "MustTargetIdList": [],
+          "MustTargetCollectionId": null,
+          "Name": "0701testcoupon",
+          "PayProfileTypeDef": "",
+          "PayProfileTypeDefDesc": "",
+          "PayShippingTargetTypeDef": "",
+          "PayTypes": [],
+          "PeriodType": null,
+          "PromotionEngineBinCodeId": 0,
+          "PromotionTargetRegionTypeDef": "All",
+          "PromotionRewardPointCalculateTypeDef": "Merged",
+          "RewardPointCondition": [],
+          "RewardPointRuleList": [],
+          "RewardCondition": [
+              {
+                  "SourceTypeDef": "ECom",
+                  "DeliveryMethod": "Home",
+                  "StatusDef": "WaitingToShipping",
+                  "RewardDays": 0,
+                  "RewardTimingType": "ByDays",
+                  "RewardDateTime": null
+              },
+              {
+                  "SourceTypeDef": "ECom",
+                  "DeliveryMethod": "Oversea",
+                  "StatusDef": "WaitingToShipping",
+                  "RewardDays": 0,
+                  "RewardTimingType": "ByDays",
+                  "RewardDateTime": null
+              },
+              {
+                  "SourceTypeDef": "ECom",
+                  "DeliveryMethod": "LocationPickup",
+                  "StatusDef": "WaitingToShipping",
+                  "RewardDays": 0,
+                  "RewardTimingType": "ByDays",
+                  "RewardDateTime": null
+              },
+              {
+                  "SourceTypeDef": "Others",
+                  "DeliveryMethod": null,
+                  "StatusDef": "Finish",
+                  "RewardDays": 1,
+                  "RewardTimingType": "ByDays",
+                  "RewardDateTime": null
+              }
+          ],
+          "RewardCouponRuleList": [
+              {
+                  "CrmShopMemberCardId": 0,
+                  "Condition": 1,
+                  "EcouponId": 1000,
+                  "Qty": 1,
+                  "MaxRewardCouponQty":88
+              }
+          ],
+          "EcouponId": 1000,
+          "RegisterEndDateTime": null,
+          "RegisterStartDateTime": null,
+          "SalesDayOfWeek": null,
+          "ShopId": 2,
+          "ShopName": "測試店_香港難波萬",
+          "ShippingTypes": [],
+          "Sort": null,
+          "SourceDuplicatePromotionEngineId": 0,
+          "StartDateTime": "2026-12-10T13:16:00.000Z",
+          "TargetIdTotalCount": 0,
+          "RewardProductSkuOuterIdCount": 1,
+          "TargetMemberTypeDef": "All",
+          "TargetPlatformTypeList": [],
+          "TargetTypeDef": "Category",
+          "TargetTypeCollectionId": null,
+          "TargetTypeProductSkuOuterIdTag": null,
+          "TargetLocationTypeDef": "All",
+          "IncludeTargetLocationIdList": [],
+          "Terms": "",
+          "TypeDef": "RewardReachPriceWithCoupon",
+          "UniqueKey": "8def62b9-1eef-4ea3-8dc1-a13717fb515c",
+          "VisibleMemberTypeDef": "All",
+          "VisiblePlatformTypeList": [
+              {
+                  "Platform": "Web",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "AppIOS",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "AppAndroid",
+                  "IsEnabled": true
+              }
+          ],
+          "Label": "",
+          "IsSwitchToCollectionUI": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

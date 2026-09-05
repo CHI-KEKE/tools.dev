@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任務清單頁 — 快速查看執行歷史／失敗 Log 規劃書</title>
+<style>
+  :root {
+    --navy-dark: #16203c;
+    --navy: #152545;
+    --navy-light: #132a4e;
+    --accent: #2b8ce6;
+    --success: #198754;
+    --warning: #b8860b;
+    --danger: #c0392b;
+    --bg: #f4f6fb;
+    --card-bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e2e6ee;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .hero {
+    background: linear-gradient(135deg, var(--navy-dark), var(--navy-light));
+    color: #fff;
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  .hero h1 { margin: 0 0 10px; font-size: 1.9rem; letter-spacing: 0.5px; }
+  .hero p { margin: 0; color: #cfd8ee; font-size: 1rem; }
+  .toc {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin: 20px auto 0; max-width: 1000px; padding: 0 20px;
+  }
+  .toc a {
+    background: rgba(255,255,255,0.12); color: #fff; text-decoration: none;
+    padding: 6px 14px; border-radius: 999px; font-size: 0.85rem;
+    border: 1px solid rgba(255,255,255,0.3); transition: background 0.2s;
+  }
+  .toc a:hover { background: rgba(255,255,255,0.25); }
+  .container { max-width: 1000px; margin: -24px auto 60px; padding: 0 20px; }
+  .card {
+    background: var(--card-bg); border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(21, 37, 69, 0.08);
+    padding: 28px 32px; margin-bottom: 28px; border: 1px solid var(--border);
+  }
+  .section-title { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; }
+  .section-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--navy); color: #fff; font-weight: 700; font-size: 1rem; flex-shrink: 0;
+  }
+  .section-title h2 { margin: 0; font-size: 1.3rem; color: var(--navy); }
+  .lead { color: var(--muted); font-size: 0.95rem; margin: 0 0 20px; }
+  .verdict {
+    display: inline-block; padding: 4px 14px; border-radius: 999px;
+    font-size: 0.85rem; font-weight: 600; margin-bottom: 16px;
+  }
+  .verdict.gap { background: #fdf2df; color: var(--warning); }
+  .verdict.plan { background: #e5f5ec; color: var(--success); }
+  code, .mono {
+    font-family: "Cascadia Code", Consolas, monospace; background: #eef1f8;
+    padding: 2px 6px; border-radius: 5px; font-size: 0.88em; color: #2a3a5c;
+  }
+  pre.code-block {
+    background: #0f1b33; color: #d7e2f7; padding: 16px 18px; border-radius: 10px;
+    overflow-x: auto; font-size: 0.85rem; line-height: 1.6;
+  }
+  pre.code-block .cm { color: #7d94c4; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92rem; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { background: var(--navy); color: #fff; font-weight: 600; }
+  tbody tr:nth-child(even) { background: #f8f9fc; }
+  .flow-steps { counter-reset: step; list-style: none; padding: 0; margin: 16px 0; }
+  .flow-steps li {
+    position: relative; padding: 10px 0 10px 44px;
+    border-left: 2px solid var(--border); margin-left: 17px;
+  }
+  .flow-steps li:last-child { border-left: 2px solid transparent; }
+  .flow-steps li::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: -18px; top: 8px;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.9rem;
+  }
+  .callout {
+    border-radius: 10px; padding: 14px 18px; margin: 16px 0;
+    font-size: 0.92rem; display: flex; gap: 12px; align-items: flex-start;
+  }
+  .callout .icon { font-size: 1.2rem; line-height: 1; margin-top: 2px; }
+  .callout.info { background: #eaf3ff; color: #1c4f8c; border: 1px solid #cfe1fb; }
+  .callout.key { background: #fff4e5; color: #8a5a00; border: 1px solid #ffe1ad; }
+  .callout.danger { background: #fdeceb; color: #a1332a; border: 1px solid #f6c6c1; }
+  .callout.good { background: #e5f5ec; color: #1d6b46; border: 1px solid #bfe6cf; }
+
+  /* Mockup card */
+  .mock-card {
+    border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px;
+    background: #fff; margin: 16px 0;
+  }
+  .mock-row1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .mock-title { font-weight: 700; color: var(--text); }
+  .mock-badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; margin-left: 6px; }
+  .mock-badge.ready { background: #dbe9ff; color: #1c4f8c; }
+  .mock-badge.on { background: #d9f2e3; color: #1d6b46; }
+  .mock-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .mock-btn {
+    font-size: 0.78rem; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+    color: var(--navy); background: #f4f6fb; white-space: nowrap;
+  }
+  .mock-btn.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .mock-btn.new { background: #fff4e5; color: #8a5a00; border-color: #ffe1ad; font-weight: 700; }
+  .mock-path { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+
+  .before-after { display: flex; gap: 20px; flex-wrap: wrap; }
+  .ba-col { flex: 1 1 300px; }
+  .ba-label {
+    font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 8px;
+  }
+  .ba-label.before { color: var(--danger); }
+  .ba-label.after { color: var(--success); }
+
+  .footer-note { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 20px 0 0; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🔗 任務清單頁 — 一鍵查看執行歷史／失敗 Log 規劃書</h1>
+  <p>Windows Task Manager｜「Windows 排程任務管理」頁面串接執行歷史功能</p>
+</div>
+<div class="toc">
+  <a href="#part1">① 現況呈現邏輯</a>
+  <a href="#part2">② 問題與需求</a>
+  <a href="#part3">③ 建議做法</a>
+  <a href="#part4">④ 實作範圍</a>
+</div>
+
+<div class="container">
+
+  <!-- Part 1 -->
+  <div class="card" id="part1">
+    <div class="section-title">
+      <span class="section-badge">1</span>
+      <h2>現況呈現邏輯</h2>
+    </div>
+    <p class="lead">對應截圖：<code>aaa49_0.png</code>（Windows 排程任務管理，ETL Flow 搜尋 FlowId = 75）</p>
+
+    <p>目前「任務管理」頁面（<code>Pages/Tasks/Index.cshtml</code>）分為 <strong>目錄檢視</strong>（<code>_TaskFolderNode.cshtml</code>）與
+      <strong>列表檢視</strong> 兩種模式，每張任務卡片 / 每一列會顯示：</p>
+
+    <ul>
+      <li>任務名稱、狀態徽章（Ready / Disabled / Running）、啟用狀態</li>
+      <li>路徑、下次執行時間、說明文字</li>
+      <li><strong>操作按鈕</strong>（僅 Admin / ReadWrite 角色可見）：目前只有 <span class="mono">編輯</span> 與 <span class="mono">啟用／停用</span></li>
+    </ul>
+
+    <div class="mock-card">
+      <div class="mock-row1">
+        <div>
+          <span class="mock-title">ETL_CrmShopMemberCard_SetDraftPreparingFlowService</span>
+          <span class="mock-badge ready">Ready</span>
+          <span class="mock-badge on">已啟用</span>
+        </div>
+        <div class="mock-btns">
+          <span class="mock-btn">✎ 編輯</span>
+          <span class="mock-btn">⏸ 停用</span>
+        </div>
+      </div>
+      <div class="mock-path">📁 \ETL_Service\ETL_CrmShopMemberCard_SetDraftPreparingFlowService　🕒 下次執行：2026-07-15 00:00</div>
+    </div>
+
+    <div class="callout info">
+      <div class="icon">ℹ️</div>
+      <div>
+        要查看某個任務的執行歷史，目前必須：<br>
+        1️⃣ 點上方導覽列「執行歷史」進到 <code>/Tasks/History</code> 頁面 →
+        2️⃣ 在「選擇任務」下拉選單中，<strong>手動找到並選取</strong>同名任務 →
+        3️⃣ 若要看失敗 log，還要再點該筆紀錄的 <span class="mono">Log</span> 按鈕。<br>
+        整個路徑跟「任務管理」頁面完全脫鉤，<strong>沒有任何連結可以直接跳轉</strong>。
+      </div>
+    </div>
+  </div>
+
+  <!-- Part 2 -->
+  <div class="card" id="part2">
+    <div class="section-title">
+      <span class="section-badge">2</span>
+      <h2>問題與需求</h2>
+    </div>
+
+    <span class="verdict gap">⚠️ 現況缺口</span>
+
+    <table>
+      <thead>
+        <tr><th style="width:30%">缺口</th><th>影響</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>任務清單與執行歷史頁面 <strong>沒有連結</strong></td>
+          <td>使用者搜尋到目標排程後，還要跳頁、手動在下拉選單重新找一次同一個任務，多花 2～3 個步驟</td>
+        </tr>
+        <tr>
+          <td>執行歷史頁面 <strong>需要手動判斷</strong> Tab 是「一般 Task」還是「ETL Flow」</td>
+          <td>使用者要自己記得該任務屬於哪個分類才能選對 Tab，容易選錯或找不到</td>
+        </tr>
+        <tr>
+          <td><strong>無法快速定位失敗紀錄</strong></td>
+          <td>執行歷史清單預設顯示全部（含成功），若只想看失敗需要人工往下捲動尋找紅色徽章</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout key">
+      <div class="icon">🎯</div>
+      <div>
+        <strong>你的需求：</strong>在「Windows 排程任務管理」頁面，針對<strong>搜尋到 / 顯示出來的每一筆排程</strong>，
+        可以<strong>直接點擊</strong>就前往該任務的執行歷史與失敗 Log，不需要再跳轉頁面手動選取。
+      </div>
+    </div>
+  </div>
+
+  <!-- Part 3 -->
+  <div class="card" id="part3">
+    <div class="section-title">
+      <span class="section-badge">3</span>
+      <h2>建議做法</h2>
+    </div>
+    <span class="verdict plan">✅ 規劃方案</span>
+
+    <h3 style="color:var(--navy); font-size:1.05rem;">3.1　在每張任務卡片 / 每一列新增「執行歷史」按鈕</h3>
+    <p>在既有的 <span class="mono">編輯</span>／<span class="mono">啟用/停用</span> 按鈕群組旁，新增一顆按鈕，
+      直接帶入該任務的路徑與分類，跳轉到 <code>/Tasks/History</code> 並自動代入篩選：</p>
+
+    <pre class="code-block"><span class="cm">// 產生連結時自動判斷任務類型（複用既有的 IsEtlTask 邏輯）</span>
+var taskType = _taskSchedulerService.IsEtlTask(task) ? "etl" : "general";
+var historyUrl = $"/Tasks/History?taskName={Uri.EscapeDataString(task.Path)}&amp;taskType={taskType}";</pre>
+
+    <div class="mock-card">
+      <div class="mock-row1">
+        <div>
+          <span class="mock-title">ETL_CrmShopMemberCard_SetDraftPreparingFlowService</span>
+          <span class="mock-badge ready">Ready</span>
+          <span class="mock-badge on">已啟用</span>
+        </div>
+        <div class="mock-btns">
+          <span class="mock-btn">✎ 編輯</span>
+          <span class="mock-btn">⏸ 停用</span>
+          <span class="mock-btn new">🕘 執行歷史</span>
+        </div>
+      </div>
+      <div class="mock-path">📁 \ETL_Service\ETL_CrmShopMemberCard_SetDraftPreparingFlowService　🕒 下次執行：2026-07-15 00:00</div>
+    </div>
+
+    <h3 style="color:var(--navy); font-size:1.05rem; margin-top:24px;">3.2　History 頁面依網址參數自動定位</h3>
+    <p><code>HistoryModel.OnGet</code> 已經支援 <code>taskName</code> + <code>taskType</code> 參數，
+      這部分<strong>不需改邏輯</strong>，只要確保連結帶對值，頁面開啟後就會自動：</p>
+    <ul class="flow-steps">
+      <li>切到正確 Tab（一般 Task／ETL Flow）</li>
+      <li>下拉選單自動選取該任務</li>
+      <li>直接顯示該任務的完整執行歷史清單</li>
+    </ul>
+
+    <h3 style="color:var(--navy); font-size:1.05rem; margin-top:24px;">3.3　新增「只看失敗」快速篩選（可選加強）</h3>
+    <p>在 History 頁面篩選區塊加一個 <span class="mono">只看失敗</span> 切換開關（沿用現有 <code>Result</code> 欄位過濾），
+      並讓「任務清單」按鈕可以直接帶 <code>onlyFailed=true</code> 參數跳轉，方便使用者一鍵定位失敗紀錄：</p>
+    <pre class="code-block"><span class="cm">// History.cshtml.cs 新增查詢參數</span>
+public void OnGet(string? taskName, string taskType = "general", bool onlyFailed = false)
+{
+    ...
+    History = onlyFailed
+        ? History.Where(h => h.Result == "Failed")
+        : History;
+}</pre>
+
+    <div class="before-after">
+      <div class="ba-col">
+        <div class="ba-label before">現況（Before）</div>
+        <div class="mock-card" style="border-color:#f6c6c1;">
+          任務清單 → 點「執行歷史」導覽 → 手動選 Tab → 手動找下拉選單 → 找到該任務歷史 → 逐筆找失敗紀錄 → 點 Log
+          <br><strong style="color:var(--danger);">共 6 個步驟</strong>
+        </div>
+      </div>
+      <div class="ba-col">
+        <div class="ba-label after">規劃後（After）</div>
+        <div class="mock-card" style="border-color:#bfe6cf;">
+          任務清單 → 點該任務卡片上的「執行歷史」按鈕 → 直接看到歷史（可選：已預先篩選失敗）→ 點 Log
+          <br><strong style="color:var(--success);">共 2～3 個步驟</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Part 4 -->
+  <div class="card" id="part4">
+    <div class="section-title">
+      <span class="section-badge">4</span>
+      <h2>實作範圍（影響檔案）</h2>
+    </div>
+    <table>
+      <thead>
+        <tr><th style="width:38%">檔案</th><th>異動內容</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Pages/Tasks/_TaskFolderNode.cshtml</code></td>
+          <td>目錄檢視卡片的按鈕群組，新增「執行歷史」連結</td>
+        </tr>
+        <tr>
+          <td><code>Pages/Tasks/Index.cshtml</code></td>
+          <td>列表檢視表格每一列，新增「執行歷史」連結</td>
+        </tr>
+        <tr>
+          <td><code>Pages/Tasks/History.cshtml.cs</code>（可選）</td>
+          <td>新增 <code>onlyFailed</code> 參數，支援直接篩選失敗紀錄</td>
+        </tr>
+        <tr>
+          <td><code>Pages/Tasks/History.cshtml</code>（可選）</td>
+          <td>加入「只看失敗」切換開關 UI</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout good">
+      <div class="icon">✅</div>
+      <div>
+        此方案 <strong>完全複用既有的 <code>IsEtlTask()</code> 與 <code>OnGet(taskName, taskType)</code> 邏輯</strong>，
+        不需異動核心資料存取層（<code>TaskSchedulerService</code>），屬於 UI 層的低風險增量調整，
+        可以快速上線且不影響現有功能。
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">Windows Task Manager · 任務清單快速串接執行歷史 規劃書 · 產生時間 2026-07-14</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+opencollection: 1.0.0
+info:
+  name: "World"
+  type: workspace
+
+collections:
+  - name: "QFPay"
+    path: "collections/QFPay"
+  - name: "Trello"
+    path: "collections/Trello"
+  - name: "2C2P"
+    path: "collections/2C2P"
+  - name: "Stripe"
+    path: "collections/Stripe"
+
+specs:
+
+docs: ''

@@ -1,0 +1,31 @@
+info:
+  name: 加購品-batch-update
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/api/cart-extra-purchase/batch-update"
+  body:
+    type: json
+    data: |2-
+       {
+         "PromotionEngineId": 40509,
+         "CartExtraPurchaseConditionList": [
+           {
+             "SalepageId": 1557572,
+             "SaleProductSkuId": 2169000,
+             "ReachPiece": 3,
+             "ReachPrice": 0,
+             "CartExtraPurchasePrice": 3,
+             "Sort": 1
+           }
+         ]
+       }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

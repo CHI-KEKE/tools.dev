@@ -1,0 +1,244 @@
+<!--
+主題：港灣日誌風（harbor-ledger-style）
+來源：取材自使用者提供的四色色票截圖（bule-white-red-cards.png），色票依序為深海軍藍 #0E3746、暖米杏 #EAE8DC、近白米白 #F4F2EC、磚紅 #BE2623。
+視覺聯想是一本放在船長桌上的航海日誌：深海軍藍墨水字跡、米黃泛黃紙張、以及用來蓋章／劃重點的磚紅火漆印。
+適用：需要沉穩、有份量感、對比強烈的技術文件或治理型文件（規範文件、稽核報告、決策紀錄、需要明確標示「重點／警示」的說明文件），
+      想要跳脫淺色糖果系（mint/cozy/blue-ghost）走向更成熟、更有「紙本文件」質感但不走 case-file-style 那種病歷表風險分級語意的內容。
+不適合：需要紅/琥珀/綠嚴格風險分級語意的事件回顧（改用 case-file-style），也不適合自然/療癒/可愛主題（改用 organic-glass-style／cozy-meadow-style／blue-ghost-style）。
+配色語意是「分類裝飾語意」而非風險分級：navy(深海軍藍)＝主要重點／核心呼叫，red(磚紅)＝需要特別注意的強調項目，tan(深米杏)＝次要／補充分類；
+callout 提示框例外，維持 danger(紅)/warn(深米杏)/info(海軍藍)/success(深藍綠) 的功能語意，但整體色相仍限定在這組四色家族內，不額外引入無關色系。
+
+doc-* 對應變數：
+  --doc-accent:#0e3746; --doc-accent2:#be2623; --doc-ink:#182228; --doc-sub:#48585d;
+  --doc-card:#f4f2ec; --doc-line:#d7cfba; --doc-bg:#eae8dc; --doc-shadow:0 10px 28px -12px rgba(14,55,70,.28);
+
+包含區塊：
+  1. hl-hero：開場橫幅（米杏底 + 深海軍藍 eyebrow 標籤 + 大標題 + 說明 + 底部徽章列，右上角帶一個磚紅圓形火漆印裝飾）
+  2. hl-token-row：色票／概念令牌橫向展示列（方形色塊 + 標籤名稱 + 代碼），適合列出核心概念清單
+  3. hl-card-grid：卡片網格（米白底、深海軍藍細邊框、頂部圓形編號徽章，可切換 navy/red/tan 三種分類）
+  4. hl-pill-flow：方角步驟流程（實心／外框膠囊 + 箭頭連接，適合有先後順序的流程）
+  5. hl-callout：警示框（success/warn/danger/info 四色，維持功能語意但色相限定在四色家族）。內容只有一段 `<p>` 時圖示與內文直接寫成 `<span class="hc-icon">` + `<p>` 兩個子節點即可；若內容有多個子元素（例如一段 `<p>` 加一個 `<ul class="hl-checklist">` 再加一段 `<p>`），一定要把圖示以外的所有內容包進一個 `<div class="hc-body">`，否則 `hl-callout` 的 `display:flex` 會把每個子元素當成獨立欄位排成一列，畫面上出現跑版的多欄並排效果
+  6. hl-checklist：勾選清單（方形勾選圖示，呼應日誌核對感）
+  7. hl-swimlane：跨系統／跨服務時序泳道圖（多欄式，每欄代表一個服務／角色，用來表達「誰在什麼時間點呼叫誰」，取代單純水平箭頭無法表達層級的問題）
+  8. hl-tabs：分頁切換（用於同一主題下需要並列比較「多方各自職責」的情境，例如 A 端做什麼／B 端做什麼，避免卡片並排硬塞）
+  9. hl-layer-flow details.ml-detail：漸進式揭露（用於條列項目過多時，預設只顯示重點幾項，其餘收合在 `<details>` 內，點擊才展開）
+  10. ml-io-badge：I/O／CPU 分類徽章（掛在流程節點標題旁，快速標示「這一步會不會對外呼叫、有沒有延遲風險」）
+  11. hl-decision：決策樹（菱形條件節點 + Yes/No 分支卡片，取代純文字條列的條件式邏輯說明，適合「只有滿足某條件才會觸發」的收尾/後處理邏輯）
+-->
+
+<style>
+.hl-hero{position:relative;overflow:hidden;border-radius:18px;padding:36px 40px;margin:0 0 30px;background:linear-gradient(160deg,#f4f2ec 0%,#eae8dc 65%,#e3dfcd 100%);border:1.5px solid #d7cfba;}
+.hl-hero::after{content:"";position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#c9403c,#8f1c1a);opacity:.16;}
+.hl-hero .hh-tag{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;background:#0e3746;color:#f4f2ec;padding:5px 16px;border-radius:3px;margin-bottom:14px;font-weight:700;}
+.hl-hero .hh-title{margin:0 0 10px;font-size:1.4rem;font-weight:800;color:#182228;}
+.hl-hero .hh-desc{max-width:82%;font-size:.92rem;line-height:1.85;color:#3d4d52;position:relative;}
+.hl-hero .hh-desc code{background:#e3ddc9;padding:1px 6px;border-radius:4px;color:#0e3746;font-weight:700;}
+.hl-hero .hh-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+.hl-hero .hh-badge{background:#f4f2ec;border:1.5px solid #b9c3c6;padding:6px 14px;border-radius:3px;font-size:.78rem;font-weight:600;color:#233238;box-shadow:0 6px 14px -8px rgba(14,55,70,.3);}
+
+.hl-token-row{display:flex;flex-wrap:wrap;gap:20px;margin:18px 0 28px;padding:22px 24px;background:#f4f2ec;border:1.5px solid #d7cfba;border-radius:14px;box-shadow:0 8px 20px -8px rgba(14,55,70,.2);}
+.hl-token-row .ht-item{display:flex;flex-direction:column;align-items:center;gap:8px;flex:0 0 auto;min-width:90px;}
+.hl-token-row .ht-swatch{width:48px;height:48px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);}
+.hl-token-row .ht-swatch.navy{background:#0e3746;}
+.hl-token-row .ht-swatch.red{background:#be2623;}
+.hl-token-row .ht-swatch.tan{background:#c9bc98;}
+.hl-token-row .ht-label{font-size:.8rem;font-weight:700;color:#182228;}
+.hl-token-row .ht-code{font-family:Consolas,'SFMono-Regular',Menlo,monospace;font-size:.68rem;color:#5a6a6f;}
+
+.hl-card-grid{display:flex;flex-wrap:wrap;gap:16px;margin:16px 0 26px;}
+.hl-card-grid .hc-card{flex:1 1 220px;background:#f4f2ec;border:1.5px solid #d7cfba;border-radius:14px;padding:20px 20px 22px;box-shadow:0 8px 20px -8px rgba(14,55,70,.22);border-top:4px solid #0e3746;}
+.hl-card-grid .hc-badge{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:6px;background:#0e3746;color:#f4f2ec;font-weight:800;font-size:.85rem;margin-bottom:10px;}
+.hl-card-grid .hc-card.red{border-top-color:#be2623;}
+.hl-card-grid .hc-card.red .hc-badge{background:#be2623;color:#fff;}
+.hl-card-grid .hc-card.tan{border-top-color:#a9946a;}
+.hl-card-grid .hc-card.tan .hc-badge{background:#a9946a;color:#fff;}
+.hl-card-grid .hc-title{font-weight:800;font-size:.96rem;color:#182228;margin-bottom:6px;}
+.hl-card-grid .hc-desc{font-size:.85rem;line-height:1.75;color:#3d4d52;}
+.hl-card-grid .hc-desc code{background:#e3ddc9;padding:1px 6px;border-radius:4px;color:#0e3746;font-size:.85em;font-weight:600;}
+
+.hl-pill-flow{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:20px 0 26px;}
+.hl-pill-flow .hp-step{background:#f4f2ec;border:2px solid #0e3746;color:#0e3746;border-radius:4px;padding:10px 20px;font-size:.85rem;font-weight:700;box-shadow:0 6px 14px -8px rgba(14,55,70,.3);}
+.hl-pill-flow .hp-step.red{border-color:#be2623;color:#8f1c1a;}
+.hl-pill-flow .hp-step.tan{border-color:#a9946a;color:#6b5a37;}
+.hl-pill-flow .hp-step.muted{border-color:#b9c3c6;color:#48585d;background:#eceae1;}
+.hl-pill-flow .hp-arrow{color:#0e3746;font-size:1.15rem;font-weight:900;}
+
+.hl-callout{border-radius:8px;padding:16px 20px;margin:16px 0;display:flex;gap:12px;align-items:flex-start;border:1.5px solid transparent;border-left-width:5px;}
+.hl-callout .hc-icon{font-size:1.2rem;flex:none;}
+.hl-callout .hc-body{flex:1;min-width:0;}
+.hl-callout p{margin:0;font-size:.9rem;color:#233238;line-height:1.7;}
+.hl-callout p+p,.hl-callout p+ul,.hl-callout ul+p{margin-top:10px;}
+.hl-callout p strong{color:#182228;}
+.hl-callout.success{background:#e3edea;border-color:#9db8b0;border-left-color:#0e3746;}
+.hl-callout.warn{background:#f3ecd8;border-color:#d9c48f;border-left-color:#a9946a;}
+.hl-callout.danger{background:#f8e2e0;border-color:#e29c98;border-left-color:#be2623;}
+.hl-callout.info{background:#e6edef;border-color:#a9bcc2;border-left-color:#37606b;}
+
+.hl-checklist{list-style:none;padding:0;margin:16px 0;}
+.hl-checklist li{position:relative;padding:9px 0 9px 32px;border-bottom:1px dashed #d7cfba;color:#3d4d52;font-size:.88rem;}
+.hl-checklist li:last-child{border-bottom:none;}
+.hl-checklist li::before{content:"✓";position:absolute;left:0;top:11px;width:20px;height:20px;border-radius:4px;background:#0e3746;color:#f4f2ec;font-size:.7rem;display:flex;align-items:center;justify-content:center;font-weight:900;}
+
+/* ---- hl-swimlane：跨服務時序泳道圖 ---- */
+.hl-swimlane{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:20px 0 30px;border:1.5px solid #d7cfba;border-radius:14px;overflow:hidden;box-shadow:0 10px 28px -12px rgba(14,55,70,.28);}
+.hl-swimlane .sl-head{background:#0e3746;color:#f4f2ec;text-align:center;font-weight:800;font-size:.82rem;padding:12px 8px;letter-spacing:.03em;}
+.hl-swimlane .sl-head.red{background:#be2623;}
+.hl-swimlane .sl-head.tan{background:#a9946a;}
+.hl-swimlane .sl-lane{border-right:1px dashed #d7cfba;padding:18px 12px;background:#f4f2ec;display:flex;flex-direction:column;align-items:center;gap:26px;position:relative;}
+.hl-swimlane .sl-lane:last-child{border-right:none;}
+.hl-swimlane .sl-lane::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:#d7cfba;z-index:0;}
+.hl-swimlane .sl-node{position:relative;z-index:1;background:#fff;border:2px solid #0e3746;color:#0e3746;border-radius:6px;padding:8px 10px;font-size:.74rem;font-weight:700;text-align:center;box-shadow:0 4px 10px -6px rgba(14,55,70,.4);width:100%;}
+.hl-swimlane .sl-node.dim{opacity:.32;border-style:dashed;box-shadow:none;}
+.hl-swimlane .sl-step{position:relative;z-index:1;font-size:.68rem;color:#8a7a52;font-weight:700;background:#f3ecd8;border:1px solid #d9c48f;border-radius:20px;padding:3px 10px;}
+
+/* ---- hl-tabs：多方職責分頁切換 ---- */
+.hl-tabs{margin:18px 0 26px;}
+.hl-tabs .ht-bar{display:flex;gap:6px;border-bottom:2px solid #d7cfba;margin-bottom:0;}
+.hl-tabs .ht-btn{appearance:none;border:none;background:transparent;cursor:pointer;font-family:inherit;font-weight:700;font-size:.86rem;color:#48585d;padding:11px 20px;border-radius:8px 8px 0 0;position:relative;top:2px;}
+.hl-tabs .ht-btn.on{color:#0e3746;background:#f4f2ec;border:1.5px solid #d7cfba;border-bottom:2px solid #f4f2ec;}
+.hl-tabs .ht-panel{display:none;background:#f4f2ec;border:1.5px solid #d7cfba;border-top:none;border-radius:0 0 14px 14px;padding:20px 24px;box-shadow:0 10px 28px -12px rgba(14,55,70,.28);}
+.hl-tabs .ht-panel.on{display:block;}
+.hl-tabs .ht-panel ul{margin:0;padding-left:1.2em;}
+.hl-tabs .ht-panel li{font-size:.87rem;line-height:1.85;color:#3d4d52;}
+.hl-tabs .ht-panel code{background:#e3ddc9;padding:1px 6px;border-radius:4px;color:#0e3746;font-weight:600;}
+
+/* ---- 漸進式揭露（搭配 hl-layer-flow 或任何條列使用）＋ I/O／CPU 徽章 ---- */
+details.ml-detail{margin-top:8px;}
+details.ml-detail summary{cursor:pointer;font-size:.78rem;font-weight:700;color:#37606b;list-style:none;user-select:none;}
+details.ml-detail summary::before{content:"▸ ";}
+details.ml-detail[open] summary::before{content:"▾ ";}
+details.ml-detail summary::-webkit-details-marker{display:none;}
+.ml-io-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+.ml-io-badge.io{background:#f8e2e0;color:#8f1c1a;}
+.ml-io-badge.cpu{background:#e6edef;color:#274952;}
+
+/* ---- hl-decision：條件分支決策樹 ---- */
+.hl-decision{display:flex;flex-direction:column;gap:0;margin:20px 0 26px;}
+.hl-decision .dc-gate{display:flex;align-items:stretch;gap:14px;margin-bottom:16px;}
+.hl-decision .dc-diamond{flex:none;width:132px;display:flex;align-items:center;justify-content:center;text-align:center;background:#0e3746;color:#f4f2ec;font-weight:800;font-size:.78rem;padding:14px 10px;border-radius:10px;position:relative;box-shadow:0 8px 18px -10px rgba(14,55,70,.4);}
+.hl-decision .dc-branches{flex:1;display:flex;flex-direction:column;gap:8px;}
+.hl-decision .dc-branch{display:flex;gap:10px;align-items:flex-start;background:#f4f2ec;border:1.5px solid #d7cfba;border-left:4px solid #a9946a;border-radius:8px;padding:10px 16px;}
+.hl-decision .dc-branch.yes{border-left-color:#be2623;background:#f8e2e0;}
+.hl-decision .dc-branch.no{border-left-color:#b9c3c6;background:#eceae1;opacity:.85;}
+.hl-decision .dc-tag{flex:none;font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:20px;background:#0e3746;color:#f4f2ec;margin-top:1px;}
+.hl-decision .dc-branch.no .dc-tag{background:#8a949a;}
+.hl-decision .dc-text{font-size:.85rem;line-height:1.7;color:#3d4d52;}
+.hl-decision .dc-text code{background:#e3ddc9;padding:1px 6px;border-radius:4px;color:#0e3746;font-weight:600;}
+</style>
+
+<div class="hl-hero">
+<div class="hh-tag">章節標籤</div>
+<div class="hh-title">開場大標題</div>
+<div class="hh-desc">用一段白話說明這個章節在講什麼情境，術語用 <code>code</code> 包起來。</div>
+<div class="hh-badges">
+<span class="hh-badge">範例徽章一</span>
+<span class="hh-badge">範例徽章二</span>
+</div>
+</div>
+
+<div class="hl-token-row">
+<div class="ht-item"><div class="ht-swatch navy"></div><div class="ht-label">核心重點</div><div class="ht-code">0E3746</div></div>
+<div class="ht-item"><div class="ht-swatch red"></div><div class="ht-label">強調注意</div><div class="ht-code">BE2623</div></div>
+<div class="ht-item"><div class="ht-swatch tan"></div><div class="ht-label">次要補充</div><div class="ht-code">C9BC98</div></div>
+</div>
+
+<div class="hl-card-grid">
+<div class="hc-card">
+<div class="hc-badge">1</div>
+<div class="hc-title">核心重點卡片標題</div>
+<div class="hc-desc">內容描述，術語用 <code>code</code> 包起來</div>
+</div>
+<div class="hc-card red">
+<div class="hc-badge">2</div>
+<div class="hc-title">強調注意卡片</div>
+<div class="hc-desc">內容描述</div>
+</div>
+<div class="hc-card tan">
+<div class="hc-badge">3</div>
+<div class="hc-title">次要補充卡片</div>
+<div class="hc-desc">內容描述</div>
+</div>
+</div>
+
+<div class="hl-pill-flow">
+<div class="hp-step">開始</div>
+<div class="hp-arrow">→</div>
+<div class="hp-step tan">中間步驟</div>
+<div class="hp-arrow">→</div>
+<div class="hp-step red">結束</div>
+</div>
+
+<div class="hl-callout success">
+<span class="hc-icon">✅</span>
+<p><strong>已完成：</strong>這是成功語意的提示框。</p>
+</div>
+<div class="hl-callout warn">
+<span class="hc-icon">⚠️</span>
+<p><strong>待觀察：</strong>這是警示語意的提示框。</p>
+</div>
+<div class="hl-callout danger">
+<span class="hc-icon">🛑</span>
+<p><strong>需注意：</strong>這是危險語意的提示框。</p>
+</div>
+
+<ul class="hl-checklist">
+<li>檢查項目一</li>
+<li>檢查項目二</li>
+</ul>
+
+<div class="hl-swimlane">
+<div class="sl-head">角色 A</div>
+<div class="sl-head">角色 B</div>
+<div class="sl-head red">角色 C</div>
+<div class="sl-head tan">資料庫</div>
+<div class="sl-lane"><div class="sl-node">發起請求</div><div class="sl-node dim">等待回應</div></div>
+<div class="sl-lane"><div class="sl-node">1 前置檢查</div><div class="sl-step">轉發 →</div></div>
+<div class="sl-lane"><div class="sl-node dim">－</div><div class="sl-node">2 商業邏輯驗證</div></div>
+<div class="sl-lane"><div class="sl-node dim">－</div><div class="sl-node">3 寫入資料</div></div>
+</div>
+
+<div class="hl-tabs">
+<div class="ht-bar">
+<button class="ht-btn on" data-tab="tab-a">角色 A 職責</button>
+<button class="ht-btn" data-tab="tab-b">角色 B 職責</button>
+</div>
+<div class="ht-panel on" id="tab-a">
+<ul><li>角色 A 負責的重點一</li><li>角色 A 負責的重點二</li></ul>
+</div>
+<div class="ht-panel" id="tab-b">
+<ul><li>角色 B 負責的重點一</li><li>角色 B 負責的重點二</li></ul>
+</div>
+</div>
+<script>
+(function(){
+  document.querySelectorAll('.hl-tabs .ht-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var group = btn.closest('.hl-tabs');
+      group.querySelectorAll('.ht-btn').forEach(function(b){ b.classList.remove('on'); });
+      group.querySelectorAll('.ht-panel').forEach(function(p){ p.classList.remove('on'); });
+      btn.classList.add('on');
+      var panel = group.querySelector('#' + btn.getAttribute('data-tab'));
+      if(panel){ panel.classList.add('on'); }
+    });
+  });
+})();
+</script>
+
+<div>
+<span>常態顯示的項目<span class="ml-io-badge io">I/O</span></span>
+<details class="ml-detail">
+<summary>展開其餘項目</summary>
+<p>收合在裡面的補充內容，點擊 summary 才會展開。</p>
+</details>
+<span>純記憶體運算項目<span class="ml-io-badge cpu">CPU</span></span>
+</div>
+
+<div class="hl-decision">
+<div class="dc-gate">
+<div class="dc-diamond">條件描述（是否滿足某狀態）？</div>
+<div class="dc-branches">
+<div class="dc-branch yes"><span class="dc-tag">YES</span><span class="dc-text">條件成立時執行的動作說明。</span></div>
+<div class="dc-branch no"><span class="dc-tag">NO</span><span class="dc-text">條件不成立則略過，說明後續狀態。</span></div>
+</div>
+</div>
+</div>

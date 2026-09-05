@@ -1,0 +1,15 @@
+info:
+  name: get-salePageV2-info
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{base-url}}/webapi/SalePageV2/GetSalePageV2Info/{{shopId}}/885038/1"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

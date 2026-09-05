@@ -1,0 +1,91 @@
+
+### QA
+@host = http://demo.connect.easyparcel.my?ac=
+
+### MY_PROD
+# @host = http://connect.easyparcel.my/?ac=
+
+### Variables
+
+
+# @authentication = 5NvNfF92pv
+# @apikey = EP-JBZPYyftx
+## 有填錯她也會回 "Required authentication key"
+
+#mgZBJbN5ns
+@authentication = mgZBJbN5ns
+@api_key = EP-JBZPYyftx
+
+@pick_code = 82100
+@pick_country = MY
+@send_code = 35820
+@send_country = MY
+@pick_contact = 6568505280
+@serviceId = EP-CS0DM8
+@date = 2025-12-05
+
+# ### Rate Checking
+# POST {{host}}MPRateChecking
+# Content-Type: application/json
+
+# {
+#   "authentication": "{{authentication}}",
+#   "api": "{{api_key}}",
+#   "pick_code": "{{pick_code}}",
+#   "pick_country": "{{pick_country}}",
+#   "send_code": "{{send_code}}",
+#   "send_country": "{{send_country}}",
+#   "weight": "0.01",
+#   "date_coll": "{{date}}"
+# }
+
+# ### SubmitOrder
+# POST {{host}}MPSubmitOrder
+# Content-Type: application/json
+
+# {
+#   "pick_contact": "68505280",
+#   "authentication": "{{authentication}}",
+#   "api": "{{api_key}}",
+#   "weight": 0.01,
+#   "content": "TEST",
+#   "value": 6,
+#   "service_id": "{{serviceId}}",
+#   "pick_name": "my",
+#   "pick_company": "My Company",
+#   "pick_unit": "12-34-56",
+#   "pick_state": "12-34-56",
+#   "pick_mobile": "68505280",
+#   "pick_addr1": "uhuihuihih",
+#   "pick_addr2": "",
+#   "pick_addr3": "",
+#   "pick_addr4": "",
+#   "pick_code": "{{pick_code}}",
+#   "pick_city": "efef",
+#   "pick_country": "{{pick_country}}",
+#   "send_name": "allenlin",
+#   "send_contact": "68505280",
+#   "send_unit": "78-90-12",
+#   "send_addr1": "ADDDDDRESSS",
+#   "send_addr2": "",
+#   "send_addr3": "",
+#   "send_addr4": "",
+#   "send_code": "{{send_code}}",
+#   "send_city": "fefefe",
+#   "send_state": "fefefe",
+#   "send_country": "{{send_country}}",
+#   "send_state": "WFEWF",
+#   "send_email": "AlertEmail@gmail.com",
+#   "collect_date": "{{date}}"
+# }
+
+
+
+
+## PayOrder
+POST {{host}}MPPayOrder
+Content-Type: application/x-www-form-urlencoded
+
+authentication={{authentication}}
+&api={{api_key}}
+&order_no=EI-5CYTB

@@ -1,0 +1,51 @@
+info:
+  name: Stripe
+  type: folder
+  seq: 1
+
+request:
+  headers:
+    - name: X-Secret
+      value: 
+  auth: inherit
+  variables:
+    - name: flow
+      value: DestinationCharge
+    - name: cardNo
+      value: "4242424242424242"
+    - name: acct
+      value: ""
+    - name: shopId
+      value: "2"
+    - name: customer-id
+      value: cus_OYZw1KvztPzb25
+    - name: pay-method
+      value: pm_1S5FsAEUxCsaikE2L2kGbSGe
+    - name: member_id
+      value: "31902"
+    - name: transactionId
+      value: pi_3S513rEUxCsaikE20L4JuMWc
+    - name: application_fee_amount
+      value: "5.5"
+
+docs:
+  content: |-
+    ## flow
+
+    DirectCharge / DestinationCharge
+
+
+    ## Card Number
+
+    成功卡號 4242424242424242
+    not required 4000000000003055
+    3D Secure use_stripe_sdk 4000000000003063
+    3D Secure stripe_3ds2_fingerprint 4000000000003220
+    card_declined 4000000000000002
+
+    # acct
+
+    ??? : acct_1OINwsHK7varnAps
+    ShopId 2 : acct_1EzmjGHfnYtXGyLl
+    ShopId 5 : acct_1KWcEYREP0EXjCKm
+  type: text/markdown

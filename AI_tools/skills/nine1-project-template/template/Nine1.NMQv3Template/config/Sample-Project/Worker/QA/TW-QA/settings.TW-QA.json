@@ -1,0 +1,10 @@
+{
+  "_N1CONFIG": {
+    "MyTestKey": 6741,
+    "MyTestKeyString": "91APP @ QA",
+    "MyTestKeyObject": {
+      "MyTestKeyInObject": 1337.00,
+      "MyTestKeyStringInObject": "The Brutalizer"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+name: hk-qa-2
+variables:
+  - name: token
+    value: "123456782"
+  - name: saltKey
+    value: "73073046"
+  - name: api-key
+    value: d80f29af-e686-4a25-8b62-7dc9f4f70417

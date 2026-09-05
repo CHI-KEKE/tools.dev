@@ -1,0 +1,17 @@
+info:
+  name: get-commit
+  type: http
+  seq: 10
+
+http:
+  method: GET
+  url: "{{base-url}}/2.0/repositories/nineyi/nineyi.configuration/commit/2e53c03443cf23781bef314ac1ae66600dfee04d"
+  auth:
+    type: bearer
+    token: "{{AccessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

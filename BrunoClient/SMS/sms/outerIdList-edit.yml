@@ -1,0 +1,29 @@
+info:
+  name: outerIdList-edit
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/PromotionEngine/EditOuterIdList"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+        "Id": 6552,
+        "ModifyType": "Add",
+        "ProductSkuOuterIds": [
+          "oijuhnbm"
+        ],
+        "ShopId": 2
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

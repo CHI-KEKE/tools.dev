@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>現狀圖解：只取最後一筆應觸發時間的偵測漏洞</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #ffffff;
+    --ink: #1e293b;
+    --muted: #64748b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --ok-soft: #dcfce7;
+    --warn: #d97706;
+    --warn-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --border: #e2e8f0;
+    --code-bg: #0b1220;
+    --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 220px, #f1f5f9 220px);
+    color: var(--ink);
+    line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color: #f8fafc; text-align: center; }
+  header.hero .eyebrow {
+    display: inline-block; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #93c5fd; background: rgba(147,197,253,0.12); border: 1px solid rgba(147,197,253,0.35);
+    border-radius: 999px; padding: 4px 14px; margin-bottom: 16px;
+  }
+  header.hero h1 { font-size: 27px; margin: 0 0 8px; }
+  header.hero p { color: #cbd5e1; max-width: 640px; margin: 0 auto; font-size: 14.5px; }
+
+  section {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,0.25);
+  }
+  section h2 { font-size: 20px; margin: 0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--accent-soft); color:var(--accent); font-size:14px; font-weight:700;
+  }
+  section .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 18px; }
+  p { margin: 10px 0; }
+  code {
+    font-family: Consolas, monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  /* Timeline diagram */
+  .timeline-box {
+    background: #f8fafc; border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px 24px 20px; margin: 20px 0; position: relative;
+  }
+  .timeline-title { font-size: 13.5px; font-weight: 700; color: #334155; margin-bottom: 18px; }
+  .track {
+    position: relative;
+    height: 70px;
+    margin: 0 10px 10px;
+    border-top: 3px solid #cbd5e1;
+  }
+  .track::before {
+    content: "";
+  }
+  .tick {
+    position: absolute;
+    top: -3px;
+    width: 3px;
+    height: 14px;
+    background: #94a3b8;
+  }
+  .tick-label {
+    position: absolute;
+    top: 16px;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .event-point {
+    position: absolute;
+    top: -12px;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+  .event-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    margin: 0 auto;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+  }
+  .event-dot.scheduled { background: var(--accent); }
+  .event-dot.checked { background: var(--ok); }
+  .event-dot.missed { background: var(--danger); }
+  .event-dot.window { background: #94a3b8; }
+  .event-label {
+    font-size: 11.5px; font-weight: 600; margin-top: 6px; white-space: nowrap; color: #334155;
+  }
+  .event-sub { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+
+  .span-bracket {
+    position: absolute;
+    top: 44px;
+    height: 20px;
+    border-left: 2px solid #94a3b8;
+    border-right: 2px solid #94a3b8;
+    border-bottom: 2px solid #94a3b8;
+    border-radius: 0 0 4px 4px;
+  }
+  .span-bracket .span-label {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    background: #f8fafc;
+    padding: 0 6px;
+  }
+
+  .legend { display:flex; flex-wrap:wrap; gap: 16px; margin-top: 14px; font-size: 12.5px; color:#334155;}
+  .legend .item { display:flex; align-items:center; gap:6px; }
+  .legend .dot { width:14px; height:14px; border-radius:50%; display:inline-block; }
+
+  .badge { display:inline-block; font-size:12px; font-weight:600; padding:2px 10px; border-radius:999px; }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+  .badge.danger { background: var(--danger-soft); color: var(--danger); }
+  .badge.info { background: var(--accent-soft); color: var(--accent); }
+
+  .note { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 14px; margin: 16px 0; }
+  .note.danger { border-color: var(--danger); background: #fef2f2; }
+  .note.ok { border-color: var(--ok); background: #f0fdf4; }
+
+  table { width:100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; }
+  th, td { border:1px solid var(--border); padding:9px 11px; text-align:left; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+
+  pre {
+    background: var(--code-bg); color: var(--code-ink); padding: 14px 16px; border-radius: 10px;
+    overflow-x: auto; font-size: 12.5px; line-height: 1.6;
+  }
+  footer { text-align:center; color:var(--muted); font-size:12.5px; margin-top:36px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">現狀圖解 · 偵測邏輯漏洞</span>
+  <h1>只取「區間內最後一筆」應觸發時間的問題</h1>
+  <p>情境：某任務一天觸發 3 次（08:00 / 12:00 / 15:00），目前程式只會檢查其中 1 次，其餘 2 次完全沒被驗證。</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">1</span>現狀：目前程式碼在做什麼</h2>
+    <p class="sub">GetExpectedLastRunTime 只回傳「最後一筆」</p>
+    <pre><code>var runTimes = task.GetRunTimes(windowStart, windowEnd, 1000);
+return runTimes.Length &gt; 0 ? runTimes[^1] : null;   // 只取陣列最後一個元素！</code></pre>
+    <p><code>task.GetRunTimes()</code> 其實會老實地回傳區間內「所有」應觸發時間點的完整清單，
+      但程式碼用 <code>[^1]</code> 只挑出陣列最後一筆，其餘全部被捨棄。</p>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>時間軸圖解：早上 8:00 巡檢時實際發生什麼事</h2>
+    <p class="sub">假設每天巡檢一次，時間點設在早上 08:00；任務前一天有 3 個排定時間點</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">昨天 00:00 ────────────────────────────────────────→ 今天 08:00（巡檢當下）</div>
+
+      <div class="track">
+        <!-- window bracket -->
+        <div class="span-bracket" style="left:2%; width:96%;">
+          <span class="span-label">windowStart ～ windowEnd（LookbackHours = 24 小時）</span>
+        </div>
+
+        <!-- tick marks -->
+        <div class="tick" style="left:2%;"></div>
+        <div class="tick-label" style="left:2%;">昨天 08:00</div>
+
+        <div class="tick" style="left:98%;"></div>
+        <div class="tick-label" style="left:98%;">今天 08:00</div>
+
+        <!-- events -->
+        <div class="event-point" style="left:20%;">
+          <div class="event-dot missed">✕</div>
+          <div class="event-label">昨天 08:00</div>
+          <div class="event-sub">應觸發 #1</div>
+        </div>
+
+        <div class="event-point" style="left:55%;">
+          <div class="event-dot missed">✕</div>
+          <div class="event-label">昨天 12:00</div>
+          <div class="event-sub">應觸發 #2</div>
+        </div>
+
+        <div class="event-point" style="left:90%;">
+          <div class="event-dot checked">✓</div>
+          <div class="event-label">昨天 15:00</div>
+          <div class="event-sub">應觸發 #3（最後一筆）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:var(--ok);"></span> 有被程式檢查（<code>runTimes[^1]</code>）</div>
+      <div class="item"><span class="dot" style="background:var(--danger);"></span> 完全沒被檢查（即使漏排也不會告警）</div>
+    </div>
+
+    <div class="note danger">
+      <strong>結論：</strong>目前巡檢只會驗證「昨天 15:00」這一筆。如果「昨天 08:00」或「昨天 12:00」那次因為機器問題沒有執行，
+      系統<strong>完全不會發現、也不會告警</strong>，因為程式根本沒去看這兩筆。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>對照：修正後應該長什麼樣子</h2>
+    <p class="sub">改成檢查「區間內所有」應觸發時間點，而不是只取最後一筆</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">昨天 00:00 ────────────────────────────────────────→ 今天 08:00（巡檢當下）</div>
+
+      <div class="track">
+        <div class="span-bracket" style="left:2%; width:96%;">
+          <span class="span-label">windowStart ～ windowEnd（LookbackHours = 24 小時）</span>
+        </div>
+
+        <div class="tick" style="left:2%;"></div>
+        <div class="tick-label" style="left:2%;">昨天 08:00</div>
+
+        <div class="tick" style="left:98%;"></div>
+        <div class="tick-label" style="left:98%;">今天 08:00</div>
+
+        <div class="event-point" style="left:20%;">
+          <div class="event-dot checked">✓</div>
+          <div class="event-label">昨天 08:00</div>
+          <div class="event-sub">各自獨立判斷</div>
+        </div>
+
+        <div class="event-point" style="left:55%;">
+          <div class="event-dot checked">✓</div>
+          <div class="event-label">昨天 12:00</div>
+          <div class="event-sub">各自獨立判斷</div>
+        </div>
+
+        <div class="event-point" style="left:90%;">
+          <div class="event-dot checked">✓</div>
+          <div class="event-label">昨天 15:00</div>
+          <div class="event-sub">各自獨立判斷</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:var(--ok);"></span> 每一筆應觸發時間都各自比對執行歷史，各自可能觸發漏排/失敗告警</div>
+    </div>
+
+    <pre><code>// 修正方向：回傳全部時間點，而非只取最後一筆
+public IEnumerable&lt;DateTime&gt; GetExpectedRunTimes(string taskPath, DateTime windowStart, DateTime windowEnd)
+{
+    using var ts = new TaskService();
+    var task = ts.GetTask(taskPath);
+    if (task == null) return Enumerable.Empty&lt;DateTime&gt;();
+    return task.GetRunTimes(windowStart, windowEnd, 1000);  // 全部回傳
+}
+
+// CheckTask 改成對每一筆各自判斷
+foreach (var expectedRunTime in expectedRunTimes)
+{
+    // 對這一筆各自找對應的執行紀錄，各自判斷漏排 / 失敗
+}</code></pre>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>兩種設計的比較</h2>
+    <table>
+      <tr><th>項目</th><th>現狀（只取最後一筆）</th><th>修正後（檢查全部）</th></tr>
+      <tr>
+        <td>一天觸發 1 次的任務</td>
+        <td><span class="badge ok">正常</span> 剛好只有 1 筆，等同全部檢查</td>
+        <td><span class="badge ok">正常</span></td>
+      </tr>
+      <tr>
+        <td>一天觸發多次的任務</td>
+        <td><span class="badge danger">有漏洞</span> 只驗證最後 1 次，其餘不會被發現</td>
+        <td><span class="badge ok">正常</span> 每次各自驗證</td>
+      </tr>
+      <tr>
+        <td>告警去重機制</td>
+        <td>Key 已含 ExpectedRunTime，天生支援多筆</td>
+        <td>不需修改，直接相容</td>
+      </tr>
+      <tr>
+        <td>GetHistory 查詢範圍</td>
+        <td>只需涵蓋最後一筆附近</td>
+        <td>需涵蓋 windowStart 到 now 整個區間，才能比對到每一筆</td>
+      </tr>
+    </table>
+  </section>
+
+  <footer>Windows Task Manager · 排程監控告警設計文件 — 現狀圖解</footer>
+</div>
+
+</body>
+</html>

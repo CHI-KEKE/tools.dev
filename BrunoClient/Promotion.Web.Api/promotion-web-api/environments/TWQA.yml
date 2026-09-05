@@ -1,0 +1,10 @@
+name: TWQA
+variables:
+  - name: base-url
+    value: https://promotion-api-internal.qa.91dev.tw
+  - name: shopId
+    value: "10230"
+  - name: collectionId
+    value: 72358179-1014-4eca-a59c-14a49f1ceed7
+  - name: collectionId2
+    value: d69266ef-a255-4e7c-ba4a-37c44619bee2

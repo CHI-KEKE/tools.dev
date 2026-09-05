@@ -1,0 +1,36 @@
+opencollection: 1.0.0
+
+info:
+  name: stripe
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: base-url
+      value: https://api.stripe.com/v1
+    - name: transactionId
+      value: tr_3TBujXHTw5MqAUMJ0ZnIT65J
+    - name: amount
+      value: "8269"
+    - name: x-secret
+      value: 
+    - name: tg
+      value: TG260317U00030
+    - name: sessionId
+      value: ch_3TBujXHTw5MqAUMJ0tqTMqUY
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

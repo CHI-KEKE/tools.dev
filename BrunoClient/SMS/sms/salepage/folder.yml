@@ -1,0 +1,7 @@
+info:
+  name: salepage
+  type: folder
+  seq: 18
+
+request:
+  auth: inherit

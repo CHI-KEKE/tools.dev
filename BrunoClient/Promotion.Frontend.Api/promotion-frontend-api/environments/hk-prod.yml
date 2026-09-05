@@ -1,0 +1,4 @@
+name: hk-prod
+variables:
+  - name: base-url
+    value: https://promotion-api-frontend-internal.hk.91app.io

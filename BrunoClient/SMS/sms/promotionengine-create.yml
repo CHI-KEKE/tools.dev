@@ -1,0 +1,432 @@
+info:
+  name: promotionengine-create
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/PromotionEngine/Create"
+  headers:
+    - name: Cookie
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+          "Quota":"10",
+          "TargetIdTotalCount": 0,
+          "TargetTypeDef": "Category",
+          "TargetTypeCollectionId": null,
+          "ExcludeTargetIdList": null,
+          "ExcludeTargetTypeDef": "None",
+          "IncludeTargetIdList": [61284,61361,61296],
+          "IncludeProductSkuOuterIdList":["bob","job","cob"],
+          "ExcludeProductSkuOuterIdList":null,
+          "TargetTypeProductSkuOuterIdTag":null,
+          "TargetLocationTypeDef":"Location",
+          "IncludeTargetLocationIdList":[109,181],
+          "IsCyclable": true,
+          "RewardPointCondition": [
+              {
+                  "SourceTypeDef": "ECom",
+                  "DeliveryMethod": "Home",
+                  "StatusDef": "WaitingToShipping",
+                  "RewardDays": 0
+              },
+              {
+                  "SourceTypeDef": "ECom",
+                  "DeliveryMethod": "Oversea",
+                  "StatusDef": "WaitingToShipping",
+                  "RewardDays": 0
+              },
+              {
+                  "SourceTypeDef": "ECom",
+                  "DeliveryMethod": "LocationPickup",
+                  "StatusDef": "WaitingToShipping",
+                  "RewardDays": 0
+              },
+              {
+                  "SourceTypeDef": "Others",
+                  "DeliveryMethod": null,
+                  "StatusDef": "Finish",
+                  "RewardDays": 1
+              }
+          ],
+          "ShopId": 2,
+          "ShopName": "測試店_香港難波萬",
+          "TypeDef": "RewardReachPriceWithPoint2",
+          "UniqueKey": "cb8cc2e4-618b-4b53-9748-00115bb9b1ef",
+          "RewardPointRuleList": [
+              {
+                  "CrmShopMemberCardId": 0,
+                  "Condition": 1,
+                  "Point": 1,
+                  "MaxRewardPoint": 100
+              }
+          ],
+          "Accumulated": false,
+          "TargetMemberTypeDef": "All",
+          "AgreeContent": "",
+          "AddOnsRuleList": [],
+          "CalculateTypeDef": "Compatible",
+          "CanUseECoupon": true,
+          "ChannelType": "App",
+          "Code": "",
+          "CustomCampaignCode": "",
+          "Description": null,
+          "DisplaySetting": "",
+          "DiscountRuleList": [],
+          "GiftRuleList": [],
+          "Image": null,
+          "IncludeTargetRegionIdList": [],
+          "IsDisplayInShoppingCart": true,
+          "IsFromDuplicate": false,
+          "IsLimitedAddOnsPurchaseQty": false,
+          "IsMultiLevel": false,
+          "IsOverPromotionTagLimit": false,
+          "IsPermanentPromotion": false,
+          "IsRegular": false,
+          "MemberTierList": [],
+          "MemberCollectionId": null,
+          "MustTargetType": "",
+          "MustTargetIdList": [],
+          "MustTargetCollectionId": null,
+          "Name": "0701test",
+          "PayProfileTypeDef": "",
+          "PayShippingTargetTypeDef": "",
+          "PayTypes": [],
+          "PeriodType": {
+              "RewardPointPeriodType": "Permanent"
+              // "AfterDays": 1,
+              // "UntilYearOffset": 0,
+              // "UntilYearMonth": 12,
+              // "SameWithMemberAccountLevel": false,
+              // "FixedDate": "2025-02-14T16:00:00.000Z"
+          },
+          "PromotionEngineBinCodeId": 0,
+          "PromotionTargetRegionTypeDef": "All",
+          "PromotionRewardPointCalculateTypeDef": "Merged",
+          "RegisterEndDateTime": null,
+          "RegisterStartDateTime": null,
+          "SalesDayOfWeek": null,
+          "ShippingTypes": [],
+          "Sort": null,
+          "SourceDuplicatePromotionEngineId": 0,
+          "StartDateTime": "2026-08-30T18:12:00.000Z",
+          "EndDateTime": "2026-09-28T16:00:00.000Z",
+          "Terms": "",
+          "VisibleMemberTypeDef": "All",
+          "Label": "",
+         "VisiblePlatformTypeList": [
+              {
+                  "Platform": "Web",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "AppIOS",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "AppAndroid",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "LocationWizard",
+                  "IsEnabled": false
+              },
+              {
+                  "Platform": "InStore",
+                  "IsEnabled": false
+              }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+      "Quota":"10",
+      "Accumulated": false,
+      "AgreeContent": "",
+      "AddOnsRuleList": [],
+      "BatchUploadFileGuid": null,
+      "BatchUploadFileName": null,
+      "BinCodeFileName": "",
+      "CalculateTypeDef": "Compatible",
+      "CanUseECoupon": true,
+      "ChannelType": "All",
+      "Code": "",
+      "CustomCampaignCode": "",
+      "DisplaySetting": "",
+      "DiscountRuleList": [],
+      "EndDateTime": "2026-12-11T16:00:00.000Z",
+      "ExcludeTargetIdList": [],
+      "ExcludeProductSkuOuterIdList": [],
+      "ExcludeTargetTypeDef": "None",
+      "GiftRuleList": [],
+      "Image": null,
+      "IncludeTargetIdList": [
+          3185
+      ],
+      "IncludeProductSkuOuterIdList": [
+          "allentest003"
+      ],
+      "IncludeTargetRegionIdList": [],
+      "IsAddOnsThresholdEligible": false,
+      "IsCyclable": true,
+      "IsDisplayInShoppingCart": true,
+      "IsFromDuplicate": false,
+      "IsLimitedAddOnsPurchaseQty": false,
+      "IsMultiLevel": false,
+      "IsOverPromotionTagLimit": false,
+      "IsOverPromotionProductSkuOuterIdTagLimit": false,
+      "IsPermanentPromotion": false,
+      "IsRegular": false,
+      "MemberTierList": [],
+      "MemberCollectionId": null,
+      "MustTargetType": "",
+      "MustTargetIdList": [],
+      "MustTargetCollectionId": null,
+      "Name": "0701testcoupon",
+      "PayProfileTypeDef": "",
+      "PayProfileTypeDefDesc": "",
+      "PayShippingTargetTypeDef": "",
+      "PayTypes": [],
+      "PeriodType": null,
+      "PromotionEngineBinCodeId": 0,
+      "PromotionTargetRegionTypeDef": "All",
+      "PromotionRewardPointCalculateTypeDef": "Merged",
+      "RewardPointCondition": [],
+      "RewardPointRuleList": [],
+      "RewardCondition": [
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "Home",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0,
+              "RewardTimingType": "ByDays",
+              "RewardDateTime": null
+          },
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "Oversea",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0,
+              "RewardTimingType": "ByDays",
+              "RewardDateTime": null
+          },
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "LocationPickup",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0,
+              "RewardTimingType": "ByDays",
+              "RewardDateTime": null
+          },
+          {
+              "SourceTypeDef": "Others",
+              "DeliveryMethod": null,
+              "StatusDef": "Finish",
+              "RewardDays": 1,
+              "RewardTimingType": "ByDays",
+              "RewardDateTime": null
+          }
+      ],
+      "RewardCouponRuleList": [
+          {
+              "CrmShopMemberCardId": 0,
+              "Condition": 1,
+              "EcouponId": 1000,
+              "Qty": 1,
+              "MaxRewardCouponQty":0
+          }
+      ],
+      "EcouponId": 1000,
+      "RegisterEndDateTime": null,
+      "RegisterStartDateTime": null,
+      "SalesDayOfWeek": null,
+      "ShopId": 2,
+      "ShopName": "測試店_香港難波萬",
+      "ShippingTypes": [],
+      "Sort": null,
+      "SourceDuplicatePromotionEngineId": 0,
+      "StartDateTime": "2026-12-10T13:16:00.000Z",
+      "TargetIdTotalCount": 0,
+      "RewardProductSkuOuterIdCount": 1,
+      "TargetMemberTypeDef": "All",
+      "TargetPlatformTypeList": [],
+      "TargetTypeDef": "Category",
+      "TargetTypeCollectionId": null,
+      "TargetTypeProductSkuOuterIdTag": null,
+      "TargetLocationTypeDef": "All",
+      "IncludeTargetLocationIdList": [],
+      "Terms": "",
+      "TypeDef": "RewardReachPriceWithCoupon",
+      "UniqueKey": "8def62b9-1eef-4ea3-8dc1-a13717fb515c",
+      "VisibleMemberTypeDef": "All",
+      "VisiblePlatformTypeList": [
+          {
+              "Platform": "Web",
+              "IsEnabled": true
+          },
+          {
+              "Platform": "AppIOS",
+              "IsEnabled": true
+          },
+          {
+              "Platform": "AppAndroid",
+              "IsEnabled": true
+          }
+      ],
+      "Label": "",
+      "IsSwitchToCollectionUI": true
+  }
+
+
+
+  {
+      "Quota":10,
+      "Accumulated": false,
+      "AgreeContent": "",
+      "AddOnsRuleList": [],
+      "BatchUploadFileGuid": null,
+      "BatchUploadFileName": null,
+      "BinCodeFileName": "",
+      "CalculateTypeDef": "Compatible",
+      "CanUseECoupon": true,
+      "ChannelType": "All",
+      "Code": "",
+      "CustomCampaignCode": "",
+      "Description": "測的是寂寞",
+      "DisplaySetting": "",
+      "DiscountRuleList": [],
+      "EndDateTime": "2025-07-11T16:00:00.000Z",
+      "ExcludeTargetIdList": [],
+      "ExcludeProductSkuOuterIdList": [],
+      "ExcludeTargetTypeDef": "None",
+      "GiftRuleList": [],
+      "Image": null,
+      "IncludeTargetIdList": [
+          3185
+      ],
+      "IncludeProductSkuOuterIdList": [
+          "allentest003"
+      ],
+      "IncludeTargetRegionIdList": [],
+      "IsAddOnsThresholdEligible": false,
+      "IsCyclable": true,
+      "IsDisplayInShoppingCart": true,
+      "IsFromDuplicate": false,
+      "IsLimitedAddOnsPurchaseQty": false,
+      "IsMultiLevel": false,
+      "IsOverPromotionTagLimit": false,
+      "IsOverPromotionProductSkuOuterIdTagLimit": false,
+      "IsPermanentPromotion": false,
+      "IsRegular": false,
+      "MemberTierList": [],
+      "MemberCollectionId": null,
+      "MustTargetType": "",
+      "MustTargetIdList": [],
+      "MustTargetCollectionId": null,
+      "Name": "試試create_phase333",
+      "PayProfileTypeDef": "",
+      "PayProfileTypeDefDesc": "",
+      "PayShippingTargetTypeDef": "",
+      "PayTypes": [],
+      "PeriodType": {
+          "RewardPointPeriodType": "Permanent"
+          // "AfterDays": 1,
+          //"UntilYearOffset": 0,
+          //"UntilYearMonth": 12,
+          //"SameWithMemberAccountLevel": false,
+          //"FixedDate": "2025-05-08T16:00:00.000Z"
+      },
+      "PromotionEngineBinCodeId": 0,
+      "PromotionTargetRegionTypeDef": "All",
+      "PromotionRewardPointCalculateTypeDef": "Merged",
+      "RewardPointCondition": [
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "Home",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0
+          },
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "Oversea",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0
+          },
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "LocationPickup",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0
+          },
+          {
+              "SourceTypeDef": "Others",
+              "DeliveryMethod": null,
+              "StatusDef": "Finish",
+              "RewardDays": 1
+          }
+      ],
+      "RewardPointRuleList": [
+          {
+              "CrmShopMemberCardId": 0,
+              "Condition": 1,
+              "Point": 1,
+              "Rate": null,
+              "MaxRewardPoint": 600
+          }
+      ],
+      "RewardCondition": [],
+      "RewardCouponRuleList": [],
+      "EcouponId": null,
+      "RegisterEndDateTime": null,
+      "RegisterStartDateTime": null,
+      "SalesDayOfWeek": null,
+      "ShopId": 2,
+      "ShopName": "測的是寂寞",
+      "ShippingTypes": [],
+      "Sort": null,
+      "SourceDuplicatePromotionEngineId": 0,
+      "StartDateTime": "2025-07-10T16:00:00.000Z",
+      "TargetIdTotalCount": 0,
+      "RewardProductSkuOuterIdCount": 1,
+      "TargetMemberTypeDef": "All",
+      "TargetPlatformTypeList": [],
+      "TargetTypeDef": "Category",
+      "TargetTypeCollectionId": null,
+      "TargetTypeProductSkuOuterIdTag": null,
+      "TargetLocationTypeDef": "Location",
+      "IncludeTargetLocationIdList": [
+          106,
+          130,
+          109
+      ],
+      "Terms": "",
+      "TypeDef": "RewardReachPriceWithPoint2",
+      "UniqueKey": "86799d13-411d-4046-a0ba-9f08e3e2dac2",
+      "VisibleMemberTypeDef": "All",
+      "VisiblePlatformTypeList": [
+          {
+              "Platform": "Web",
+              "IsEnabled": true
+          },
+          {
+              "Platform": "AppIOS",
+              "IsEnabled": true
+          },
+          {
+              "Platform": "AppAndroid",
+              "IsEnabled": true
+          }
+      ],
+      "Label": "",
+      "IsSwitchToCollectionUI": true
+  }

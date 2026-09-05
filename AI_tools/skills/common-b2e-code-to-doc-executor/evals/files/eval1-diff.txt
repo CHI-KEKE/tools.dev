@@ -1,0 +1,32 @@
+-- 模擬 git diff --name-only --stat main...feature/member-tier-add
+src/Models/MemberTier.cs          | 12 +++++++---
+src/Services/MemberService.cs     |  4 ++--
+src/Repositories/MemberRepo.cs    |  2 ++
+3 files changed, 14 insertions(+), 4 deletions(-)
+
+-- 模擬 git diff main...feature/member-tier-add
+diff --git a/src/Models/MemberTier.cs b/src/Models/MemberTier.cs
+index 3a1b2c3..9d4e5f6 100644
+--- a/src/Models/MemberTier.cs
++++ b/src/Models/MemberTier.cs
+@@ -8,6 +8,9 @@ public enum MemberTier
+ {
+     Normal = 0,
+     Silver = 1,
+-    Gold = 2
++    Gold = 2,
++    Platinum = 3,
++    Diamond = 4
+ }
+ 
+diff --git a/src/Services/MemberService.cs b/src/Services/MemberService.cs
+index 1a2b3c4..5d6e7f8 100644
+--- a/src/Services/MemberService.cs
++++ b/src/Services/MemberService.cs
+@@ -22,7 +22,7 @@ public class MemberService
+-    private static readonly int MaxTierValue = 2;
++    private static readonly int MaxTierValue = 4;
+ 
+     public bool IsEligibleForUpgrade(MemberTier current)
+-        => (int)current < 2;
++        => (int)current < 4;

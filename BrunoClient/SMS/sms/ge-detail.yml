@@ -1,0 +1,27 @@
+info:
+  name: ge-detail
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/Translate/GetDetail"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+          "ShopId": 2,
+          "ModuleType": "PromotionReward",
+          "Id": 7087,
+          "Language": "en-US"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

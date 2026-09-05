@@ -1,0 +1,4 @@
+name: my-qa
+variables:
+  - name: base-url
+    value: https://promotion-api-frontend-internal.qa1.my.91dev.tw

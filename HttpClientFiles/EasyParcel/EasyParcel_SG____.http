@@ -1,0 +1,98 @@
+
+### QA
+@host = http://demo.connect.easyparcel.sg/?ac=
+
+### Prod
+#@host = http://connect.easyparcel.sg/?ac=
+
+#### Variables
+
+## auth : mgZBJbN5ns
+## apiKey : EP-23DwqL7Ie
+## 有填錯她也會回 "Required authentication key"
+
+@authentication = mgZBJbN5ns
+@api_key = EP-23DwqL7Ie
+
+## sg :536828 / 218925
+@pick_code = 536828
+@pick_country = SG
+@send_code = 218925
+@send_country = SG
+@pick_contact = 6568505280
+@serviceId = EP-CS0YD
+
+### Rate Checking
+POST {{host}}MPRateChecking
+Content-Type: application/json
+
+{
+  "authentication": "{{authentication}}",
+  "api": "{{api_key}}",
+  "pick_code": "{{pick_code}}",
+  "pick_country": "{{pick_country}}",
+  "send_code": "{{send_code}}",
+  "send_country": "{{send_country}}",
+  "weight": "0.01",
+  "date_coll": "2025-12-30"
+}
+
+
+### unit : 它們是門牌編號 + 單位號（Unit No.）12-34
+### 12-34-56 : 12 是門牌號，34 是樓層號，56 是單位號
+### 跑出 Required API Key 表示格式可能有錯誤
+### SubmitOrder
+POST {{host}}MPSubmitOrderBulk
+Content-Type: application/json
+
+{
+  "authentication": "{{authentication}}",
+  "api": "{{api_key}}",
+  "bulk":[
+    {
+    "weight": 0.01,
+    "content": "$#T-shirt,cotton(100%)",
+    "value": 6,
+    "service_id": "EP-CS0GS",
+    "collect_date": "2025-12-30",
+    "pick_contact": "+6568505280",
+    "pick_name": "83",
+    "pick_unit": "none",
+    "pick_addr1": "uhuihuihih",
+    "pick_addr2": "",
+    "pick_addr3": "",
+    "pick_addr4": "",
+    "pick_code": "{{pick_code}}",
+    "pick_country": "{{pick_country}}",
+    "send_name": "allenlin",
+    "send_contact": "+6568505280",
+    "send_email": "AlertEmail@gmail.com",
+    "send_unit": "N/A",
+    "send_addr1": "F",
+    "send_addr2": "E",
+    "send_addr3": "E",
+    "send_addr4": "E",
+    "send_code": "{{send_code}}",
+    "send_country": "{{send_country}}",
+    "send_state": ""
+    }
+  ]
+}
+
+
+### PayOrder
+POST {{host}}MPPayOrder
+Content-Type: application/x-www-form-urlencoded
+
+authentication={{authentication}}
+&api={{api_key}}
+&order_no=EI-0FPRO
+
+
+### ShipmentStats
+POST {{host}}MPParcelStatus
+Content-Type: application/x-www-form-urlencoded
+
+authentication={{authentication}}
+&api={{api_key}}
+&order_no=EI-0FPRO

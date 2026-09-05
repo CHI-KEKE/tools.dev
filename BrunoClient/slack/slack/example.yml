@@ -1,0 +1,45 @@
+info:
+  name: example
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: 
+  body:
+    type: json
+    data: |-
+      {
+        "text": "CybersourceTest",
+        "attachments": [
+          {
+            "color": "#36a64f",
+            "pretext": "附件1的前置文本",
+            "author_name": "作者1",
+            "title": "附件1標題",
+            "title_link": "http://example.com/attachment1",
+            "text": "附件1的正文內容",
+            "fields": [
+              {
+                "title": "欄位1",
+                "value": "值1",
+                "short": true
+              }
+            ],
+            "image_url": "http://example.com/image1.jpg",
+            "thumb_url": "http://example.com/thumb1.jpg",
+            "footer": "附件1頁腳",
+            "footer_icon": "http://example.com/footer_icon1.png",
+            "ts": 1623456789
+          }
+        ],
+        "icon_emoji": ":smiley:",
+        "username": "Cyber"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

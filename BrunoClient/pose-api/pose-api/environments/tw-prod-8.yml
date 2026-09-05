@@ -1,0 +1,32 @@
+name: tw-prod-8
+variables:
+  - name: shop_Id
+    value: "8"
+  - name: token
+    value: "54361439"
+  - name: api_key
+    value: 770555d7-1806-4ee8-9452-7762bc80ef7d
+  - name: salt_key
+    value: d6b55cf9
+  - name: phone
+    value: "+886988542534"
+  - name: request_id
+    value: NY0643
+  - name: machine_code
+    value: NY0643
+  - name: location_code
+    value: "2073"
+  - name: employee_code
+    value: "1306"
+  - name: outermembercode
+    value: QATEST04270030000221
+  - name: member_code
+    value: 66024956B2
+  - name: timestamp
+    value: "1736337342"
+  - name: signature
+    value: fda0e34c90bd42e04b5c6500854d5d3db78b9ab4510de01f74e92a5997ad063e6c2def39a73dc11fb52215160774ecb71b87c7b5f885a5da9a2b1a5ff0449970
+  - name: request_body
+    value: '{"OuterMemberCode":"QATEST04270030000221","MemberCode":"66024956B2","CellPhone":"+886988542534","UsingChannelType":"All"}'
+  - name: usingChannelType
+    value: All

@@ -1,0 +1,30 @@
+name: my-prod-200136
+variables:
+  - name: shop_Id
+    value: "200136"
+  - name: token
+    value: "000000"
+  - name: api_key
+    value: e550dda5-be8e-41d1-b128-817736c63f7f
+  - name: salt_key
+    value: f2693a30
+  - name: phone
+    value: "+886936650731"
+  - name: request_id
+    value: NY0643
+  - name: machine_code
+    value: "9999"
+  - name: location_code
+    value: JulieSG1
+  - name: employee_code
+    value: juliemysg
+  - name: timestamp
+    value: "1767897681"
+  - name: signature
+    value: 624be0d7a67045adba9ecd78755bbdccc1c45e3eab8684dd3ba0c312d0b708ba088b61cb7f570bd0b48741f4276af5a1c249df506b456e50d254fb97fac05155
+  - name: request_body
+    value: '{"OuterMemberCode":"","MemberCode":"","CellPhone":"+886936650731"}'
+  - name: outermembercode
+    value: ""
+  - name: member_code
+    value: ""

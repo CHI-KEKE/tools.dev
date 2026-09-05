@@ -1,0 +1,101 @@
+#########################################
+#             Worker settings              #
+#########################################
+
+# market 用來表示市場。如：TW, PX。
+market: TW
+# env 是用來表示部署環境，如：QA, QA3, Prod。
+env: PP
+# serviceName 表示服務名稱，只會用來組合 config 路徑。
+serviceName: Sample-Project
+
+# worker 物件用來控制 worker 相關參數，如 container 使用的 image、運算資源及 hostname 等。
+worker:
+  # worker.role 為此服務中的角色，比如 Worker，BatchWorker 等。
+  role: Worker
+  # api.secretAccountName 可修改 deployment 的 serviceAccount 名稱 (預設不需要調整，統一為 nkp-service-account)
+  # serviceAccountName: "xxx"
+  configSource:
+    version: "latest"
+    # worker.configSource.files 指定服務在特定環境下要抓取的檔案名稱
+    # files: []
+    files:
+      - s3://91app-ap-northeast-1-private-conf/TW-PP/Sample-Project/Worker/{{CONFIG_VERSION}}/settings.json
+  # worker.secretSources 用來指定要從 AWS Secrets Manager 抓取的 secret ID。
+  # secretSource: null
+  secretSource:
+    secrets:
+      # 如果沒有資料庫以外的機密資訊，可以不用設定
+      - key: /TW-PP/Sample-Project/Worker/secrets
+        fileName: secrets.json
+      - key: /TW-PP/Sample-Project/Worker/secrets.db.sample-project-db.sample-project-db-user.json
+
+  # worker.replicaCount 為期望的 Pod 數量。如果有開啟 worker.autoscaling.enabled，則會使用 worker.autoscaling 設定進行配置。
+  replicaCount: 1
+  # worker.image 用來指定要指定的 OCI image
+  image:
+    # worker.image.repository 用來指定 image 的名稱，如 "docker.build.91app.io/rd5/alpine"。
+    repository: docker.build.91app.io/91app/nine1-sample-project-console-nmqv3worker
+    # worker.image.tag 用來指定 image 的 tag，如："1.0.0"。
+    tag: "latest"
+    # api.image.pullSecrets 用來指定 docker auth config secret 名稱 (預設不需要調整，根據 image.repository 可調整不同的 docker auth config)
+    # pullSecrets:
+    #  - 91app-build-site # for docker.build.91app.io
+    #  - 91app-build-site-dev # for docker-dev.build.91app.io
+
+  # worker.podAnnotations 用來擴充 Worker Pod 的註解 (annotations)，若無特殊需求，只需留空即可。
+  podAnnotations: {}
+
+  # worker.environmentVariables 用來加入要設定的環境變數，一般不需額外調整。
+  environmentVariables:
+    ASPNETCORE_ENVIRONMENT: "Production"
+    NY_DEPLOY_REGION: ap-northeast-1
+    NY_DEPLOY_MARKET: tw
+    NY_DEPLOY_ENV: Prod
+    NY_DEPLOY_CONFIG_TYPE: s3
+    NY_DEPLOY_CONFIG_URL: https://91app-ap-northeast-1-voyager-configuration.s3-ap-northeast-1.amazonaws.com/ap-northeast-1/prod/
+    NY_DEPLOY_SERVICE_DISCOVERY_TYPE: consul
+    NY_DEPLOY_SERVICE_DISCOVERY_URL: http://voyager.91app.io:8500/
+    CUSTOM_GROUP: sample-project.group1
+
+  # worker.resources 用來指定 container 要使用的計算資源。
+  resources:
+    # worker.resources.cpu 用來指定要使用多少 CPU 資源。 1 = 1顆 vCPU；0.5 = 500m = 0.5 顆 vCPU。
+    cpu: "250m"
+    # worker.resources.memory 用來指定要使用多少記憶體 1 = 1 Gi = 1024Mi = 1024^3 Bytes。
+    memory: "512Mi"
+  # worker.limits 用來指定 container 的上限資源。預設不需配置，會使用 worker.resources 作為 limits。
+  # 注意: limits 並不是提供服務正常使用時的上限，而是當服務在使用量上升時，在自動擴展前的 burst 上限。建議搭配 autoscaling 使用。
+  # limits:
+    # worker.limits.cpu 用來指定要使用多少 CPU 資源。 1 = 1顆 vCPU；0.5 = 500m = 0.5 顆 vCPU。
+    # 一般建議設定為 worker.resources.cpu 的兩倍。
+    # cpu: "1000m"
+    # worker.limits.memory 用來指定要使用多少記憶體 1 = 1 Gi = 1024Mi = 1024^3 Bytes。
+    # 一般建議設定為 worker.resources.memory 的一樣。需經過評估才能超過原設定。
+    # memory: "512Mi"
+
+  # worker.autoscaling 可設定是否讓 Pod 根據資源使用量自動擴展。目前僅支援 CPU 平均使用率。
+  autoscaling:
+    # worker.autoscaling.enabled 用來開啟 autoscaling 功能。
+    enabled: true
+    # worker.autoscaling.minReplicas 設定最少要有幾個 Pod (replica)。
+    minReplicas: 1
+    # worker.autoscaling.maxReplicas 設定最多要有幾個 Pod (replica)。
+    maxReplicas: 2
+    # worker.autoscaling.targetCPUUtilizationPercentage 指定當所有 Pod 的平均 CPU 高於多少百分比時，自動進行擴展。
+    targetCPUUtilizationPercentage: 70
+    # api.autoscaling.targetMemoryUtilizationPercentage 指定當所有 Pod 的平均 Memory 高於多少百分比時，自動進行擴展。
+    # 因此設定並不是所有的 api 都需要配置, 故預設為空值。
+    # targetMemoryUtilizationPercentage: 70
+    scaleBehavior:
+      # worker.autoscaling.scaleBehavior.enabled 用來開啟scaleBehavior 功能。
+      enabled: true
+      scaleUp:
+        # stabilizationWindowSeconds 用來設定在 scale up 時緩衝等待的時間,單位為秒。
+        # 預設值為 0,表示不進行緩衝等待,立即進行擴展。
+        stabilizationWindowSeconds: 0
+      scaleDown:
+        # stabilizationWindowSeconds 用來設定在 scale down 時緩衝等待的時間,單位為秒。
+        # 預設值為 300,表示在進行縮減前會等待 5 分鐘以避免頻繁縮減。
+        stabilizationWindowSeconds: 300
+

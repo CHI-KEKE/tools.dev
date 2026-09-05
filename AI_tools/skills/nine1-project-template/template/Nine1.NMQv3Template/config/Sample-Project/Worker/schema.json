@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "MyTestKey": {
+            "type": "integer"
+        },
+        "MyTestKeyString": {
+            "type": "string"
+        },
+        "MyTestKeyObject": {
+            "type": "object",
+            "properties": {
+                "MyTestKeyInObject": {
+                    "type": "number"
+                },
+                "MyTestKeyStringInObject": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "MyTestKeyInObject",
+                "MyTestKeyStringInObject"
+            ]
+        }
+    },
+    "required": [
+        "MyTestKey",
+        "MyTestKeyString",
+        "MyTestKeyObject"
+    ]
+}

@@ -1,0 +1,30 @@
+info:
+  name: sync_livecomments
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/live/comments/sync/LS260427L00001?shopId=20&referenceTime=2026-04-28T11:00:00Z"
+  headers:
+    - name: Cookie
+      value: _ga_2WFJBS7B20=deleted; _fbp=fb.1.1768012631882.200133521726464270; _clck=1o0wrd8%5E2%5Eg2u%5E0%5E2210; SL_C_23361dd035530_SID={"61a79bbd82d029bef2eb0eebfe201ecae641c22f":{"sessionId":"nZBMqm8InsnJIYWrS-k2t","visitorId":"pj1lGNjRLcFQS4ZFS71a8"}}; _uetvid=334805604f1f11efa3c3c1ff964e00ff; __gads=ID=ff122ef4cb483dc5:T=1768874824:RT=1770633156:S=ALNI_Mbtv0ca8CkUnpg4nbsqWaLoLse33w; __gpi=UID=000011e828e48cd4:T=1768874824:RT=1770633156:S=ALNI_Ma_diubMbt99jKuBiEf0ROAi6AUvg; __eoi=ID=1bbdb658465f4d0b:T=1768874824:RT=1770633156:S=AA-AfjagpdbiWwlKdHREADAYClIT; _ga_PXC7ENYBGM=GS2.1.s1770633156$o3$g1$t1770633745$j32$l0$h0; _gid=GA1.2.1732848528.1772607503; Livebuy.Sid=7fc4dcdc1a7940aa98e5577992cb87f6; .AspNetCore.Livebuy.Cookie=CfDJ8LVcznhEAm5JtRZtd8lB1JZDtXFazJe4L3rb4bYpCrBOaquGy5alBv3xC_07fMiLLriPE7J9jWVCEdI2Xt4Xl-3ATvIvwLlxOXlfySQpAMYQ50Sbmv3j_AOSpds7xM_eNLwsfOXjipr1OhFAjRpJPILz_CmUy6yBWcyXFYZgoaUUDMWnHyN5nYpxMN3ab5vo5rBWPs6dOfybB9jp4313BCc0dn9VY8qV5sFijvqtLaBjaa1fWfp3Qb33RhORH0K8BLvDeLUlE1fXXhWcYHVBfA9pIZ5-Q3PX4F0jFPvgHstYnQ8MQRFltBGI-Ea1ELSdE3b83qh54jznXoSM9hnEi9Zu593GkjBAB38539orwxwagzvN4Nuxj16k-M5xoFN5R69T8paw6gB1MaDYMEi4x8260Ip4fK61cXEOgz2ORdRL3brmIZW0daNfseIU781YWZ1QqgonJxnk5QEtW1WVYbNr2mBnxwSkjxj0GY6JJhmbwwGiwIEyH3eGA0Pkhu1UCuGDznOlbG8peA3HyLy5UmCKru2XB8GpOFEC6UlLnZit_4pXN-iB_QNK2inU-mm5ldEiw9GSFqG2l6mKbwUHhcPRGlszqjSE1TOxgJXdk3Fb; _ga=GA1.2.1153032814.1768012217; _ga_P9SKT1T0T2=GS2.2.s1772682217$o51$g0$t1772682217$j60$l0$h0; _ga_2WFJBS7B20=GS2.1.s1772681566$o98$g1$t1772682273$j2$l0$h0
+  params:
+    - name: shopId
+      value: "20"
+      type: query
+    - name: referenceTime
+      value: 2026-04-28T11:00:00Z
+      type: query
+  body:
+    type: json
+    data: ""
+  auth:
+    type: bearer
+    token: ""
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

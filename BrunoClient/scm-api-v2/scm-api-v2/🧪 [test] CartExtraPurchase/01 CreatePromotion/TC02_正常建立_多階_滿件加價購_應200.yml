@@ -1,0 +1,65 @@
+﻿info:
+  name: TC02_正常建立_多階_滿件加價購_應200
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/CreatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "TypeDef": "CartReachPieceExtraPurchase",
+        "Name": "[TC02] 三階滿件加價購",
+        "StartDateTime": "2029-07-01T00:00:00.000Z",
+        "EndDateTime": "2029-07-31T23:59:59.000Z",
+        "Description": "TC02",
+        "CustomCampaignCode": "TC02",
+        "CanUseECoupon": false,
+        "IsCartExtraPurchaseThresholdEligible": true,
+        "TargetMemberTypeDef": "All",
+        "PromotionTargetRegionTypeDef": "All",
+        "IsCyclable": false,
+        "ExtraPurchaseRuleList": [
+          { "ConditionId": 1, "ReachPiece": 2, "ReachPrice": 0, "LimitQty": 10 },
+          { "ConditionId": 2, "ReachPiece": 5, "ReachPrice": 0, "LimitQty": 8 },
+          { "ConditionId": 3, "ReachPiece": 10, "ReachPrice": 0, "LimitQty": 5 }
+        ],
+        "TargetTypeDef": "SalePage",
+        "ExcludeTargetTypeDef": "None",
+        "CalculateTypeDef": "Compatible",
+        "TargetPlatformTypeList": [
+          { "Platform": "Web", "IsEnabled": true },
+          { "Platform": "AppIOS", "IsEnabled": true },
+          { "Platform": "AppAndroid", "IsEnabled": true }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC02 狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("TC02 回傳 Data.Id 應存在", function () {
+    const body = res.getBody();
+    expect(body.Data).to.have.property("Id");
+    expect(body.Data.Id).to.be.a("number").and.greaterThan(0);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

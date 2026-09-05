@@ -1,0 +1,35 @@
+info:
+  name: 📎 [sidebar] get-extensionArea-menu
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/scm/v2/Home/GetExtensionAreaMenu?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "UserId": "{{userId}}",
+        "UserName": "{{userName}}",
+        "CloudType": "",
+        "Type":"",
+        "ShopId":{{shopId}}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

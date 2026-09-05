@@ -1,0 +1,21 @@
+info:
+  name: testbrodcast
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{base-url}}/api/websocket/test-broadcast/LS260303L00005"
+  body:
+    type: json
+    data: |-
+      {
+          "commentDatetime": "2026-03-09T16:34:52"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

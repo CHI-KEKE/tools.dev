@@ -1,0 +1,25 @@
+info:
+  name: islogin
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/api/User/islogin"
+  body:
+    type: json
+    data: |-
+      {
+          "Auth": "okK9U0V/wzXoTz1rCNb7IVH6tuoND9Prdm7IPBLQeQLM5PAlyMfBIDPHG7IvQDceHOd1irJTT6hxAFDhmutpxGeB5B4MZADPS3Yhg837kAmZjxTCKzp0c39C/wElHqW8Jc2HTFtlcvjkzaFhW1SOxIjIDR8i2hamy7jdQ83FlyJXF1GRtaYFZEBn95ewSyRq+LkwRjVw4MRjn9/lMGMFStLaUgkW8WHP1laX+UyFiE64CY4aC05FL1egx1cnS7lsrQqVNrLTlDAzDAJVS1IqxwEpGxGc/3sSgzvmg0BjvXSMpr6I/rGuEAVpBhG1RDKG0X/VYbo7CUQksBDCdbdg5SWkJ65Tk/4G7iGYBn+wz/tizmpXqRH8LGJqJfRTv8PJ79Mk6VESILBtTB0fzNbK14sVMgEzLMy9LKG9dBdVsVLuQgjIWq4RwK3+0i4XOHTJMCnSPMPtpekMUkip400dKpPv+Uop58/tcYq4J4POiTSME9v3ZTVtPnp+9cTk+72xfBotvvcScd8MqABWMB5jmeWHUevYFioCHcr0lQaVntsEDnLoIeiFrvOsrrrT4FOEVSZ9ARC2cYJuktVMX5pCi6HL1YNiLZlhHwkPvyiW1gwbiB1MJn6yyuBRV0BVBxX+4JPAdNDC3V5Y/cZzN9WX0OdjEx4AAhBJAi6Teujr7xSRTs+dRTxZAyw862dgKgv8GW12oVtcx8Qfoi6gzy1uls23Se31EWyI3N96RkQI4qpLoEU/SY5LPq6oEmgp8SeTLv65+UI+SFHAXZ4XMiJsc1tPniqPHzioQq4FOhOrvvw=",
+          "AuthSameSite": "okK9U0V/wzXoTz1rCNb7IVH6tuoND9Prdm7IPBLQeQLM5PAlyMfBIDPHG7IvQDceHOd1irJTT6hxAFDhmutpxGeB5B4MZADPS3Yhg837kAmZjxTCKzp0c39C/wElHqW8Jc2HTFtlcvjkzaFhW1SOxIjIDR8i2hamy7jdQ83FlyJXF1GRtaYFZEBn95ewSyRq+LkwRjVw4MRjn9/lMGMFStLaUgkW8WHP1laX+UyFiE64CY4aC05FL1egx1cnS7lsrQqVNrLTlDAzDAJVS1IqxwEpGxGc/3sSgzvmg0BjvXSMpr6I/rGuEAVpBhG1RDKG0X/VYbo7CUQksBDCdbdg5SWkJ65Tk/4G7iGYBn+wz/tizmpXqRH8LGJqJfRTv8PJ79Mk6VESILBtTB0fzNbK14sVMgEzLMy9LKG9dBdVsVLuQgjIWq4RwK3+0i4XOHTJMCnSPMPtpekMUkip400dKpPv+Uop58/tcYq4J4POiTSME9v3ZTVtPnp+9cTk+72xfBotvvcScd8MqABWMB5jmeWHUevYFioCHcr0lQaVntsEDnLoIeiFrvOsrrrT4FOEVSZ9ARC2cYJuktVMX5pCi6HL1YNiLZlhHwkPvyiW1gwbiB1MJn6yyuBRV0BVBxX+4JPAdNDC3V5Y/cZzN9WX0OdjEx4AAhBJAi6Teujr7xSRTs+dRTxZAyw862dgKgv8GW12oVtcx8Qfoi6gzy1uls23Se31EWyI3N96RkQI4qpLoEU/SY5LPq6oEmgp8SeTLv65+UI+SFHAXZ4XMiJsc1tPniqPHzioQq4FOhOrvvw=",
+          "UAuth": "CvcSuJQZe/C8nG3jcwNboQuGIQZEnaQ4UDVot/q+i4wjDU+sHctAfRX5u8t7eEmaM9PNmvlbpynRET8sQVmwLdCbY/QTf3NkpNNVAKxQzWU=",
+          "AuthSameSite": "CvcSuJQZe/C8nG3jcwNboQuGIQZEnaQ4UDVot/q+i4wjDU+sHctAfRX5u8t7eEmaM9PNmvlbpynRET8sQVmwLdCbY/QTf3NkpNNVAKxQzWU=",
+          "ShopId": 10230
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

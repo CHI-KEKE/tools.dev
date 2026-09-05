@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>Windows 排程任務失敗情境與 Log 對應關係分析</title>
+<style>
+    :root {
+        --bg: #0f1115;
+        --card-bg: #171a21;
+        --border: #2a2e37;
+        --text: #e6e8ec;
+        --muted: #9096a3;
+        --danger: #e5484d;
+        --danger-bg: rgba(229,72,77,0.12);
+        --warning: #f5a524;
+        --warning-bg: rgba(245,165,36,0.12);
+        --success: #2fbf71;
+        --success-bg: rgba(47,191,113,0.12);
+        --info: #4c9eeb;
+        --info-bg: rgba(76,158,235,0.12);
+        --accent: #7c6cf0;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: "Segoe UI", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        padding: 0 0 60px 0;
+    }
+    header {
+        padding: 48px 40px 32px;
+        background: linear-gradient(135deg, #1b1f2a 0%, #12141a 100%);
+        border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        letter-spacing: 0.3px;
+    }
+    header p.subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+    }
+    .container {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 40px;
+    }
+    section {
+        margin-top: 40px;
+    }
+    h2 {
+        font-size: 20px;
+        border-left: 4px solid var(--accent);
+        padding-left: 12px;
+        margin-bottom: 16px;
+    }
+    h3 {
+        font-size: 16px;
+        color: var(--text);
+        margin: 24px 0 10px;
+    }
+    p { color: #c8cbd3; }
+    .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+    code, .mono {
+        font-family: "Cascadia Code", Consolas, monospace;
+        background: #0c0d11;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.88em;
+        color: #ffd479;
+        border: 1px solid #24262e;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+    thead th {
+        text-align: left;
+        background: #1d2029;
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 12.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        padding: 10px 12px;
+        border-bottom: 2px solid var(--border);
+        white-space: nowrap;
+    }
+    tbody td {
+        padding: 12px 12px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        color: #d7d9de;
+    }
+    tbody tr:hover { background: #1a1d25; }
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .badge.has-log { background: var(--success-bg); color: var(--success); }
+    .badge.shared-log { background: var(--warning-bg); color: var(--warning); }
+    .badge.no-log { background: var(--danger-bg); color: var(--danger); }
+    .badge.event { background: var(--info-bg); color: var(--info); }
+    .stage {
+        font-size: 12.5px;
+        color: var(--muted);
+    }
+    .legend {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+    .legend .item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13.5px;
+        color: var(--muted);
+    }
+    .flow {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-top: 10px;
+    }
+    .flow .step {
+        position: relative;
+        padding: 14px 18px 14px 42px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: #14161d;
+    }
+    .flow .step::before {
+        content: attr(data-n);
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .flow .step .title { font-weight: 600; margin-bottom: 4px; }
+    .flow .step .desc { color: var(--muted); font-size: 13.5px; }
+    .flow .step.outcome-nolog { border-left: 3px solid var(--danger); }
+    .flow .step.outcome-shared { border-left: 3px solid var(--warning); }
+    .flow .step.outcome-haslog { border-left: 3px solid var(--success); }
+    .note {
+        background: var(--info-bg);
+        border: 1px solid rgba(76,158,235,0.35);
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13.5px;
+        color: #cfe4fb;
+        margin: 14px 0;
+    }
+    .note.warn {
+        background: var(--warning-bg);
+        border-color: rgba(245,165,36,0.35);
+        color: #ffe3b0;
+    }
+    .note.danger {
+        background: var(--danger-bg);
+        border-color: rgba(229,72,77,0.35);
+        color: #ffd0d1;
+    }
+    footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12.5px;
+        margin-top: 60px;
+    }
+    .path { color: #9fd3ff; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="container" style="padding:0;">
+        <h1>Windows 排程任務失敗情境與 Log 對應關係分析</h1>
+        <p class="subtitle">依據 OSMPlus（NineYi.OsmPlus.Batch.RunFlowById / EtlFlowControlService）原始碼與 Windows Task Scheduler Event Log 行為盤點 — 涵蓋所有失敗情境、是否產生 Log、Log 實際存放位置</p>
+    </div>
+</header>
+
+<div class="container">
+
+    <section>
+        <h2>1. 前提：兩種任務類型的差異</h2>
+        <div class="card">
+            <p>Windows Task Manager 網站上的「Log」按鈕，只有在任務被判定為 <strong>ETL Flow 任務</strong>（<code>IsEtlTask()</code> 判斷 <code>Program</code>/<code>Arguments</code> 是否包含 <code>RunFlowById</code>）時才會顯示。任務可分為兩大類：</p>
+            <table>
+                <thead>
+                    <tr><th>任務類型</th><th>執行方式</th><th>是否可能有 OsmConsole Log</th><th>備註</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>ETL Flow 任務</strong></td>
+                        <td>透過 <code>NineYi.OsmPlus.Batch.RunFlowById.exe --flowid / --flowname</code> 執行</td>
+                        <td><span class="badge has-log">可能有</span></td>
+                        <td>視失敗發生的階段而定，詳見下方情境表</td>
+                    </tr>
+                    <tr>
+                        <td><strong>一般任務</strong>（PowerShell script、其他 .exe）</td>
+                        <td>如 <code>Monitor_CheckOrderShippingFee</code> 等直接執行的排程</td>
+                        <td><span class="badge no-log">不會有</span></td>
+                        <td>完全不會產生 <code>E:\Files\OsmConsole\</code> 底下的資料夾結構，UI 也不會顯示 Log 按鈕（設計上正確排除）</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. Log 狀態圖例</h2>
+        <div class="legend">
+            <div class="item"><span class="badge has-log">● 有專屬 Log</span> 該次執行有自己專屬的 <code>service.*</code> 檔案</div>
+            <div class="item"><span class="badge shared-log">● 僅有共用 Log</span> 只會寫入當日所有任務共用的 <code>ProgramException</code> 檔案</div>
+            <div class="item"><span class="badge no-log">● 完全沒有 Log</span> 連共用 Log 都不會產生任何檔案紀錄</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. ETL Flow 任務執行流程與各階段失敗對應</h2>
+        <p>以下依照 <code>RunFlowById.exe</code> → <code>EtlFlowControlService.ExecuteFlowId/DoProcess</code> 的實際執行順序，列出每一個可能失敗的關卡，以及該關卡失敗時的 Log 落點。</p>
+
+        <div class="flow">
+            <div class="step outcome-nolog" data-n="0">
+                <div class="title">階段 0：工作排程器嘗試啟動 <code>RunFlowById.exe</code> 進程</div>
+                <div class="desc">帳號密碼錯誤、帳號被停用（<code>0x80070533</code>）、權限不足（缺少「以批次工作登入」權限）等 → Windows 產生 <strong>Event 101（Task Start Failed / Launch Failure）</strong>，進程本身根本沒有被建立起來。</div>
+            </div>
+            <div class="step outcome-shared" data-n="1">
+                <div class="title">階段 1：進程已啟動，執行到 <code>CreateFlowTask()</code> 之前或本身失敗</div>
+                <div class="desc">例如資料庫連線失敗、<code>ShopEtlFlowId</code> 參數格式錯誤、insert 失敗等。此時 <code>isExecuteFlow</code> 仍為 <code>false</code>，例外會被 <code>Program.cs</code> 最外層 catch 攔截並呼叫 <code>WriteProgramExceptionLog</code>。</div>
+            </div>
+            <div class="step outcome-shared" data-n="2">
+                <div class="title">階段 2：<code>CreateFlowTask()</code> 成功，但找不到 <code>TaskSlave</code> 或 <code>DoFlowValidation</code> 失敗</div>
+                <div class="desc"><code>flowServiceTasks.Any() == false</code> 或流程設定驗證未通過。此時仍在 <code>isExecuteFlow = true</code> 這行**之前**，同樣落入共用 <code>ProgramException</code> log。</div>
+            </div>
+            <div class="step outcome-nolog" data-n="3">
+                <div class="title">階段 3：<code>isExecuteFlow = true</code> 之後，<code>CreateFlowService()</code> 建構 Flow Service 物件本身失敗</div>
+                <div class="desc">例如反射建立類別失敗、<code>StreamWriter</code> 開啟 log 檔案失敗（磁碟權限/路徑問題）等，導致 <code>flowflowService</code> 仍為 <code>null</code>。此時例外會被最內層 catch 攔截，因為 <code>flowflowService == null</code> 所以完全不會呼叫 <code>serviceConsole.WriteLine</code>；例外重新拋出後回到 <code>Program.cs</code>，但因為 <code>isExecuteFlow</code> 已經是 <code>true</code>，<strong>連共用的 ProgramException log 都不會寫入</strong>。只會有 DB 的 <code>TaskLog</code> 表紀錄與 Slack 告警訊息。</div>
+            </div>
+            <div class="step outcome-haslog" data-n="4">
+                <div class="title">階段 4：Flow Service 物件成功建構（<code>service.*</code> 檔案已建立並開始寫入）</div>
+                <div class="desc">從這一刻起，這次執行終於有了「屬於自己的」log 檔案（路徑中包含這次的 <code>EtlFlowTaskId</code>）。之後不論這個 Step 執行<strong>成功</strong>還是在 <code>DoProcess()</code> 過程中<strong>失敗</strong>，都會繼續寫入同一份已開啟的 log 檔案。</div>
+            </div>
+            <div class="step outcome-haslog" data-n="5">
+                <div class="title">階段 5a：Step 執行成功</div>
+                <div class="desc">呼叫 <code>ProcessFinished()</code> 寫入 <code>OutputChainData</code> 後關閉 StreamWriter，Log 檔案完整保留。</div>
+            </div>
+            <div class="step outcome-haslog" data-n="6">
+                <div class="title">階段 5b：Step 執行中拋出例外（業務邏輯錯誤、外部 API 失敗、SQL 錯誤等）</div>
+                <div class="desc">例外訊息、Exception Stack Trace 會被寫入這個已存在的 <code>service.*</code> 檔案中，且會同時更新 DB 狀態為 Error 並發送 Slack 告警。<strong>這是唯一「有詳細錯誤內容」的情境</strong>。</div>
+            </div>
+        </div>
+
+        <div class="note danger">
+            <strong>重點提醒：</strong>階段 3（Flow Service 建構失敗）是最容易被忽略的「靜默失敗」——它發生在 <code>isExecuteFlow = true</code> 之後，導致 Program.cs 判斷式誤以為「Flow 已經開始執行，錯誤會由 Flow 自己記錄」，但實際上這次連 log 檔案的 StreamWriter 都還沒建立成功，最終造成<strong>完全沒有任何檔案 Log 可查</strong>，只能從 DB 的 TaskLog 狀態與 Slack 告警歷史回溯原因。
+        </div>
+    </section>
+
+    <section>
+        <h2>4. 完整情境對照總表</h2>
+        <div class="card" style="padding:0; overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>失敗情境</th>
+                    <th>發生階段</th>
+                    <th>Windows Event Log</th>
+                    <th>是否有 Log</th>
+                    <th>Log 實際位置</th>
+                    <th>備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>帳號密碼錯誤 / 帳號停用 / 缺少「以批次工作登入」權限</td>
+                    <td class="stage">進程啟動前（Task Scheduler 層級）</td>
+                    <td><span class="badge event">Event 101</span></td>
+                    <td><span class="badge no-log">完全沒有</span></td>
+                    <td class="path">—（僅存在於 Windows 工作排程器 Event Log，<code>ResultCode</code> 欄位如 <code>0x80070533</code>）</td>
+                    <td>RunFlowById.exe 從未被執行，OsmConsole 完全沒有任何紀錄</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>一般任務找不到 PowerShell 腳本檔案</td>
+                    <td class="stage">進程啟動後，Exit Code 與一般程式錯誤相同（皆為 0x1）</td>
+                    <td><span class="badge event">Event 200/201</span></td>
+                    <td><span class="badge no-log">完全沒有</span>（且無法單靠錯誤碼區分）</td>
+                    <td class="path">—</td>
+                    <td>已改用 WTM 主動 <code>File.Exists()</code> 檢查，於 UI 顯示警示區塊彌補</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>資料庫連線失敗 / <code>CreateFlowTask()</code> Insert 失敗</td>
+                    <td class="stage"><code>isExecuteFlow</code> 尚為 false</td>
+                    <td><span class="badge event">Event 200/201</span></td>
+                    <td><span class="badge shared-log">共用 Log</span></td>
+                    <td class="path">{LogRoot}\ProgramException\{yyyyMMdd}\service.*</td>
+                    <td>當日所有任務共用同一份檔案，需自行比對是否為本次錯誤</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>找不到任何 <code>TaskSlave</code>（流程未設定執行步驟）</td>
+                    <td class="stage"><code>isExecuteFlow</code> 尚為 false</td>
+                    <td><span class="badge event">Event 200/201</span></td>
+                    <td><span class="badge shared-log">共用 Log</span></td>
+                    <td class="path">{LogRoot}\ProgramException\{yyyyMMdd}\service.*</td>
+                    <td>同上</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td><code>DoFlowValidation</code> 流程設定驗證失敗</td>
+                    <td class="stage"><code>isExecuteFlow</code> 尚為 false</td>
+                    <td><span class="badge event">Event 200/201</span></td>
+                    <td><span class="badge shared-log">共用 Log</span></td>
+                    <td class="path">{LogRoot}\ProgramException\{yyyyMMdd}\service.*</td>
+                    <td>同上</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td><code>CreateFlowService()</code> 建構 Flow Service 物件本身失敗（反射建立失敗、StreamWriter 開啟失敗等）</td>
+                    <td class="stage"><code>isExecuteFlow</code> 已為 true，但 <code>flowflowService</code> 仍是 null</td>
+                    <td><span class="badge event">Event 200/201</span></td>
+                    <td><span class="badge no-log">完全沒有</span></td>
+                    <td class="path">— （僅 DB TaskLog 表 + Slack 告警）</td>
+                    <td><strong>最容易被忽略的靜默失敗</strong>，連共用 ProgramException log 都不會寫，因為 Program.cs 判斷 <code>isExecuteFlow==false</code> 才寫共用 log，此時已是 true</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Flow Step 執行中發生業務邏輯錯誤（SQL 錯誤、外部 API 失敗、資料格式錯誤等）</td>
+                    <td class="stage">Flow Service 物件已成功建構之後</td>
+                    <td><span class="badge event">Event 200/201</span></td>
+                    <td><span class="badge has-log">有專屬 Log</span></td>
+                    <td class="path">{LogRoot}\{ShopId}\{yyyyMMdd}\{分類}\{FlowId}_{FlowName}_{ShopId}\{EtlFlowTaskId}\{StepName}\service.*</td>
+                    <td>唯一能看到完整 Exception Stack Trace 的情境</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Flow Step 正常執行成功（完成）</td>
+                    <td class="stage">Flow Service 物件已成功建構之後</td>
+                    <td><span class="badge event">Event 200/201</span></td>
+                    <td><span class="badge has-log">有專屬 Log</span></td>
+                    <td class="path">{LogRoot}\{ShopId}\{yyyyMMdd}\{分類}\{FlowId}_{FlowName}_{ShopId}\{EtlFlowTaskId}\{StepName}\service.*</td>
+                    <td>記錄執行過程與 <code>OutputChainData</code> 內容</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>5. 對 Windows Task Manager 網站的影響與建議</h2>
+        <div class="card">
+            <h3>目前 UI 顯示「找不到 ETL Log 檔案」可能的真正原因</h3>
+            <table>
+                <thead><tr><th>可能原因</th><th>屬於上表情境</th><th>是否可從 UI 改善</th></tr></thead>
+                <tbody>
+                    <tr><td>該任務本來就不是 ETL Flow 任務</td><td>—</td><td>✅ 目前已用 <code>IsEtlTask()</code> 正確排除，不顯示按鈕</td></tr>
+                    <tr><td>Event 101 Launch Failure，進程未啟動</td><td>情境 1</td><td>✅ 已用 <code>MissingScriptPath</code> 概念的警示邏輯可延伸套用；此類先天無 log 可查，UI 應提示「此錯誤發生於排程啟動前，不會有 OsmConsole Log」</td></tr>
+                    <tr><td><code>LogRootPath</code> 設定值磁碟機代號錯誤（如先前 <code>C:</code> vs 實際 <code>E:</code>）</td><td>環境設定問題，非 OSMPlus 邏輯</td><td>✅ 已修正 <code>appsettings.QA.json</code> / <code>appsettings.Production.json</code></td></tr>
+                    <tr><td>檔名不是固定 <code>service.log</code>（可能為 <code>.txt</code> 或 <code>{shopId}.log</code>）</td><td>檔名慣例不一致</td><td>✅ 已改用萬用字元 <code>service.*</code> 搜尋；<code>{shopId}.log</code> 命名的特殊服務仍待擴充規則</td></tr>
+                    <tr><td>失敗發生在情境 3 / 6（共用 log 或完全無 log）</td><td>情境 3、6</td><td>⚠️ 建議：UI 應明確告知「此次失敗發生於流程啟動階段，請查看當日共用 ProgramException Log」或「此次失敗未產生任何檔案 Log，請查看 Slack 告警紀錄」，而非單純顯示「找不到 ETL Log 檔案」造成誤解</td></tr>
+                </tbody>
+            </table>
+
+            <h3>建議後續優化方向</h3>
+            <ul>
+                <li>UI 找不到 log 檔案時，依據執行結果與時間點，區分顯示不同提示文字（而非統一顯示「找不到 ETL Log 檔案」），讓使用者知道是「先天不會有」還是「應該要有但抓錯位置」。</li>
+                <li>當任務失敗且判定為 ETL 任務，但連 <code>ProgramException</code> 共用 log 都找不到符合時間點的內容時，可提示使用者改查 DB <code>EtlFlowTaskLog</code> 表或 Slack 告警歷史。</li>
+                <li>持續驗證各環境（QA / Prod / HK / MY）的 <code>LogRootPath</code> 磁碟機代號是否與 OSMPlus 該環境的 <code>AppSettings.*.config</code> 一致，避免再次出現磁碟機代號設定錯誤。</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        依據 <code>nine1.tools.windows-task-manager</code> 與 <code>nineyi.osmplus.console</code>（<code>NineYi.OsmPlus.Batch.RunFlowById</code> / <code>EtlFlowControlService.cs</code> / <code>BaseEtlFlowService.cs</code>）原始碼分析整理，2026-07-15
+    </footer>
+
+</div>
+</body>
+</html>

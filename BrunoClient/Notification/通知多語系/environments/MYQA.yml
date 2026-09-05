@@ -1,0 +1,4 @@
+name: MYQA
+variables:
+  - name: template-base-url
+    value: http://notification-template-api-internal.qa1.my.91dev.tw

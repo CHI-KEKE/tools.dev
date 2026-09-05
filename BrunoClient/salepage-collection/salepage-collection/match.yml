@@ -1,0 +1,33 @@
+info:
+  name: match
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/api/salepage-collections:match"
+  headers:
+    - name: N1-TRACE-ID
+      value: "{{traceId}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "salepageIds": [
+          62094
+        ],
+        "matchType": "FilterByPromotions",
+        "expectedPromotionsOnActiveTime": "2025-05-07T12:30:44.638Z",
+           "targetSalepageCollectionIds":[
+            "{{CollectionId}}"
+         ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

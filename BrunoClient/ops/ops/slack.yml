@@ -1,0 +1,35 @@
+info:
+  name: slack
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: https://api.infra.91app.io/v1/Ops/Slack
+  headers:
+    - name: x-api-key
+      value: "{{api-key}}"
+  body:
+    type: json
+    data: |-
+      {
+          "slack_channel": "rd-sg-slacktest",
+          "message": "<!subteam^SJGSP4PFW|oversea_brd>\n 📚",
+          "attachments": {
+          "Environment": "HK/QA",
+          "Team": "oversea_brd"
+          },
+            "service": "CyberSource Payment",
+          "role": "API",
+          "level": "Warning",
+          "broadcast": true,
+          "username":"!!!",
+          "icon": ":atom_symbol:"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

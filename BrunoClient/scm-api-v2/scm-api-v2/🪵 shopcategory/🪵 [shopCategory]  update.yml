@@ -1,0 +1,58 @@
+info:
+  name: 🪵 [shopCategory]  update
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/SCM/V2/ShopCategory/Update?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "ShopId": 2,
+          "Id": 3165,
+          "IsLevel1": false,
+          "ParentId":3163,
+          "Name": "0203 測一下分類看看改一下",
+          "StatusDef": "Normal",
+          "DisplayType": "Text",
+          "OrderByDef": "Curator",
+          "SEOTitle": null,
+          "SEOKeywords": null,
+          "SEODescription": null,
+          "AutoDescription": "在香港難波萬，您可以輕鬆探索各種與金物流相關的商品，這裡的選擇多樣且價格實惠，讓每位顧客都能找到心儀的產品。無論是日常需求還是特別喜好，這裡的優惠和推薦將為您的選擇帶來便利，讓您的購物體驗更加愉快。"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+      "ShopId": 2,
+      "Id": 3165,
+      "IsLevel1": false,
+      "ParentId":3163,
+      "Name": "0203 測一下分類看看改一下",
+      "StatusDef": "Normal",
+      "DisplayType": "Text",
+      "OrderByDef": "Curator",
+      "SEOTitle": null,
+      "SEOKeywords": null,
+      "SEODescription": null,
+      "AutoDescription": "在香港難波萬，您可以輕鬆探索各種與金物流相關的商品，這裡的選擇多樣且價格實惠，讓每位顧客都能找到心儀的產品。無論是日常需求還是特別喜好，這裡的優惠和推薦將為您的選擇帶來便利，讓您的購物體驗更加愉快。"
+  }

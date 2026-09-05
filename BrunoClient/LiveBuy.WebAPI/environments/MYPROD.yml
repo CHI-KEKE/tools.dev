@@ -1,0 +1,10 @@
+name: MYPROD
+variables:
+  - name: wss-url
+    value: wss://5dw3ywtx23.execute-api.ap-southeast-1.amazonaws.com/91applive
+  - name: base-url
+    value: https://91app-live-internal.my.91app.io
+  - name: shopId
+    value: "200017"
+  - name: k8s-public-url
+    value: https://91app-live.my.91app.io

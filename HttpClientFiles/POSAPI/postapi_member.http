@@ -1,0 +1,21 @@
+### TWQA
+@host=http://pos-api.qa.91dev.tw/
+
+### Prod
+#@host=http://pos-api.91app.io/
+
+### MYPROD
+#@host=http://pos-api.my.91app.io/
+
+### HKPROD
+#@host=http://pos-api.hk.91app.io/
+
+@traceId=TEST-{{$guid}}
+@shopId=2
+@collectionId=f_371602421048813312
+@promotionEngineId = 2595
+
+### 查詢 MemberInfo
+GET {{host}}/pos/v1/GetMemberInfo?t={{token}}&ts={{timestamp}}&s={{signature}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}

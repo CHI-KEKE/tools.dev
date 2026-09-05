@@ -1,0 +1,38 @@
+info:
+  name: fail-tasks-query
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: |-
+    
+    https://nmqv3-dashboard-v2.qa1.hk.91dev.tw/api/v1/tasks?state=Failed&jobName=PromotionRewardCouponPriorityLow&limit=20&offset=0&isArchived=false
+  headers:
+    - name: cookie
+      value: _ga_2WFJBS7B20=deleted; _fbp=fb.1.1768012631882.200133521726464270; _uetvid=334805604f1f11efa3c3c1ff964e00ff; __gads=ID=ff122ef4cb483dc5:T=1768874824:RT=1770633156:S=ALNI_Mbtv0ca8CkUnpg4nbsqWaLoLse33w; __gpi=UID=000011e828e48cd4:T=1768874824:RT=1770633156:S=ALNI_Ma_diubMbt99jKuBiEf0ROAi6AUvg; __eoi=ID=1bbdb658465f4d0b:T=1768874824:RT=1770633156:S=AA-AfjagpdbiWwlKdHREADAYClIT; _ga_PXC7ENYBGM=GS2.1.s1770633156$o3$g1$t1770633745$j32$l0$h0; _ga_P9SKT1T0T2=GS2.2.s1778555166$o90$g1$t1778556954$j52$l0$h0; _ga_2WFJBS7B20=GS2.1.s1778555165$o185$g1$t1778557180$j60$l0$h0; _ga=GA1.2.88aa0ea0-7f47-4a0a-bb8d-6147822b16cf; _clck=1o0wrd8%5E2%5Eg60%5E0%5E2210; SL_C_23361dd035530_SID={"61a79bbd82d029bef2eb0eebfe201ecae641c22f":{"sessionId":"TWaHQoEbKVCbiK470vDl6","visitorId":"pj1lGNjRLcFQS4ZFS71a8"}}; _clsk=22gvfz%5E1778665201579%5E1%5E1%5Es.clarity.ms%2Fcollect
+  params:
+    - name: state
+      value: Failed
+      type: query
+    - name: jobName
+      value: PromotionRewardCouponPriorityLow
+      type: query
+    - name: limit
+      value: "20"
+      type: query
+    - name: offset
+      value: "0"
+      type: query
+    - name: isArchived
+      value: "false"
+      type: query
+  auth:
+    type: bearer
+    token: eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg2OGU0YWNlMGI2NTE2ZDM2YjlmNTZkZThjZTQ5Nzg4ZmNjZGFjNDMiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoi5p6X5a6l6L6wIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0x5SUNoeld1OHR4WXg3ZzEzSkJkaHZwa3R1enJLMENsWTNxVi15SVNFN2hESnJKSkU9czk2LWMiLCJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbm1xLWRhc2hib2FyZCIsImF1ZCI6Im5tcS1kYXNoYm9hcmQiLCJhdXRoX3RpbWUiOjE3NTc3MjkzMjQsInVzZXJfaWQiOiJWOVhTcVpFaHkwVW1YWW81cFpRbEpWSWl3ZDQzIiwic3ViIjoiVjlYU3FaRWh5MFVtWFlvNXBaUWxKVklpd2Q0MyIsImlhdCI6MTc3ODczMDY1NywiZXhwIjoxNzc4NzM0MjU3LCJlbWFpbCI6ImFsbGVubGluQG5pbmUteWkuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDM2MDY3MjkxMzc2MzM4NjMzNTEiXSwiZW1haWwiOlsiYWxsZW5saW5AbmluZS15aS5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.sM6cgDdP7QzSqL8BZ7ELQ9Ip-qrDOt8vz5xp-ZgjTgxwMdItg4LRZnkNrR8MU6AJerfOlR0c4imj-WXTBshfnyE3CCdzMStKlfOpErsG5dwG6sbqgM7wvqO-S6MLz55lBwrxOoKNTbKmCzDfj8U4hJ_u4KLKSx4rhBZEFwxdKpA1gSHsEwWu81_p1xFmBTU5ImHiZM2Lt18vQ0uc8uW2cHzgtYre8yJVEh5UsIDmby44gCmFF29MpWOe3J1tgQLwIYRDgd5BGYDymOoFCh-ogGBf04a0l7cCy505L6RfnVO1MHSP17iRM2YBSn0Tdm6zDu5gUT_PlgX9nOY9F1tvHw
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

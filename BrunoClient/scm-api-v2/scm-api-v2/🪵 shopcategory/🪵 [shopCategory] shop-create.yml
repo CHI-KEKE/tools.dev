@@ -1,0 +1,83 @@
+info:
+  name: 🪵 [shopCategory] shop-create
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/scm/v2/Shop/CreateShopCategory?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "Id": 0,
+          "Name": "20250102新年快樂分類頁",
+          "ParentId": 1,
+          "ShopId": 2,
+          "ListModeDef": "s",
+          "StatusDef": "Normal",
+          "SeoTitle": "新名稱新氣象",
+          "SeoKeywords": "新名稱新氣象",
+          "SeoDescription": "新名稱新氣象",
+          "OrderByDef": "Curator",
+          "LangItems": [
+              {
+                  "LangId": "en-US",
+                  "Name": "",
+                  "SeoTitle": "",
+                  "SeoKeywords": "",
+                  "SeoDescription": "",
+                  "AutoDescription": ""
+              },
+              {
+                  "LangId": "zh-TW",
+                  "Name": "",
+                  "SeoTitle": "",
+                  "SeoKeywords": "",
+                  "SeoDescription": "",
+                  "AutoDescription": ""
+              },
+              {
+                  "LangId": "ms-MY",
+                  "Name": "",
+                  "SeoTitle": "",
+                  "SeoKeywords": "",
+                  "SeoDescription": "",
+                  "AutoDescription": ""
+              },
+              {
+                  "LangId": "zh-CN",
+                  "Name": "",
+                  "SeoTitle": "",
+                  "SeoKeywords": "",
+                  "SeoDescription": "",
+                  "AutoDescription": ""
+              }
+          ],
+          "DisplayType": null,
+          "ShopCategoryImage": {
+              "Type": 0,
+              "Operation": 0,
+              "FileName": null,
+              "Group": null,
+              "Key": null
+          },
+          "AutoDescription": "AI描......"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

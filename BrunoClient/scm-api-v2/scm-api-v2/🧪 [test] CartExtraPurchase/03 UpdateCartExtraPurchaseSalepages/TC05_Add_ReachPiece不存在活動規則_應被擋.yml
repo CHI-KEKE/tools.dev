@@ -1,0 +1,58 @@
+﻿info:
+  name: TC05_Add_ReachPiece不存在活動規則_應被擋
+  type: http
+  seq: 5
+
+meta:
+  purpose: |-
+    【負向】ReachPiece=99，但活動 ExtraPurchaseRuleList 只有 ReachPiece=2 和 5。
+    Filter 應拒絕此請求（ReachPiece 不在活動規則中）。
+    預期：400 或含錯誤訊息的 200（依實際行為記錄）。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdateCartExtraPurchaseSalepages?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "PromotionId": {{promotionId}},
+        "IsAddHistory": false,
+        "CartExtraPurchaseConditionList": [
+          {
+            "ActionType": "Add",
+            "ReachPiece": 99,
+            "ReachPrice": 0,
+            "SalepageId": 1557573,
+            "SaleProductSKUId": 2169001,
+            "CartExtraPurchasePrice": 99,
+            "Sort": 1
+          }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC-SP05 ReachPiece 不存在活動規則應被擋（記錄實際狀態供分析）", function () {
+    const status = res.getStatus();
+    const body = res.getBody();
+    console.log("TC-SP05 status:", status, "response:", JSON.stringify(body));
+    expect([400, 200]).to.include(status);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

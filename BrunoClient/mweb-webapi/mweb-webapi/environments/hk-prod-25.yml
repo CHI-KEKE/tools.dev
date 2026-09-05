@@ -1,0 +1,7 @@
+name: hk-prod-25
+color: "#CE4F3B"
+variables:
+  - name: base-url
+    value: https://hktestingshopid25.91app.hk
+  - name: shopId
+    value: "25"

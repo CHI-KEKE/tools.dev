@@ -1,0 +1,15 @@
+info:
+  name: oauth-callback
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: /api/facebook/oauth/callback
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

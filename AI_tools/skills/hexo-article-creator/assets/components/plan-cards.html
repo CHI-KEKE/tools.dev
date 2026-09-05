@@ -1,0 +1,43 @@
+<!--
+元件：改善方案卡（編號 + 優先度標籤）
+用途：條列多個改善策略/建議方案，每個方案獨立成卡，附上優先度徽章
+可搭配 flow-note（見 flow-banner-note.html）在卡片內加提示/警示區塊
+-->
+
+<style>
+.plan-card { background: #fbfaf6; border: 1px solid #c9c3ae; border-radius: 4px; margin: 22px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
+.plan-card .plan-head { display: flex; align-items: center; gap: 12px; padding: 12px 18px; background: #2f4f4f; color: #fbfaf6; }
+.plan-card .plan-num {
+  font-family: 'Courier New', Consolas, monospace; font-weight: 700; font-size: 0.85rem;
+  border: 1px solid rgba(255,255,255,0.6); border-radius: 50%; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.plan-card .plan-title { font-weight: 700; font-size: 0.98rem; letter-spacing: 1px; }
+.plan-card .plan-priority { font-size: 0.68rem; letter-spacing: 1px; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; margin-left: auto; }
+.plan-priority.high { background: #a3441e; color: #fff; }
+.plan-priority.mid  { background: #b8860b; color: #fff; }
+.plan-priority.low  { background: #6b8e6b; color: #fff; }
+.plan-card .plan-body { padding: 16px 20px 18px; }
+.plan-card .plan-body > p:first-child { margin-top: 0; }
+.plan-card .plan-body pre { margin: 12px 0 0; }
+.plan-card .plan-body code { color: #a3441e; }
+</style>
+
+<div class="plan-card">
+<div class="plan-head">
+<div class="plan-num">1</div>
+<div class="plan-title">方案標題</div>
+<span class="plan-priority high">優先度：高</span>
+</div>
+<div class="plan-body">
+
+方案內文，可包含 Markdown（表格、程式碼區塊皆可，因為在 HTML 區塊內仍走 marked.js 解析）。
+
+```csharp
+// 程式碼示意
+```
+
+</div>
+</div>
+
+<!-- 複製上面的 .plan-card 區塊新增下一個方案，優先度依序用 high/mid/low -->

@@ -1,0 +1,41 @@
+info:
+  name: 🪵 [shopCategory]  create
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/SCM/V2/ShopCategory/Create?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |
+      {
+        "Name": "0124新增測試level1111111real",
+        "IsLevel1": false,
+        "ParentId":11111,
+        "ShopId": 2,
+        "ListModeDef": "b",
+        "StatusDef": "Normal",
+        "SeoTitle": "Best Electronics for You 第一行\nBest Electronics for You 第二行 ",
+        "SeoKeywords": "electronics,gadgets,tech",
+        "SeoDescription": "Best Electronics for You 第一行\nBest Electronics for You 第二行",
+        "AutoDescription": "DBest Electronics for You 第一行\nBest Electronics for You 第二行",
+        "OrderByDef": "Curator"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,34 @@
+opencollection: 1.0.0
+
+info:
+  name: payment-middleware
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: TG
+      value: TG
+    - name: currency-code
+      value: HKD
+    - name: country-code
+      value: HK
+    - name: TS
+      value: TS
+    - name: amount
+      value: "10.00"
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

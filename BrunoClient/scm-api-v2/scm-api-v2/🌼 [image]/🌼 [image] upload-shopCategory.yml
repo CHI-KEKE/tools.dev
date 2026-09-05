@@ -1,0 +1,151 @@
+info:
+  name: 🌼 [image] upload-shopCategory
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/SCM/V2/Image/UploadShopCategoryImage?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: Id
+        type: text
+        value: "3144"
+      - name: ShopId
+        type: text
+        value: "2"
+      - name: Image
+        type: file
+        value:
+          - C:\Users\Allen Lin\Desktop\pics\300X300\rsz_di.png
+      - name: data
+        type: text
+        value: '{"Id":3144,"ShopId":2,"Image":null}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## pm
+
+  // 取得Timestamp
+  let timestamp = getTimestamp();
+
+  // 取得Signature
+  const signatureApiUrl = pm.collectionVariables.get("API_URL") + "/scm/v1/Sample/GetEncryptData";
+  const apiKey = pm.collectionVariables.get("API_Key");
+  const saltKey = pm.collectionVariables.get("SaltKey");
+  const requestBody = pm.request.body;
+  console.log("requestBody",requestBody);
+  console.log("mode:" + requestBody.mode);
+  let body = {};
+  if(requestBody.mode == "formdata"){
+      const formdata = requestBody.formdata.members;
+      body = convertFormDataToJson(formdata)
+      requestBody.formdata.members.add("data",body)
+  }else{
+      body = JSON.parse(requestBody.raw);
+  }
+
+  const bodyJson = JSON.stringify(body);
+  console.log("~~~~~~~~~bodyJson :" + bodyJson);
+
+  const content = "ts="+ timestamp+"&data=" + bodyJson.toLowerCase() + "&sk=" + saltKey;
+  console.log("apiKey: " , apiKey);
+  console.log("timestamp: ", timestamp);
+  console.log("body: ", body);
+  console.log("saltKey: ", saltKey);
+  console.log("content: ", content);
+  pm.sendRequest({
+      url: signatureApiUrl,
+      method: 'POST',
+      header: {
+          'Content-Type': 'multipart/form-data'
+      },
+      body: {
+          mode: 'formdata',
+          formdata: [
+              { key: "content", value: content, type: "text" },
+              { key: "key", value: apiKey, type: "text" }
+          ]
+      }}, function (err, response) {
+      const responseBody = response.json();
+      pm.collectionVariables.set("Signature", responseBody.Data);
+  });
+
+  // // 重組request
+  //  let newBody = {
+  //      data: JSON.stringify(body)
+  //   };
+
+  //     pm.request.body.update({
+  //        mode: 'raw',
+  //        raw: JSON.stringify(newBody),
+  //       options:{
+  //           raw:{
+  //               language:"json"
+  //            }
+  //        }
+  //    });
+
+
+  function getTimestamp(){
+      const gtm = new Date(Date.UTC(1970, 0, 1));
+
+      const utc = new Date();
+      const utcOffsetInHours = 8; // UTC+8
+      const localTime = new Date(utc.getTime() + (utcOffsetInHours * 60 * 60 * 1000));
+
+      const timestamp = Math.floor((localTime - gtm) / 1000);
+      pm.collectionVariables.set("Timestamp", timestamp);
+      return timestamp;
+  }
+
+  function convertFormDataToJson(obj){
+      const formdata = requestBody.formdata.members;
+      var result = {};
+      formdata.forEach(item => {
+          if (item.type === "file") {
+              result[item.key] = null;
+          }else if(item.key === "data"){
+          }
+          else if (typeof item.value === 'string'){
+              result[item.key] = Number(item.value);
+          }
+          else {
+              result[item.key] = item.value;
+          }
+      });
+      // return convertStringNumbers(result)
+      return result
+  }
+
+  //  function convertStringNumbers(obj) {
+  //      for (const key in obj) {
+  //          if (obj.hasOwnProperty(key)) {
+  //              if (typeof obj[key] === 'string' ) {
+  //                  console.log("convertStringNumbers_k: " , key);
+  //                  console.log("convertStringNumbers_v: " , obj[key]);
+  //                  obj[key] = Number(obj[key]);
+  //              } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+  //                  convertStringNumbers(obj[key]);
+  //              }
+  //          }
+  //      }
+  //      return obj;
+  //  }

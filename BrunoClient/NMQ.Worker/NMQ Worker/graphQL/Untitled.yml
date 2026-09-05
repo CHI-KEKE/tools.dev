@@ -1,0 +1,31 @@
+info:
+  name: Untitled
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://nmqv3-dashboard.qa1.hk.91dev.tw/graphql
+  body:
+    type: json
+    data: |-
+      {
+        "operationName":"QueryTasks",
+        "query":"query QueryTasks($input: QueryTaskInput!) {\n  queryTasks(input: $input) {\n    tasks {\n      id\n      jobName\n      createTime\n      startExecutionTime\n      endExecutionTime\n      source\n      sourceId\n      retryCount\n      status\n      router {\n        groupName\n        hostName\n        __typename\n      }\n      isMuted\n      __typename\n    }\n    hasMore\n    __typename\n  }\n}\n",
+        "variables":{
+          "input":{
+            "taskStatus":"FAILED",
+            "jobName":"PromotionRewardLoyaltyPointsV2PriorityLow",
+            "taskPool":"ONGOING",
+            "offset":"0",
+            "limit":"1000"
+          }
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

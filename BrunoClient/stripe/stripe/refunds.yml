@@ -1,0 +1,28 @@
+info:
+  name: refunds
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/refunds"
+  body:
+    type: form-urlencoded
+    data:
+      - name: charge
+        value: "{{sessionId}}"
+      - name: amount
+        value: "{{amount}}"
+      - name: refund_application_fee
+        value: "false"
+      - name: metadata[request_id]
+        value: 20260319_init
+  auth:
+    type: bearer
+    token: "{{x-secret}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

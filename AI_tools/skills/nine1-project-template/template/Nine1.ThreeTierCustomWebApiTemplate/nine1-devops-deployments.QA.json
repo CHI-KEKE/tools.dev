@@ -1,0 +1,39 @@
+{
+    "apiVersion": "nine1-devops/v1",
+    "kind": "deployment",
+    "metadata": {
+        "name": "Sample-Project",
+        "serviceName": "Sample-Project",
+        "type": "HelmChart"
+    },
+    "spec": {
+        "deployments": [
+            {
+                "metadata": {
+                    "name": "tw-qa",
+                    "market": "TW",
+                    "env": "QA"
+                },
+                "settings": {
+                    "NAMESPACE": "qa-sample-project",
+                    "KUBE_CONFIG_ENV_NAME": "KUBE_CONFIG_TW_QA",
+                    "HELM_VALUES_FILE_NAME": "values-tw-qa",
+                    "IS_DRY_RUN": "false",
+                    "IS_MANUAL_DEPLOY": "false"
+                },
+                "roles": [
+                    {
+                        "name": "Web.Api",
+                        "APP_ROLE": "api",
+                        "RELEASE_NAME": "sample-project-web-api",
+                        "versions": {
+                            "app": "latest",
+                            "config": "latest",
+                            "secret": "v1.0.0"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

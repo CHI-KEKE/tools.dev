@@ -1,0 +1,25 @@
+info:
+  name: add-tag
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v3/modules/{{module-id}}/translations/{{key}}/tags/add"
+  body:
+    type: json
+    data: |-
+      {
+          "tags": [
+              {
+                  "tag": "{{tag-name}}"
+              }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

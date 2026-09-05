@@ -1,0 +1,15 @@
+info:
+  name: connections-test
+  type: websocket
+  seq: 19
+
+websocket:
+  url: wss://trm24yg5re.execute-api.ap-southeast-1.amazonaws.com/91applive
+  message:
+    type: json
+    data: "{}"
+  auth: inherit
+
+settings:
+  timeout: 0
+  keepAliveInterval: 0

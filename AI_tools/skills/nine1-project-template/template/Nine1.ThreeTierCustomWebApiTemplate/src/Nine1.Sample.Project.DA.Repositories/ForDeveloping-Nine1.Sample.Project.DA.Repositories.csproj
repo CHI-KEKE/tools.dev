@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Nine1.Sample.Project.DA.Repositories</AssemblyName>
+    <RootNamespace>ForDeveloping-Nine1.Sample.Project.DA.Repositories</RootNamespace>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Nine1.Sample.Project.BL.BE\Nine1.Sample.Project.BL.BE.csproj" />
+  </ItemGroup>
+
+</Project>

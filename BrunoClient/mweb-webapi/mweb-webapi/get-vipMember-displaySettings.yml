@@ -1,0 +1,30 @@
+info:
+  name: get-vipMember-displaySettings
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: https://hclub01.shop.qa1.hk.91dev.tw/webapi/Shop/GetVipMemberDisplaySettings/{{shopId}}?lang={{lang}}&shopId={{shopId}}&r=t
+  params:
+    - name: lang
+      value: "{{lang}}"
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+    - name: r
+      value: t
+      type: query
+  auth: inherit
+
+runtime:
+  variables:
+    - name: lang
+      value: zh-HK
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

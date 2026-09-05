@@ -1,0 +1,26 @@
+opencollection: 1.0.0
+
+info:
+  name: LINE
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: token
+      value: kBz8jSLWOTmDfp8JlfEUuka5d5Hw9NboJDd5j1CNs8T
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

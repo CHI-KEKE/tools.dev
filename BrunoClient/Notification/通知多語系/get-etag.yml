@@ -1,0 +1,34 @@
+info:
+  name: get-etag
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{template-base-url}}/api/Templates/etag?ShopId={{ShopId}}&Name={{Name}}&Lang={{Lang}}"
+  params:
+    - name: ShopId
+      value: "{{ShopId}}"
+      type: query
+    - name: Name
+      value: "{{Name}}"
+      type: query
+    - name: Lang
+      value: "{{Lang}}"
+      type: query
+  auth: inherit
+
+runtime:
+  variables:
+    - name: ShopId
+      value: "5"
+    - name: Name
+      value: SCMEmail_TradesOrderV2_RazorTemplate
+    - name: Lang
+      value: en-US
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

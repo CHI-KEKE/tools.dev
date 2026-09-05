@@ -1,0 +1,10 @@
+name: TWQA
+variables:
+  - name: wss-url
+    value: wss://y58oeddf9i.execute-api.ap-northeast-1.amazonaws.com/91applive
+  - name: base-url
+    value: https://91app-live.qa.91dev.tw
+  - name: k8s-public-url
+    value: https://91app-live-io.qa.91dev.tw
+  - name: shopId
+    value: "10230"

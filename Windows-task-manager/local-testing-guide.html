@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows Task Scheduler 監控 · 本機測試操作手冊</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#93c5fd; background:rgba(147,197,253,.12); border:1px solid rgba(147,197,253,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 27px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:820px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--accent-soft); color:var(--accent); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  h3 { font-size:15.5px; margin:22px 0 8px; color:#1e293b; }
+  h4 { font-size:14px; margin:16px 0 6px; color:#1e293b; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:10px 12px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+  td.center, th.center { text-align:center; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; }
+  .split .col {
+    border:1px solid var(--border); border-radius:12px; padding:16px 18px;
+  }
+  .split .col.purple { background:var(--purple-soft); border-color:#ddd6fe; }
+  .split .col.blue { background:var(--accent-soft); border-color:#bfdbfe; }
+  .split .col.danger { background:var(--danger-soft); border-color:#fecaca; }
+  .split .col.warn { background:var(--warn-soft); border-color:#fde68a; }
+  .split .col h4 { margin:0 0 8px; font-size:14px; }
+
+  .file-tag {
+    display:inline-block; font-family:Consolas,monospace; font-size:11.5px; background:#0b1220; color:#e2e8f0;
+    padding:2px 8px; border-radius:5px; margin:2px 4px 2px 0;
+  }
+
+  .steps { counter-reset: step; list-style:none; padding:0; margin:14px 0; }
+  .steps li {
+    counter-increment: step; position:relative; padding:8px 0 8px 40px; margin-bottom:4px; font-size:14px;
+  }
+  .steps li::before {
+    content: counter(step); position:absolute; left:0; top:6px; width:26px; height:26px; border-radius:50%;
+    background:var(--accent-soft); color:var(--accent); font-weight:700; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  footer { text-align:center; color:#94a3b8; font-size:12.5px; margin-top:34px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow">Local Testing Guide</span>
+    <h1>Windows Task Scheduler 監控 — 本機測試操作手冊</h1>
+    <p>本文件記錄如何在本機建立測試用排程任務、模擬各種真實情境（正常、心跳型、執行失敗、漏排），
+      以及如何用 GUI 或 PowerShell 手動驗證結果，搭配 <code>WindowsTaskManager.Monitor</code> 觀察告警行為。</p>
+  </header>
+
+  <!-- 1. 測試任務總覽 -->
+  <section>
+    <h2><span class="num">1</span>測試任務總覽</h2>
+    <p class="sub">全部建立在 Task Scheduler 的 <code>\WTMTest\</code> 資料夾下，Action 統一寫入 <code>C:\91APP\AI_Devs\taskmanager\test-logs\</code>，方便事後比對。</p>
+
+    <table>
+      <thead>
+        <tr><th>任務名稱</th><th>模擬類型</th><th>Trigger 設計</th><th>用途</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>TypeA-Weekly</code></td><td>A - Weekly</td><td>每週（本週當天）09:58 觸發一次</td><td>驗證單次事件型 + Weekly Trigger 判斷</td></tr>
+        <tr><td><code>TypeB-DailySingle</code></td><td>B - Daily 單次</td><td>每天 09:58 觸發一次</td><td>驗證單次事件型 + Daily Trigger 判斷</td></tr>
+        <tr><td><code>TypeC-Heartbeat</code></td><td>C - 心跳型</td><td>指定時間起，每 2 分鐘重複一次，持續 1 小時</td><td>驗證 <code>Repetition</code> 判斷為心跳型，走 gap 計算模型</td></tr>
+        <tr><td><code>TypeD-MultipleTriggers</code></td><td>D - 多組獨立 Trigger</td><td>三組獨立 Daily Trigger（間隔 3 分鐘）</td><td>驗證 <code>GetRunTimes</code> 能正確合併多組 Trigger 的候選時間</td></tr>
+        <tr><td><code>TypeE-Failure</code></td><td>執行失敗</td><td>Daily 觸發一次</td><td>Action 執行後主動 <code>exit /b 1</code>，驗證「有跑但失敗」告警分支</td></tr>
+        <tr><td><code>TypeF-Missed</code></td><td>漏排（該跑沒跑）</td><td>Daily 觸發一次 + <code>RunOnlyIfIdle</code> 條件</td><td>觸發時間到但因閒置條件不滿足被跳過，驗證「漏排」告警分支</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note warn">
+      <strong>清理提醒：</strong>測試完畢後記得移除全部測試任務：
+      <pre>Get-ScheduledTask -TaskPath "\WTMTest\" | Unregister-ScheduledTask -Confirm:$false</pre>
+    </div>
+  </section>
+
+  <!-- 2. 排除機制設計 -->
+  <section>
+    <h2><span class="num">2</span>第三方雜訊任務排除機制</h2>
+    <p class="sub">實測時發現 OneDrive、GoogleUpdater、MicrosoftEdgeUpdateTask 等系統內建第三方任務會被誤判為心跳型並產生大量無意義告警，因此新增可設定的排除規則。</p>
+
+    <h3>設計方式：路徑萬用字元清單</h3>
+    <p>在 <code>MonitorOptions</code> 新增 <code>ExcludedTaskPathPatterns</code>（字串陣列，支援 <code>*</code> 萬用字元），設定於 <code>appsettings.json</code>：</p>
+    <pre>"ExcludedTaskPathPatterns": [
+  "\\OneDrive*",
+  "\\GoogleSystem\\*",
+  "\\GoogleUpdateTaskMachine*",
+  "\\MicrosoftEdgeUpdateTask*",
+  "\\Lenovo\\*",
+  "\\LenovoUpdate*"
+]</pre>
+
+    <h3>實作重點</h3>
+    <ul>
+      <li><code>SchedulerReader</code> 建構子注入 <code>IOptions&lt;MonitorOptions&gt;</code>，啟動時把萬用字元 pattern 預先編譯成 <code>Regex</code>（<code>Compiled</code>、忽略大小寫），避免每輪巡檢重複解析字串。</li>
+      <li><code>GetEnabledTasks()</code> 在既有「排除 <code>\Microsoft\</code> 系統任務」判斷之後，新增「排除自訂規則」判斷，兩者各自獨立計數，統計 log 一併呈現。</li>
+      <li>之後若再遇到新的雜訊任務，只要在設定檔加一行 pattern，不需要重新編譯部署。</li>
+    </ul>
+
+    <div class="file-tag">MonitorOptions.cs</div>
+    <div class="file-tag">SchedulerReader.cs</div>
+    <div class="file-tag">appsettings.json</div>
+  </section>
+
+  <!-- 3. 執行失敗案例設計與驗證 -->
+  <section>
+    <h2><span class="num">3</span>「執行失敗」案例：設計與手動驗證</h2>
+    <p class="sub">最容易模擬的情境——讓 Action 確實執行，但回傳非 0 的結果碼。</p>
+
+    <h3>建立方式</h3>
+    <pre>$actionFail = New-ScheduledTaskAction -Execute "cmd.exe" `
+    -Argument '/c echo [%date% %time%] TypeE-Failure ran >> "...\TypeE-Failure.log" & exit /b 1'
+$triggerFail = New-ScheduledTaskTrigger -Daily -At (Get-Date).AddMinutes(3)
+Register-ScheduledTask -TaskName "TypeE-Failure" -TaskPath "\WTMTest\" `
+    -Action $actionFail -Trigger $triggerFail -Force</pre>
+
+    <h3>方法一：PowerShell 快速確認</h3>
+    <pre>Get-ScheduledTaskInfo -TaskName "TypeE-Failure" -TaskPath "\WTMTest\" |
+    Select-Object LastRunTime, LastTaskResult, NextRunTime</pre>
+    <p>實測結果：<code>LastTaskResult = 1</code>，log 檔確實有寫入內容 → 代表 Action 有執行，但回傳失敗。</p>
+
+    <h3>方法二：直接查 Event Log（跟程式邏輯一致）</h3>
+    <pre>Get-WinEvent -LogName "Microsoft-Windows-TaskScheduler/Operational" `
+    -FilterXPath "*[System[(EventID=200 or EventID=201)]] and *[EventData[Data[@Name='TaskName']='\WTMTest\TypeE-Failure']]" `
+    -MaxEvents 10 | Select-Object TimeCreated, Id, Message</pre>
+    <p>查到兩筆事件：</p>
+    <pre>EventID 200  Task Scheduler launched action "cmd.exe" ...
+EventID 201  Task Scheduler successfully completed task ... with return code 2147942401.</pre>
+
+    <h3>方法三：GUI（工作排程器 + Event Viewer）</h3>
+    <ol class="steps">
+      <li>執行 <code>taskschd.msc</code>，左側展開「工作排程器程式庫 → WTMTest」，找到 <code>TypeE-Failure</code>。</li>
+      <li>清單畫面「上次執行結果（Last Run Result）」欄位直接顯示 <code>(0x1)</code>（其他正常任務會顯示「操作順利完成 (0x0)」）。</li>
+      <li>點選任務後，下方「歷程記錄（History）」分頁——若顯示「已停用」，需先按右側「動作」欄的<strong>啟用所有工作歷程記錄</strong>。</li>
+      <li>History 分頁可看到事件序列：<code>100 Task Started → 200 Action started → 201 Action completed (Operational Code 2) → 102 Task completed (Operational Code 2)</code>。<br>Operational Code 顯示 <code>(2)</code> 而非 <code>(0)</code>，即代表結果非成功。</li>
+    </ol>
+
+    <div class="note ok">
+      <strong>判斷依據一致性：</strong>GUI 清單欄位 <code>(0x1)</code> + History 的 Operational Code <code>(2)</code> + PowerShell 查到的 ResultCode <code>2147942401</code>，三者都指向同一個「失敗」結論，只是呈現層級不同（詳見第 4 節的進位制說明）。
+    </div>
+  </section>
+
+  <!-- 4. 數字進位制說明 -->
+  <section>
+    <h2><span class="num">4</span>結果碼數字辨識：0x1 是什麼意思？</h2>
+    <p class="sub">同一個失敗結果，會在不同工具、不同層級用完全不同的數字格式呈現，容易造成誤解。</p>
+
+    <div class="note">
+      <strong><code>0x</code> 開頭代表十六進位（hexadecimal），不是二進位。</strong>
+      這是 Windows / 程式設計裡標準的十六進位前綴寫法。
+    </div>
+
+    <h3>三種呈現方式其實是同一件事</h3>
+    <table>
+      <thead><tr><th>顯示位置</th><th>數值</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>工作排程器 GUI「Last Run Result」欄</td><td><code>0x1</code></td><td>直接顯示 Task Scheduler 記錄的原始 exit code（16 進位）</td></tr>
+        <tr><td>Event Log EventID 201 的 <code>ResultCode</code>（16 進位）</td><td><code>0x80070001</code></td><td>Win32 exit code 包裝成標準 HRESULT 格式</td></tr>
+        <tr><td>Event Log <code>ResultCode</code>（十進位顯示）</td><td><code>2147942401</code></td><td>上面 HRESULT 直接轉成十進位數字（PowerShell/程式常見顯示方式）</td></tr>
+      </tbody>
+    </table>
+
+    <h3>HRESULT <code>0x80070001</code> 拆解</h3>
+    <div class="split">
+      <div class="col blue">
+        <h4>組成結構</h4>
+        <ul>
+          <li><code>8</code>：Severity bit，代表這是一個 Error</li>
+          <li><code>007</code>：Facility code <code>FACILITY_WIN32</code>，代表這個錯誤是從 Win32 API 錯誤碼轉換而來</li>
+          <li><code>0001</code>：真正的原始錯誤碼，也就是你設定的 <code>exit /b 1</code></li>
+        </ul>
+      </div>
+      <div class="col purple">
+        <h4>驗證換算</h4>
+        <pre>PS&gt; "{0:X}" -f 2147942401
+80070001</pre>
+        <p>十進位 <code>2147942401</code> 換算成十六進位確實是 <code>80070001</code>，兩者是同一個數字的不同進位表示。</p>
+      </div>
+    </div>
+
+    <h3>為什麼我們的程式不會被格式差異搞混？</h3>
+    <p><code>SchedulerReader.GetHistory()</code> 判斷成功與否的邏輯很寬鬆，只認固定幾種「0」的寫法：</p>
+    <pre>var isSuccess = resultCode is "0" or "0x0" or "0x00000000";</pre>
+    <p>只要不是這三種表示法，一律視為失敗——不管數字是 <code>1</code>、<code>0x80070001</code> 還是 <code>2147942401</code>，只要不是 0，就會被正確判定為 <code>IsSuccess = false</code>，不受呈現格式差異影響。</p>
+  </section>
+
+  <!-- 5. 漏排案例設計與驗證 -->
+  <section>
+    <h2><span class="num">5</span>「漏排」案例：設計與手動驗證</h2>
+    <p class="sub">漏排不能用「停用任務」模擬——停用的任務本來就會被監控排除，不算漏排。真正的漏排是「任務仍是 Enabled、Trigger 時間到了，但因某種<strong>條件</strong>不滿足而被 Task Scheduler 跳過」。</p>
+
+    <h3>建立方式：RunOnlyIfIdle 條件</h3>
+    <pre>$settingsMiss = New-ScheduledTaskSettingsSet `
+    -RunOnlyIfIdle `
+    -IdleDuration (New-TimeSpan -Hours 1) `
+    -IdleWaitTimeout (New-TimeSpan -Hours 2)
+
+Register-ScheduledTask -TaskName "TypeF-Missed" -TaskPath "\WTMTest\" `
+    -Action $actionMiss -Trigger $triggerMiss -Settings $settingsMiss -Force</pre>
+
+    <h3>三個關鍵參數</h3>
+    <table>
+      <thead><tr><th>參數</th><th>作用</th></tr></thead>
+      <tbody>
+        <tr><td><code>-RunOnlyIfIdle</code></td><td>開啟「僅在電腦閒置時啟動這項工作」條件開關（對應 GUI「條件」分頁的閒置設定）</td></tr>
+        <tr><td><code>-IdleDuration</code></td><td>電腦必須連續閒置多久才算符合閒置條件（設 1 小時）</td></tr>
+        <tr><td><code>-IdleWaitTimeout</code></td><td>Trigger 時間到了之後，願意等待閒置條件成立的最長時間（設 2 小時），超過還沒閒置就直接放棄、跳過這次執行</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      因為操作機器時 Windows 判定的「閒置」（滑鼠鍵盤無動作）不會累積到 1 小時，Trigger 時間到了之後，Task Scheduler 會在 <code>IdleWaitTimeout</code> 期間內持續檢查、始終不滿足條件，最終這次觸發就被跳過。
+      任務本身仍是 <code>Enabled</code>，Trigger 排程邏輯也正常，只是「執行條件」擋住了它——這正是最貼近真實世界「該跑卻沒跑」的情境。
+    </div>
+
+    <h3>GUI 手動設定位置</h3>
+    <p>工作排程器 → 該任務內容 → <strong>條件</strong> 分頁 → 勾選「僅當電腦閒置以下時間時啟動此工作」。</p>
+
+    <h3>驗證結果</h3>
+    <p>實測截圖中 <code>TypeF-Missed</code> 這一列：</p>
+    <ul>
+      <li><strong>Last Run Time</strong>：<code>1999/11/30 上午 12:00:00</code> ← Task Scheduler 用這個「從未執行」的預設佔位時間表示尚未跑過</li>
+      <li><strong>Last Run Result</strong>：<code>工作尚未執行 (0x41303)</code> ← 明確代表 Trigger 有設定，但從未真正被執行</li>
+    </ul>
+    <p>對照之下，<code>GetRunTimes</code> 依然會把 Trigger 定義的候選時間算出來（因為它是純粹依 Trigger 排程規則計算理論時間，不考慮執行條件），但 <code>GetHistory</code> 查 Event Log 完全找不到對應紀錄——兩者的落差正是「漏排」判斷的核心依據。</p>
+  </section>
+
+  <!-- 6. 快速比對總表 -->
+  <section>
+    <h2><span class="num">6</span>三種案例快速比對</h2>
+    <div class="split">
+      <div class="col blue">
+        <h4>✅ 正常執行</h4>
+        <p><code>LastRunTime</code> ≈ 候選時間，<code>LastTaskResult = 0</code></p>
+        <p>GUI 顯示「操作順利完成 (0x0)」</p>
+      </div>
+      <div class="col danger">
+        <h4>❌ 執行失敗</h4>
+        <p><code>LastRunTime</code> ≈ 候選時間，<code>LastTaskResult ≠ 0</code></p>
+        <p>GUI 顯示 <code>(0x1)</code> 等非零結果碼；History 有完整 200/201/102 事件但 Operational Code 非 0</p>
+      </div>
+      <div class="col warn">
+        <h4>⚠️ 漏排</h4>
+        <p><code>LastRunTime</code> 遠早於候選時間（或仍是 <code>1999/11/30</code> 預設值）</p>
+        <p>GUI 顯示「工作尚未執行 (0x41303)」；Event Log 對應時間點完全查無 200/201 事件</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Windows Task Scheduler 監控 · 本機測試操作手冊 · 對應 WindowsTaskManager.Monitor 專案</footer>
+</div>
+</body>
+</html>

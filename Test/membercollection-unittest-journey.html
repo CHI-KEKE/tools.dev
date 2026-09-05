@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>build.log — MemberCollection 客群過濾單元測試建構全記錄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#100f0c;
+    --bg-panel:#17150f;
+    --bg-panel-2:#1d1a12;
+    --line:#3a3323;
+    --line-soft:#28241a;
+    --amber:#ffb454;
+    --amber-dim:#c98a3a;
+    --lime:#9ee08a;
+    --lime-dim:#6b9f5c;
+    --rose:#ff8577;
+    --sky:#7fc7e0;
+    --ink:#e9e2cf;
+    --ink-dim:#a89d80;
+    --ink-faint:#6b6350;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --serif: 'Fraunces', Georgia, serif;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 1200px 700px at 15% -10%, rgba(255,180,84,0.10), transparent 60%),
+      radial-gradient(ellipse 900px 600px at 105% 15%, rgba(158,224,138,0.07), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--serif);
+    line-height:1.6;
+    position:relative;
+  }
+
+  /* grain overlay */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:2;
+    opacity:0.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* scanlines */
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:3;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.10) 3px
+    );
+    opacity:0.35;
+  }
+
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 28px 140px;
+    position:relative;
+    z-index:1;
+  }
+
+  /* ===== Top bar ===== */
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 0;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-faint);
+    letter-spacing:0.06em;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .topbar .dots span{
+    display:inline-block;
+    width:9px; height:9px;
+    border-radius:50%;
+    margin-right:6px;
+  }
+  .dots .r{ background:var(--rose); }
+  .dots .y{ background:var(--amber); }
+  .dots .g{ background:var(--lime); }
+
+  /* ===== Hero ===== */
+  .hero{
+    padding:64px 0 40px;
+    position:relative;
+  }
+  .hero .kicker{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--amber);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .hero .kicker::before{
+    content:"";
+    width:26px; height:1px;
+    background:var(--amber);
+    display:inline-block;
+  }
+  .hero h1{
+    font-family:var(--serif);
+    font-optical-sizing:auto;
+    font-weight:600;
+    font-size:clamp(34px, 6vw, 58px);
+    line-height:1.06;
+    margin:0 0 20px;
+    color:#fbf3e2;
+    letter-spacing:-0.01em;
+  }
+  .hero h1 em{
+    font-style:italic;
+    color:var(--amber);
+    font-weight:500;
+  }
+  .hero p.lede{
+    font-size:18px;
+    color:var(--ink-dim);
+    max-width:620px;
+    margin:0 0 30px;
+  }
+  .hero .meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .chip{
+    font-family:var(--mono);
+    font-size:11.5px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--ink-dim);
+    background:rgba(255,255,255,0.015);
+  }
+  .chip b{ color:var(--lime); font-weight:600; }
+
+  /* ===== stat strip ===== */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:var(--line-soft);
+    border:1px solid var(--line-soft);
+    margin:36px 0 10px;
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .stat{
+    background:var(--bg-panel);
+    padding:18px 16px;
+    text-align:left;
+  }
+  .stat .num{
+    font-family:var(--mono);
+    font-size:26px;
+    font-weight:600;
+    color:var(--amber);
+    line-height:1;
+  }
+  .stat .num.g{ color:var(--lime); }
+  .stat .lbl{
+    margin-top:6px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-faint);
+    letter-spacing:0.04em;
+  }
+
+  /* ===== section headers ===== */
+  .section-title{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin:88px 0 8px;
+  }
+  .section-title .tag{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--bg);
+    background:var(--amber);
+    padding:3px 9px;
+    border-radius:5px;
+    font-weight:700;
+    letter-spacing:0.03em;
+  }
+  .section-title h2{
+    font-family:var(--serif);
+    font-size:26px;
+    font-weight:600;
+    margin:0;
+    color:#fbf3e2;
+  }
+  .section-sub{
+    color:var(--ink-faint);
+    font-size:14.5px;
+    margin:0 0 40px;
+    max-width:640px;
+  }
+
+  /* ===== Timeline ===== */
+  .timeline{
+    position:relative;
+    padding-left:38px;
+    border-left:2px solid var(--line);
+  }
+  .step{
+    position:relative;
+    margin-bottom:46px;
+  }
+  .step:last-child{ margin-bottom:0; }
+  .step::before{
+    content:attr(data-n);
+    position:absolute;
+    left:-38px;
+    top:0;
+    transform:translateX(-50%);
+    width:34px;height:34px;
+    border-radius:50%;
+    background:var(--bg-panel);
+    border:2px solid var(--amber-dim);
+    color:var(--amber);
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .step.milestone::before{
+    border-color:var(--lime);
+    color:var(--lime);
+    background:#182016;
+  }
+  .step .card{
+    background:var(--bg-panel);
+    border:1px solid var(--line-soft);
+    border-radius:12px;
+    padding:22px 24px;
+  }
+  .step .stepline{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:8px;
+  }
+  .step h3{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:19px;
+    margin:0 0 10px;
+    color:#f4ecdb;
+  }
+  .step p{
+    color:var(--ink-dim);
+    font-size:15px;
+    margin:0 0 12px;
+  }
+  .step p:last-child{ margin-bottom:0; }
+  .step .why{
+    border-left:2px solid var(--rose);
+    padding:10px 14px;
+    background:rgba(255,133,119,0.06);
+    border-radius:0 8px 8px 0;
+    font-size:13.5px;
+    color:#e9c2bc;
+    margin-top:12px;
+  }
+  .step .fix{
+    border-left:2px solid var(--lime);
+    padding:10px 14px;
+    background:rgba(158,224,138,0.06);
+    border-radius:0 8px 8px 0;
+    font-size:13.5px;
+    color:#cfe8c4;
+    margin-top:12px;
+  }
+
+  code.inline{
+    font-family:var(--mono);
+    background:var(--bg-panel-2);
+    border:1px solid var(--line-soft);
+    padding:1px 6px;
+    border-radius:4px;
+    font-size:0.88em;
+    color:var(--sky);
+  }
+
+  /* ===== terminal code block ===== */
+  .term{
+    margin-top:14px;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid var(--line-soft);
+    background:#0b0a08;
+  }
+  .term .bar{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 12px;
+    background:#161310;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .term .bar span{ width:8px;height:8px;border-radius:50%; }
+  .term .bar .r{ background:#5c4a3a; }
+  .term .bar .y{ background:#5c4a3a; }
+  .term .bar .g{ background:#5c4a3a; }
+  .term .bar .file{
+    margin-left:8px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-faint);
+  }
+  .term pre{
+    margin:0;
+    padding:16px 18px;
+    overflow-x:auto;
+    font-family:var(--mono);
+    font-size:12.8px;
+    line-height:1.65;
+    color:#d9cfb4;
+  }
+  .term pre .c1{ color:var(--ink-faint); font-style:italic; }
+  .term pre .kw{ color:var(--rose); }
+  .term pre .ty{ color:var(--sky); }
+  .term pre .str{ color:var(--lime); }
+  .term pre .fn{ color:var(--amber); }
+
+  /* ===== two-col compare ===== */
+  .compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:14px;
+  }
+  @media (max-width:720px){ .compare{ grid-template-columns:1fr; } }
+  .compare .col{
+    border:1px solid var(--line-soft);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .compare .col .head{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.05em;
+    padding:8px 12px;
+  }
+  .compare .col.bad .head{ background:rgba(255,133,119,0.12); color:var(--rose); }
+  .compare .col.good .head{ background:rgba(158,224,138,0.12); color:var(--lime); }
+  .compare .col pre{
+    margin:0;
+    padding:12px 14px;
+    background:#0b0a08;
+    font-family:var(--mono);
+    font-size:12px;
+    color:#d9cfb4;
+    overflow-x:auto;
+  }
+
+  /* ===== decisions table ===== */
+  .decisions{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    font-size:14px;
+  }
+  .decisions th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  .decisions td{
+    padding:12px 14px;
+    border-bottom:1px solid var(--line-soft);
+    color:var(--ink-dim);
+    vertical-align:top;
+  }
+  .decisions tr:last-child td{ border-bottom:none; }
+  .decisions td.q{ color:#f4ecdb; font-weight:500; }
+  .decisions td.a{ color:var(--amber); font-family:var(--mono); font-size:13px; }
+
+  /* ===== test grid ===== */
+  .tests{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:10px;
+  }
+  @media (max-width:720px){ .tests{ grid-template-columns:1fr; } }
+  .test-item{
+    border:1px solid var(--line-soft);
+    border-radius:10px;
+    padding:14px 16px;
+    background:var(--bg-panel);
+    display:flex;
+    gap:12px;
+  }
+  .test-item .check{
+    flex:0 0 auto;
+    width:22px;height:22px;
+    border-radius:50%;
+    background:rgba(158,224,138,0.15);
+    color:var(--lime);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);
+    font-size:13px;
+  }
+  .test-item .txt b{
+    display:block;
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:#f4ecdb;
+    margin-bottom:4px;
+  }
+  .test-item .txt span{
+    font-size:13px;
+    color:var(--ink-faint);
+  }
+
+  /* ===== final commit card ===== */
+  .commit{
+    margin-top:88px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2));
+    padding:30px 32px;
+    position:relative;
+    overflow:hidden;
+  }
+  .commit::before{
+    content:"✓";
+    position:absolute;
+    right:24px; top:18px;
+    font-size:64px;
+    color:rgba(158,224,138,0.08);
+    font-family:var(--mono);
+  }
+  .commit .commit-kicker{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--lime);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .commit h3{
+    font-family:var(--serif);
+    font-size:22px;
+    margin:0 0 14px;
+    color:#fbf3e2;
+  }
+  .commit ul{
+    margin:0;
+    padding-left:18px;
+    color:var(--ink-dim);
+    font-size:14.5px;
+  }
+  .commit li{ margin-bottom:6px; }
+  .commit .runline{
+    margin-top:18px;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--lime);
+    background:#0b0a08;
+    border:1px solid var(--line-soft);
+    border-radius:8px;
+    padding:12px 16px;
+  }
+
+  footer{
+    margin-top:80px;
+    padding-top:24px;
+    border-top:1px solid var(--line-soft);
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--ink-faint);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  ::selection{ background:var(--amber); color:#100f0c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span> test.log</div>
+    <div>MemberCollectionAuditServiceTests.cs · net6.0 · xUnit + NSubstitute</div>
+  </div>
+
+  <div class="hero">
+    <div class="kicker">Engineering Journal · Unit Test Construction</div>
+    <h1>一份測試檔的誕生：<br>從 <em>零</em> 到 <em>6 個綠色勾勾</em></h1>
+    <p class="lede">
+      這篇聚焦在單一件事——<b style="color:var(--amber)">單元測試本身是怎麼被建出來的</b>。
+      不談功能怎麼設計，只談：怎麼找到專案的測試慣例、怎麼決定要測哪些情境、
+      怎麼搭建可重用的 Mock 骨架、怎麼一個個把「風險點」釘成測試，
+      以及中間踩到的編譯錯誤與工具依賴取捨。
+    </p>
+    <div class="meta">
+      <span class="chip">受測對象 <b>MemberCollectionAuditService</b></span>
+      <span class="chip">新增測試 <b>1 個檔案</b></span>
+      <span class="chip">測試案例 <b>6 個 Fact</b></span>
+      <span class="chip">編譯錯誤修正 <b>1 次</b></span>
+      <span class="chip">依賴精簡 <b>移除 1 個套件</b></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num">6</div><div class="lbl">新增 Test Case</div></div>
+      <div class="stat"><div class="num">7</div><div class="lbl">Mock 依賴（Substitute.For）</div></div>
+      <div class="stat"><div class="num g">6/6</div><div class="lbl">目標測試 Passed</div></div>
+      <div class="stat"><div class="num g">237/237</div><div class="lbl">全專案迴歸 Passed</div></div>
+    </div>
+  </div>
+
+  <!-- ================= PART 1 ================= -->
+  <div class="section-title"><span class="tag">STEP 01</span><h2>動手寫之前：先摸清楚這個 repo 怎麼測試</h2></div>
+  <p class="section-sub">在建立任何一個 Fact 之前，先確認三件事：測試專案用什麼框架、既有測試怎麼命名與組織、repo 是否有明文的測試規範。</p>
+
+  <div class="timeline">
+
+    <div class="step" data-n="1">
+      <div class="card">
+        <div class="stepline">確認測試專案結構</div>
+        <h3>找到 <code class="inline">Nine1.Promotion.Console.BL.Tests</code>，看它已經裝了什麼</h3>
+        <p>檢查 <code class="inline">.csproj</code> 發現既有工具鏈是 <b>xUnit + NSubstitute</b>（沒有 FluentAssertions，也沒有 NUnit 實際被使用——雖然套件參考裡還掛著）。</p>
+        <p>同時用 glob 找有沒有既存的 <code class="inline">MemberCollectionAuditServiceTest</code>，確認是要新建檔案而不是修改既有測試。</p>
+        <div class="term">
+          <div class="bar"><span class="r"></span><span class="y"></span><span class="g"></span><span class="file">Nine1.Promotion.Console.BL.Tests.csproj</span></div>
+          <pre><span class="ty">PackageReference</span> xunit
+<span class="ty">PackageReference</span> NSubstitute
+<span class="ty">ProjectReference</span> ..\Nine1.Promotion.Console.BL
+<span class="ty">ProjectReference</span> ..\Nine1.Promotion.Console.DA.Repositories</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-n="2">
+      <div class="card">
+        <div class="stepline">讀規範文件</div>
+        <h3>repo 內建的 <code class="inline">unit_test_generation.instructions.md</code></h3>
+        <p>這份 repo 明確規定了測試怎麼寫，不是隨意風格：</p>
+        <ul style="margin:0 0 0 18px; color:var(--ink-dim); font-size:14.5px;">
+          <li>類別命名 <code class="inline">&lt;ClassUnderTest&gt;Test(s)</code>，用 <b>NSubstitute</b> mock 所有外部依賴</li>
+          <li>每個測試遵守 <b>Arrange–Act–Assert</b> 三段式</li>
+          <li>測試方法名稱本身就要用 <b>繁體中文</b> 表達意圖（等同 DisplayName）</li>
+          <li>需覆蓋所有分支 / 邊界 / 例外情境，不只是 happy path</li>
+        </ul>
+        <div class="fix">✓ 這代表：測試命名不是「Test1、Test2」，而是像 <code class="inline">AuditByRedisDataAsync_呼叫下游取得客群資訊失敗_該筆Id仍應保留於Match清單中</code> 這種「情境_行為」語意化命名。</div>
+      </div>
+    </div>
+
+    <div class="step" data-n="3">
+      <div class="card">
+        <div class="stepline">參考既有測試的寫法</div>
+        <h3>看 <code class="inline">PromotionEngineServiceTest.cs</code> 抓「這個 repo 慣用的骨架」</h3>
+        <p>觀察既有測試如何在建構子準備 mock 依賴、如何組出 SUT（受測物件）。確定了要沿用同一套模式：
+        欄位存放每個介面的 <code class="inline">Substitute.For&lt;T&gt;()</code>，建構子做共用初始化，再用一個私有 <code class="inline">GetSystemUnderTest()</code> 方法組裝受測服務。</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= PART 2 ================= -->
+  <div class="section-title"><span class="tag">STEP 02</span><h2>設計骨架：讓 6 個測試不必重複寫 20 行 Arrange</h2></div>
+  <p class="section-sub"><code class="inline">AuditByRedisDataAsync</code> 一路依賴 7 個外部服務，若每個測試都重新 mock 一次，會非常吵雜。因此先解決「共用 Happy Path」的問題。</p>
+
+  <div class="timeline">
+
+    <div class="step" data-n="4">
+      <div class="card">
+        <div class="stepline">建構子：把「正常路徑」都掛好</div>
+        <h3>先讓所有依賴回傳「正常會發生的資料」，測試只需覆寫差異點</h3>
+        <p>在測試類別建構子中，把 <code class="inline">GetUniqueKeyAsync</code>、<code class="inline">Load&lt;PayProcessContextEntity&gt;</code>、
+        <code class="inline">GetTradesOrderSlaveIdListAsync</code>、<code class="inline">GetListAsync</code>、<code class="inline">GetRequestHeaders</code>、
+        <code class="inline">PutObjectAsync</code> 全部先掛上「不出錯」的預設回應。</p>
+        <div class="term">
+          <div class="bar"><span class="r"></span><span class="y"></span><span class="g"></span><span class="file">MemberCollectionAuditServiceTests.cs</span></div>
+          <pre><span class="kw">public</span> <span class="fn">MemberCollectionAuditServiceTests</span>()
+{
+    <span class="c1">// 建構共用的正常路徑依賴，讓每個測試案例只需覆寫與該案例相關的行為</span>
+    _tradesOrderGroupRepository.GetUniqueKeyAsync(ShopId, OrderCode).Returns(UniqueKey);
+    _userRedisDataService.Load&lt;PayProcessContextEntity&gt;(...).Returns(<span class="kw">new</span> PayProcessContextEntity());
+    _tradesOrderGroupRepository.GetTradesOrderSlaveIdListAsync(ShopId, OrderCode)
+        .Returns(<span class="kw">new</span> List&lt;<span class="ty">long</span>&gt; { 1 });
+    _promotionHttpClient.GetRequestHeaders(ShopId).Returns(<span class="kw">new</span> Dictionary&lt;<span class="ty">string</span>,<span class="ty">string</span>&gt;());
+    _amazonS3.PutObjectAsync(...).Returns(<span class="kw">new</span> PutObjectResponse { HttpStatusCode = HttpStatusCode.OK });
+}</pre>
+        </div>
+        <div class="fix">✓ 好處：每個測試只需要覆寫「真正影響該情境」的那一兩個 mock，其餘全部沿用共用設定，測試本體因此更聚焦、更好讀。</div>
+      </div>
+    </div>
+
+    <div class="step" data-n="5">
+      <div class="card">
+        <div class="stepline">抽出資料建構的 Helper</div>
+        <h3><code class="inline">SetupMemberCollectionIdList(...)</code> —— 把「準備幾個客群 Id」變成一行呼叫</h3>
+        <p>6 個測試裡有 4 個都需要「準備 N 筆 <code class="inline">MemberCollectionId</code> 並讓 <code class="inline">GetPromotionMemberCollectionByTargetMemberTypeDefAsync</code> 回傳對應資料」。
+        於是抽成一個 <code class="inline">params string[]</code> 的私有方法，避免每個測試重複寫同樣的 5 行組裝邏輯。</p>
+        <div class="term">
+          <div class="bar"><span class="r"></span><span class="y"></span><span class="g"></span><span class="file">MemberCollectionAuditServiceTests.cs</span></div>
+          <pre><span class="kw">private void</span> <span class="fn">SetupMemberCollectionIdList</span>(<span class="kw">params</span> <span class="ty">string</span>[] ids)
+{
+    <span class="kw">var</span> list = ids.Select((id, i) => <span class="kw">new</span> PromotionEngine
+    {
+        PromotionEngine_Id = i + 1,
+        PromotionEngine_MemberCollectionId = id
+    }).ToList();
+
+    _promotionEngineRepository
+        .GetPromotionMemberCollectionByTargetMemberTypeDefAsync(ShopId, ..., Arg.Any&lt;List&lt;<span class="ty">int</span>&gt;&gt;())
+        .Returns(list);
+}</pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= PART 3 ================= -->
+  <div class="section-title"><span class="tag">STEP 03</span><h2>逐一把「風險點」寫成測試</h2></div>
+  <p class="section-sub">測試案例不是隨機湊數，而是對應開發過程中每一個曾經被質疑、修正過的邏輯分支——確保未來不會悄悄回歸。</p>
+
+  <div class="tests">
+    <div class="test-item">
+      <div class="check">01</div>
+      <div class="txt"><b>含 FIRST_PURCHASE 標籤</b><span>驗證核心過濾邏輯：該筆 Id 不應出現在傳給 <code class="inline">MemberMatch</code> 的清單中</span></div>
+    </div>
+    <div class="test-item">
+      <div class="check">02</div>
+      <div class="txt"><b>皆無 FIRST_PURCHASE 標籤</b><span>反向驗證：正常情境不該被誤過濾，全部 Id 應完整送入 Match</span></div>
+    </div>
+    <div class="test-item">
+      <div class="check">03</div>
+      <div class="txt"><b>下游查詢單筆失敗</b><span>最關鍵案例——驗證失敗不會造成資料遺失，而是以「無標籤」保留參與比對</span></div>
+    </div>
+    <div class="test-item">
+      <div class="check">04</div>
+      <div class="txt"><b>全部皆為首購客群</b><span>驗證過濾後為空清單時，提早 return，不呼叫 Match、不寫入 S3</span></div>
+    </div>
+    <div class="test-item">
+      <div class="check">05</div>
+      <div class="txt"><b>無任何客群相關活動</b><span>驗證最前面的空清單守門邏輯，確認完全不觸發下游 API</span></div>
+    </div>
+    <div class="test-item">
+      <div class="check">06</div>
+      <div class="txt"><b>payProcessContext 為 null</b><span>驗證最上層的早期 return，避免對不存在的付款資訊繼續處理</span></div>
+    </div>
+  </div>
+
+  <div class="timeline" style="margin-top:40px;">
+
+    <div class="step milestone" data-n="7">
+      <div class="card">
+        <div class="stepline">最關鍵的一個測試怎麼寫出來</div>
+        <h3>Case 03：用 <code class="inline">.Throws()</code> 模擬下游失敗，斷言「Id 沒有消失」</h3>
+        <p>這個案例是整組測試的核心——直接對應開發過程中「呼叫失敗還是要 add to list」的正確性修正。
+        寫法上刻意讓兩個 Id 走不同路徑：一筆正常回應、一筆讓 mock 拋出例外，最後只斷言 <b>兩者都出現在送進 <code class="inline">MemberMatch</code> 的清單裡</b>。</p>
+        <div class="term">
+          <div class="bar"><span class="r"></span><span class="y"></span><span class="g"></span><span class="file">MemberCollectionAuditServiceTests.cs</span></div>
+          <pre>[<span class="fn">Fact</span>]
+[<span class="fn">Trait</span>(<span class="str">"Category"</span>, nameof(MemberCollectionAuditService.AuditByRedisDataAsync))]
+<span class="kw">public async</span> <span class="ty">Task</span> AuditByRedisDataAsync_呼叫下游取得客群資訊失敗_該筆Id仍應保留於Match清單中()
+{
+    <span class="c1">// Arrange</span>
+    SetupMemberCollectionIdList(normalId, failedId);
+    _promotionHttpClient.GetMemberCollectionDataAsync(normalId, Arg.Any&lt;...&gt;())
+        .Returns(<span class="kw">new</span> GetMemberCollectionsResponseEntity { CollectionId = normalId, CollectionTags = <span class="kw">new</span>() });
+    _promotionHttpClient.GetMemberCollectionDataAsync(failedId, Arg.Any&lt;...&gt;())
+        .Throws(<span class="kw">new</span> HttpRequestException(<span class="str">"下游服務逾時"</span>));
+
+    <span class="c1">// Act</span>
+    <span class="kw">await</span> sut.AuditByRedisDataAsync(ShopId, OrderCode, MemberId);
+
+    <span class="c1">// Assert — 下游查詢失敗不代表該客群為首購客群，仍須保留稽核</span>
+    <span class="kw">await</span> _promotionHttpClient.Received(1).MemberMatch(
+        Arg.Is&lt;MemberMatchRequestEntity&gt;(x =>
+            x.MemberCollectionIdList.Contains(normalId) &&
+            x.MemberCollectionIdList.Contains(failedId)),
+        Arg.Any&lt;...&gt;());
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-n="8">
+      <div class="card">
+        <div class="stepline">用「行為驗證」取代「回傳值斷言」</div>
+        <h3>為什麼每個測試最後都是 <code class="inline">Received(1)</code> / <code class="inline">DidNotReceive()</code>，而不是檢查回傳值？</h3>
+        <p><code class="inline">AuditByRedisDataAsync</code> 是 <code class="inline">Task</code>（無回傳值）的稽核流程，真正的「結果」體現在<b>它跟哪些依賴互動、傳了什麼參數</b>。
+        因此測試策略統一採用 NSubstitute 的<b>互動驗證（interaction verification）</b>：</p>
+        <ul style="margin:0 0 0 18px; color:var(--ink-dim); font-size:14.5px;">
+          <li><code class="inline">Received(1).MemberMatch(Arg.Is&lt;...&gt;(x => ...))</code> — 驗證傳入的客群清單內容是否正確</li>
+          <li><code class="inline">DidNotReceive().MemberMatch(...)</code> — 驗證提早結束時真的沒有繼續往下呼叫</li>
+          <li><code class="inline">DidNotReceive().PutObjectAsync(...)</code> — 連帶驗證早期 return 也不會誤觸發 S3 上傳</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= PART 4 ================= -->
+  <div class="section-title"><span class="tag">STEP 04</span><h2>寫完不代表對：編譯、修錯、再驗證</h2></div>
+  <p class="section-sub">測試程式碼本身也會犯錯。這一段記錄從「寫完」到「真正綠燈」之間，實際踩到的編譯問題與修正過程。</p>
+
+  <div class="timeline">
+
+    <div class="step" data-n="9">
+      <div class="card">
+        <div class="stepline">第一次 Build：CS1061</div>
+        <h3>「'Task&lt;T&gt;' does not contain a definition for 'Throws'」</h3>
+        <p><code class="inline">.Throws(new HttpRequestException(...))</code> 在 NSubstitute 裡其實是一個擴充方法，
+        預設的 <code class="inline">using NSubstitute;</code> 並不包含它——它被拆分在獨立的命名空間裡。</p>
+        <div class="compare">
+          <div class="col bad">
+            <div class="head">✗ 編譯失敗</div>
+            <pre>using NSubstitute;
+// 缺少 Throws 擴充方法所在的 namespace</pre>
+          </div>
+          <div class="col good">
+            <div class="head">✓ 補上正確的 using</div>
+            <pre>using NSubstitute;
+using NSubstitute.ExceptionExtensions;</pre>
+          </div>
+        </div>
+        <div class="fix">✓ 補上 <code class="inline">NSubstitute.ExceptionExtensions</code> 後，測試專案重新編譯通過（0 Error）。</div>
+      </div>
+    </div>
+
+    <div class="step" data-n="10">
+      <div class="card">
+        <div class="stepline">先跑目標測試，再跑全專案迴歸</div>
+        <h3>兩層驗證：先窄後寬</h3>
+        <p>第一步只用 <code class="inline">--filter</code> 鎖定新測試，確認 6 個案例本身邏輯正確：</p>
+        <div class="term">
+          <div class="bar"><span class="r"></span><span class="y"></span><span class="g"></span><span class="file">terminal</span></div>
+          <pre>$ dotnet test --filter <span class="str">"FullyQualifiedName~MemberCollectionAuditServiceTests"</span>
+Passed!  - Failed: 0, Passed: 6, Skipped: 0, Total: 6</pre>
+        </div>
+        <p>接著跑<b>整個測試專案</b>，確認新增測試沒有跟既有 237 個測試互相干擾（例如共用靜態狀態、命名衝突）：</p>
+        <div class="term">
+          <div class="bar"><span class="r"></span><span class="y"></span><span class="g"></span><span class="file">terminal</span></div>
+          <pre>$ dotnet test Nine1.Promotion.Console.BL.Tests.csproj
+Total tests: 237
+Passed: 237 · Failed: 0 · 0 Error(s)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step milestone" data-n="11">
+      <div class="card">
+        <div class="stepline">回頭質疑自己引入的依賴</div>
+        <h3>「有需要用 FluentAssertions 嗎？能不能用既有套件處理？」</h3>
+        <p>整份測試檔裡，唯一用到 <code class="inline">FluentAssertions</code> 的地方只有一行：驗證「不拋例外」。
+        為了這一行語法糖，新增了一個測試專案原本沒有的套件依賴，並不划算。</p>
+        <div class="compare">
+          <div class="col bad">
+            <div class="head">✗ 為了一行斷言新增套件</div>
+            <pre>var act = async () =>
+  await sut.AuditByRedisDataAsync(...);
+await act.Should().NotThrowAsync();</pre>
+          </div>
+          <div class="col good">
+            <div class="head">✓ xUnit 原生行為完全等價</div>
+            <pre>// 若執行過程中拋出未捕捉例外，
+// xUnit 會自動將該測試標記為失敗
+await sut.AuditByRedisDataAsync(...);</pre>
+          </div>
+        </div>
+        <div class="fix">✓ 移除該行多餘的斷言語法、移除 <code class="inline">using FluentAssertions;</code>，並從 <code class="inline">.csproj</code> 拿掉套件參考，重新 build + test 確認 6 個案例依然全數通過。</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="commit">
+    <div class="commit-kicker">Final State · Verified</div>
+    <h3>一份不多背套件、只測真正會壞掉之處的測試檔</h3>
+    <ul>
+      <li>沿用 repo 既有慣例：xUnit + NSubstitute，測試方法以繁中「情境_行為」命名</li>
+      <li>建構子集中管理共用 Happy Path Mock，搭配 <code class="inline">SetupMemberCollectionIdList</code> Helper 降低重複</li>
+      <li>6 個 Fact 對應 6 個曾被質疑、修正過的邏輯分支，全部以互動驗證（<code class="inline">Received</code> / <code class="inline">DidNotReceive</code>）斷言</li>
+      <li>修正一次編譯錯誤（<code class="inline">NSubstitute.ExceptionExtensions</code> 缺漏）</li>
+      <li>移除非必要的 FluentAssertions 依賴，維持測試工具鏈最小化</li>
+    </ul>
+    <div class="runline">$ dotnet test — Passed: 6, Failed: 0, Skipped: 0 · Total (全專案): 237 Passed, 0 Failed</div>
+  </div>
+
+  <footer>
+    <span>MemberCollectionAuditServiceTests.cs · Nine1.Promotion.Console.BL.Tests</span>
+    <span>generated as test.log · 2026-07-30</span>
+  </footer>
+
+</div>
+</body>
+</html>

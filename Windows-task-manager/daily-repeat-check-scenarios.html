@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>類型 C（Daily + 高頻重複 / 心跳模式）× Gap 比對 · 情境圖解</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#fcd34d; background:rgba(252,211,77,.12); border:1px solid rgba(252,211,77,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 26px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:720px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--warn-soft); color:var(--warn); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:9px 11px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+
+  /* Timeline */
+  .timeline-box {
+    background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:28px 24px 40px; margin:18px 0; position:relative;
+  }
+  .timeline-title { font-size:13px; font-weight:700; color:#334155; margin-bottom:26px; }
+  .track { position:relative; height:56px; margin:0 10px; border-top:3px solid #cbd5e1; }
+  .hour-tick { position:absolute; top:-3px; width:2px; height:9px; background:#94a3b8; }
+  .tick-label { position:absolute; top:12px; transform:translateX(-50%); font-size:10.5px; color:#94a3b8; white-space:nowrap; }
+
+  .rep-dot {
+    position:absolute; top:-7px; transform:translateX(-50%);
+    width:12px; height:12px; border-radius:50%; background:#fde68a; border:2px solid #fff;
+  }
+  .rep-dot.fail { background:var(--danger); }
+
+  .check-mark { position:absolute; top:-9px; transform:translateX(-50%); text-align:center; }
+  .check-mark .diamond { width:14px; height:14px; background:#94a3b8; transform:rotate(45deg); margin:0 auto; border:2px solid #fff; }
+  .check-mark.hit .diamond { background: var(--accent); }
+  .check-mark .clabel { font-size:10px; color:#64748b; margin-top:6px; white-space:nowrap; }
+
+  .event-dot { position:absolute; top:-16px; transform:translateX(-50%); text-align:center; }
+  .event-dot .dot {
+    width:26px; height:26px; border-radius:50%; color:#fff; display:flex;
+    align-items:center; justify-content:center; font-size:12px; font-weight:700; margin:0 auto; border:3px solid #fff;
+  }
+  .event-dot .dot.ok { background:var(--ok); }
+  .event-dot .dot.danger { background:var(--danger); }
+  .event-dot .dot.warn { background:var(--warn); }
+  .event-dot .dot.purple { background:var(--purple); }
+  .event-dot .dot.grey { background:#94a3b8; }
+  .event-dot .label { font-size:11px; font-weight:700; color:#334155; margin-top:4px; white-space:nowrap; }
+
+  .delay-bracket { position:absolute; top:34px; height:0; border-top:2px dashed var(--danger); }
+  .delay-bracket .dtext { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:11px; font-weight:700; color:var(--danger); white-space:nowrap; }
+
+  .legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:16px; font-size:12.5px; color:#334155; }
+  .legend .item { display:flex; align-items:center; gap:6px; }
+  .legend .dot { width:14px; height:14px; border-radius:50%; display:inline-block; }
+
+  footer { text-align:center; color:var(--muted); font-size:12.5px; margin-top:36px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">類型 C · Daily + 高頻重複 Trigger（心跳模式）</span>
+  <h1>「每 30 分鐘巡檢一次」下，永久性高頻心跳任務的監控設計</h1>
+  <p>Trigger 範例：<code>Daily, Start 2:01:52 PM, Repeat every 5 min for a duration of 1 day</code>。
+    因為 Duration（1天）剛好等於 Daily 的 Recur 間隔（1天），這個重複區間會無縫銜接下一次的 Daily 觸發，
+    <strong>實務上等於是永久性、不間斷每 5 分鐘觸發一次的心跳</strong>，起始時間的幾點幾分只是相位，不具監控意義。
+    採用策略：<strong>放棄「起始時間 / 視窗查詢」模型，改用 <code>gap = now − task.LastRunTime</code> 心跳比對</strong>，
+    <code>GapThresholdMinutes=10</code>，巡檢頻率 <code>CheckIntervalMinutes=30</code>。</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">1</span>基本設定回顧 —— 為什麼改用「心跳模式」取代起始時間 / 視窗查詢</h2>
+    <table>
+      <tr><th>項目</th><th>說明</th></tr>
+      <tr><td>Trigger 本質</td><td><code>Daily Start=2:01:52 PM</code> + <code>Repeat every 5min, Duration=1day</code> → Duration 剛好等於 Recur 間隔，重複區間無縫銜接下一次 Daily 觸發，等於<strong>永久不間斷心跳</strong></td></tr>
+      <tr><td>❌ 方案一：只檢查起始時間</td><td>只要起始時間有觸發就結案，之後永遠不再檢查 → <strong>若起始成功、但後續心跳中途整個停止，完全偵測不到</strong>（本文件先前版本的缺陷）</td></tr>
+      <tr><td>❌ 方案二：固定視窗查詢（如「往前拉10分鐘查 GetHistory」）</td><td>視窗與巡檢間隔（30分鐘）沒有對齊時，兩次巡檢的視窗之間會出現查詢死角（例如視窗10分鐘、間隔30分鐘 → 中間20分鐘無人查詢），屬於離散片段覆蓋，設計上不直觀且容易抓錯參數</td></tr>
+      <tr><td>✅ 採用方案：心跳 Gap 比對</td><td>直接讀取 Task Scheduler 內建屬性 <code>task.LastRunTime</code>（每次任一次重複實例觸發都會更新），用連續數值 <code>gap = now − LastRunTime</code> 與閾值比較，不受視窗覆蓋問題影響</td></tr>
+    </table>
+    <div class="note">
+      <strong>核心概念：</strong>心跳型任務要監控的重點不是「哪一個時間點該執行」，而是「心跳有沒有持續在跳」。
+      用連續遞增的 <code>gap</code> 取代離散的時間點比對，任何時刻中斷都必然反映在 <code>gap</code> 變大上，不會有查詢死角。
+    </div>
+    <pre>// 心跳模式：不需要 GetRunTimes / GetHistory，直接讀 Task 屬性
+GapThresholdMinutes = 10      // 允許心跳延遲的容忍值（跑1~2次的緩衝）
+CheckIntervalMinutes = 30     // 巡檢頻率（沿用原設定，不影響心跳判斷）
+
+for task in enabledTasks:
+    if task.Trigger 不是心跳型（無 Repetition 或 Duration≠Recur間隔）:
+        continue  // 交由類型A/B/C(單次)邏輯處理
+
+    gap = now - task.LastRunTime
+
+    if gap <= GapThresholdMinutes:
+        正常（心跳持續）
+        if task.LastTaskResult != 0:
+            告警「最近一次心跳執行失敗」
+    else:
+        告警「心跳已停止，距離最後一次執行已 {gap} 分鐘」</pre>
+    <div class="note warn">
+      <strong>邊界防護：</strong>若 Duration 到期後心跳循環自然結束（如任務被改為只跑固定一段時間），
+      應先確認 <code>now</code> 是否仍落在 Trigger 的有效範圍內（<code>StartBoundary ≤ now ≤ EndBoundary</code>），避免循環正常結束後被誤判為心跳停止。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>情境 1：正常心跳 —— gap 持續維持在低值</h2>
+    <p class="sub">Trigger 起始相位 2:01:52 PM（僅決定分鐘尾數），巡檢時間 3:00 PM。心跳持續正常運作，最近一次執行是 2:58 PM。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">2:50 PM ── 2:53 ── 2:58(最後心跳) ── 3:00 PM（巡檢）</div>
+      <div class="track" style="height:70px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:50</div>
+        <div class="hour-tick" style="left:45%;"></div><div class="tick-label" style="left:45%;">2:53</div>
+        <div class="hour-tick" style="left:85%;"></div><div class="tick-label" style="left:85%;">2:58</div>
+        <div class="hour-tick" style="left:97%;"></div><div class="tick-label" style="left:97%;">3:00</div>
+
+        <div class="rep-dot" style="left:5%;"></div>
+        <div class="rep-dot" style="left:25%;"></div>
+        <div class="rep-dot" style="left:45%;"></div>
+        <div class="rep-dot" style="left:65%;"></div>
+        <div class="event-dot" style="left:85%;">
+          <div class="dot ok">✓</div>
+          <div class="label">2:58 PM<br>LastRunTime</div>
+        </div>
+        <div class="check-mark hit" style="left:97%;">
+          <div class="diamond"></div>
+          <div class="clabel">3:00 巡檢<br>gap=2分鐘 ≤10 → 正常</div>
+        </div>
+      </div>
+    </div>
+    <div class="note ok">
+      <strong>判斷邏輯：</strong><code>gap = 3:00 − 2:58 = 2分鐘 ≤ GapThreshold(10分鐘)</code> → 心跳正常，若 <code>LastTaskResult==0</code> 則完全不告警。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>情境 2：心跳中途停止 —— gap 超過閾值立即告警（不用等下一輪）</h2>
+    <p class="sub">心跳原本正常運作，但在 12:50 PM 之後排程器異常，整個重複循環完全停止觸發。巡檢時間 3:00 PM。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">12:50 PM(最後一次心跳) ────────── 130分鐘無心跳 ────────── 3:00 PM（巡檢）</div>
+      <div class="track" style="height:70px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">12:50</div>
+        <div class="hour-tick" style="left:97%;"></div><div class="tick-label" style="left:97%;">3:00</div>
+
+        <div class="event-dot" style="left:5%;">
+          <div class="dot ok">✓</div>
+          <div class="label">12:50 PM<br>最後一次 LastRunTime</div>
+        </div>
+        <div class="delay-bracket" style="left:5%; width:92%;">
+          <div class="dtext">gap = 130分鐘（心跳已停）</div>
+        </div>
+        <div class="check-mark hit" style="left:97%;">
+          <div class="diamond"></div>
+          <div class="clabel" style="color:var(--danger); font-weight:700;">3:00 巡檢<br>gap=130分鐘 &gt;10 → ⚠ 立即告警</div>
+        </div>
+      </div>
+    </div>
+    <div class="note danger">
+      <strong>判斷邏輯：</strong><code>gap = 3:00 − 12:50 = 130分鐘 &gt; GapThreshold(10分鐘)</code> → 直接判定「心跳已停止」，<strong>不需要等下一輪巡檢</strong>，
+      因為 <code>gap</code> 是連續即時數值，超標的當下已是既定事實，不像單次事件模型需要「時間閘門」等待。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>情境 3：視窗查詢法 vs LastRunTime Gap 法 —— 為何視窗法會漏</h2>
+    <p class="sub">情境：心跳在 <code>3:05 PM</code> 之後整個停止。巡檢頻率 30 分鐘一次，分別在 <code>3:00 PM</code> 與 <code>3:30 PM</code> 執行。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">❌ 舊方案：往前拉10分鐘查 GetHistory（離散視窗，覆蓋不到 3:00~3:20）</div>
+      <div class="track" style="height:90px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:50</div>
+        <div class="hour-tick" style="left:50%;"></div><div class="tick-label" style="left:50%;">3:00</div>
+        <div class="hour-tick" style="left:60%;"></div><div class="tick-label" style="left:60%;">3:05(最後心跳)</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:30</div>
+
+        <div class="delay-bracket" style="left:40%; width:10%; top:14px; border-color:var(--accent);">
+          <div class="dtext" style="color:var(--accent);">3:00查詢窗[2:50,3:00]</div>
+        </div>
+        <div class="delay-bracket" style="left:85%; width:10%; top:14px; border-color:var(--accent);">
+          <div class="dtext" style="color:var(--accent);">3:30查詢窗[3:20,3:30]</div>
+        </div>
+        <div class="delay-bracket" style="left:50%; width:35%; top:50px;">
+          <div class="dtext">⚠ [3:00,3:20]死角區間 — 兩次視窗都查不到</div>
+        </div>
+        <div class="event-dot" style="left:60%; top:-30px;">
+          <div class="dot warn">✓</div>
+          <div class="label">3:05<br>最後心跳</div>
+        </div>
+      </div>
+    </div>
+    <div class="note warn">
+      本例中即使有死角，因為 3:30 巡檢查 <code>[3:20,3:30]</code> 依然查無紀錄仍會告警（只是延後一輪發現），
+      但視窗大小與間隔沒對齊時，參數設計上容易讓人誤解覆蓋範圍，邏輯不夠直觀。
+    </div>
+
+    <div class="timeline-box">
+      <div class="timeline-title">✅ 新方案：gap = now − LastRunTime（連續數值，無死角）</div>
+      <div class="track" style="height:70px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">2:50</div>
+        <div class="hour-tick" style="left:50%;"></div><div class="tick-label" style="left:50%;">3:00</div>
+        <div class="hour-tick" style="left:60%;"></div><div class="tick-label" style="left:60%;">3:05(最後心跳)</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">3:30</div>
+
+        <div class="event-dot" style="left:60%;">
+          <div class="dot ok">✓</div>
+          <div class="label">3:05<br>LastRunTime</div>
+        </div>
+        <div class="check-mark" style="left:50%;">
+          <div class="diamond"></div>
+          <div class="clabel">3:00巡檢<br>gap=-5分(尚未發生)</div>
+        </div>
+        <div class="check-mark hit" style="left:95%;">
+          <div class="diamond"></div>
+          <div class="clabel" style="color:var(--danger); font-weight:700;">3:30巡檢<br>gap=25分&gt;10 → ⚠告警</div>
+        </div>
+      </div>
+    </div>
+    <div class="note ok">
+      <strong>結論：</strong>不論心跳停在哪個確切時刻，下一次巡檢時 <code>gap</code> 一定能真實反映「距今已經多久沒心跳」，
+      不會有「剛好卡在兩次查詢窗之間」而被永久忽略的風險。<code>LastRunTime</code> 是連續遞增的狀態值，不是離散片段。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span>情境 4：多個心跳型任務併存 —— 各自獨立比對 Gap</h2>
+    <p class="sub">任務 X：每5分鐘心跳（正常）｜ 任務 Y：每10分鐘心跳（已停止92分鐘）｜ 任務 Z：每3分鐘心跳（剛好卡在邊界 gap=11分鐘）</p>
+
+    <table>
+      <tr><th>任務</th><th>LastRunTime</th><th>Now</th><th>Gap</th><th>GapThreshold</th><th>判斷</th></tr>
+      <tr><td>任務 X</td><td>2:58 PM</td><td>3:00 PM</td><td>2分鐘</td><td>10分鐘</td><td style="color:var(--ok); font-weight:700;">✅ 正常</td></tr>
+      <tr><td>任務 Y</td><td>1:28 PM</td><td>3:00 PM</td><td>92分鐘</td><td>10分鐘</td><td style="color:var(--danger); font-weight:700;">⚠ 心跳已停止</td></tr>
+      <tr><td>任務 Z</td><td>2:49 PM</td><td>3:00 PM</td><td>11分鐘</td><td>10分鐘</td><td style="color:var(--danger); font-weight:700;">⚠ 剛好超標，告警（可觀察是否為偶發延遲）</td></tr>
+    </table>
+    <div class="note">
+      <strong>重點：</strong>各任務的重複頻率（5分鐘/10分鐘/3分鐘）完全不影響判斷邏輯，只需要各自的 <code>GapThreshold</code>
+      合理反映「該任務允許漏跳幾次心跳」（例如：頻率5分鐘、閾值10分鐘＝允許漏1~2次；頻率10分鐘的任務，閾值可能要拉高到20~30分鐘才合理，
+      閾值應依各任務的心跳頻率個別設定，不建議所有任務套用同一個固定值）。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span>小結：類型 C 心跳模式設計總覽</h2>
+    <table>
+      <tr><th>面向</th><th>類型 C（心跳模式，本版）</th><th>類型 A/B（單次事件模式）</th></tr>
+      <tr><td>判斷依據</td><td><code>gap = now − task.LastRunTime</code>（連續數值）</td><td><code>GetRunTimes</code> 展開的離散候選時間點 T</td></tr>
+      <tr><td>是否需要 GetHistory 視窗查詢</td><td>不需要，直接讀 <code>LastRunTime</code> / <code>LastTaskResult</code> 屬性</td><td>需要，<code>GetHistory(taskPath, T−Tolerance, T+Tolerance)</code></td></tr>
+      <tr><td>是否需要時間閘門等待</td><td>不需要，gap 超標即是既定事實，立即告警</td><td>需要，<code>now ≥ T+Tolerance</code> 才能下結論</td></tr>
+      <tr><td>是否需要 resolved 去重</td><td>不需要，每輪巡檢都是獨立評估同一個持續狀態</td><td>需要，避免 Lookback 重疊造成同一筆 T 被重複告警</td></tr>
+      <tr><td>閾值設定</td><td><code>GapThresholdMinutes</code>，依任務心跳頻率個別調整</td><td><code>ToleranceMinutes=30 / LookbackMinutes=90</code>，全類型共用</td></tr>
+      <tr><td>邊界防護</td><td>需確認 <code>now</code> 落在 Trigger 有效範圍內，避免循環自然結束被誤判</td><td>需確認跨日/跨週邊界的候選歸屬正確</td></tr>
+    </table>
+    <div class="note ok">
+      <strong>結論：</strong>心跳型任務（Duration＝Recur間隔、無縫銜接的高頻重複）本質上是「持續運作中的狀態」，
+      不適合套用單次事件模型（起始時間檢查 / 視窗查詢）。改用 <code>gap = now − LastRunTime</code> 直接比對，
+      邏輯更簡單、沒有查詢死角，且能同時涵蓋「從未啟動」與「啟動後中途停止」兩種情況，不需要額外的前處理（清空 Repetition）或去重機制。
+    </div>
+  </section>
+</div>
+
+<footer>Windows Task Scheduler 監控設計 · 類型 C（Daily + 高頻重複 / 心跳模式）× gap=now−LastRunTime 情境圖解</footer>
+
+</body>
+</html>

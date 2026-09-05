@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+        <PackageReference Include="Nine1.BaseSDK.Console" Version="10.0.0" />
+        <PackageReference Condition="'$(isDatabaseSecretNone)' != 'true'" Include="Nine1.BaseSDK.Extensions.Data.SecretProvider" Version="10.0.0" />
+        <PackageReference Condition="'$(isDatabaseSecretPostgresql)' == 'true'" Include="Npgsql" Version="10.0.2" />
+        <PackageReference Condition="'$(isDatabaseSecretMssql)' == 'true'" Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+    <PackageReference Include="Nine1.NMQ.Extensions.Hosting" Version="1.2.0" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.Development.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+        </Content>
+    <Content Update="appsettings.Production.json">
+      <DependentUpon>
+                appsettings.json</DependentUpon>
+        </Content>
+    <Content Update="appsettings.Staging.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+        </Content>
+    </ItemGroup>
+
+</Project>

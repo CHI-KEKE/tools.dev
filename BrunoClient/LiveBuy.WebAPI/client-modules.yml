@@ -1,0 +1,27 @@
+info:
+  name: client-modules
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/api/translations/client-modules/zh-HK"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+        "modules": [
+          "frontend.stream_settings",
+          "backend.general"
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

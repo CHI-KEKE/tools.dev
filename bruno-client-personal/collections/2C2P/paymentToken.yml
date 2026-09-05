@@ -1,0 +1,144 @@
+info:
+  name: paymentToken
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://sandbox-pgw.2c2p.com/payment/4.1/paymentToken
+  body:
+    type: json
+    data: |-
+      {
+        "merchantID": "{{merchant-id}}",
+        "invoiceNo": "{{invoice-no}}",
+        "description": "item 1",
+        "amount": 105.0,
+        "currencyCode": "{{currency-code}}",
+        "frontendReturnUrl": "{{frontend-return-url}}",
+        "backendReturnUrl": "{{backend-return-url}}",
+        "paymentChannel": ["CC"],
+        "cardTokens": ["24102310433350485273", "02410231637541834494"],
+        "tokenize": true, //// 記住信用卡
+        "installmentPeriodFilter": [6, 12],
+        "request3DS":"F" //// 信用卡強制 3D 驗證
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const jwt = require("jsonwebtoken");
+
+        const getVal = (name) =>
+          bru.getRequestVar(name) ||
+          bru.getCollectionVar(name) ||
+          bru.getEnvVar(name);
+
+        const secretKey = getVal("secret-key");
+
+        if (!secretKey || !String(secretKey).trim()) {
+          throw new Error('找不到 "secret-key"');
+        }
+
+        const payload = {
+          merchantID: getVal("merchant-id"),
+          invoiceNo: getVal("invoice-no"),
+          description: "item 1",
+          amount: 105,
+          currencyCode: getVal("currency-code"),
+          frontendReturnUrl: getVal("frontend-return-url"),
+          backendReturnUrl: getVal("backend-return-url"),
+          paymentChannel: ["CC"],
+          cardTokens: ["24102310433350485273", "02410231637541834494"],
+          tokenize: true,
+          installmentPeriodFilter: [6, 12]
+        };
+
+        const jwtToken = jwt.sign(payload, secretKey, {
+          algorithm: "HS256",
+          noTimestamp: true
+        });
+
+        bru.setVar("jwtToken", jwtToken);
+
+        req.setBody({
+          payload: jwtToken
+        });
+
+        console.log("Resolved payload:", JSON.stringify(payload));
+        console.log("JWT token:", jwtToken);
+    - type: after-response
+      code: |-
+        const jwt = require("jsonwebtoken");
+
+        // 讀 response body
+        let responseBody = res.getBody();
+
+        if (!responseBody) {
+          throw new Error("Response body 為空");
+        }
+
+        if (typeof responseBody === "string") {
+          try {
+            responseBody = JSON.parse(responseBody);
+          } catch (e) {
+            throw new Error("Response body 不是合法 JSON");
+          }
+        }
+
+        const encryptedPayload = responseBody.payload;
+
+        if (!encryptedPayload || !String(encryptedPayload).trim()) {
+          throw new Error('Response 裡找不到 "payload"');
+        }
+
+        // decode JWT（不驗簽，只做解碼）
+        const decoded = jwt.decode(encryptedPayload);
+
+        if (!decoded) {
+          throw new Error("JWT decode 失敗");
+        }
+
+        // 取欄位
+        const respCode = decoded.respCode || "";
+        const respDesc = decoded.respDesc || "";
+        const paymentToken = decoded.paymentToken || "";
+        const webPaymentUrl = decoded.webPaymentUrl || "";
+
+        // 模擬你 C# 的 responseEntity
+        const responseEntity = {
+          ReturnCode: "WaitingToPay",
+          ReturnMessage: `${respCode},${respDesc}`,
+          Action: {
+            Action: "Redirect",
+            WebPaymentUrl: webPaymentUrl
+          },
+          ExtendInfo: {
+            PaymentToken: paymentToken,
+            RawData: responseBody,
+            RawDataDecrypt: decoded
+          }
+        };
+
+        // 存成變數，後續 request 可直接用
+        bru.setVar("resp-code", respCode);
+        bru.setVar("resp-desc", respDesc);
+        bru.setVar("payment-token", paymentToken);
+        bru.setVar("web-payment-url", webPaymentUrl);
+        bru.setVar("decoded-payload", JSON.stringify(decoded));
+        bru.setVar("response-entity", JSON.stringify(responseEntity));
+
+        // log 出來方便你看
+        console.log("==== 2C2P Decoded JWT ====");
+        console.log(JSON.stringify(decoded, null, 2));
+
+        console.log("==== Simulated responseEntity ====");
+        console.log(JSON.stringify(responseEntity, null, 2));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,25 @@
+info:
+  name: cancel
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/Cancel/TwoCTwoP/{{TG}}"
+  body:
+    type: json
+    data: |-
+      {
+         "request_id": "{{$guid}}",
+         "transaction_id": "{{TG}}",
+         "currency": "{{currency-code}}",
+         "extend_info": {
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

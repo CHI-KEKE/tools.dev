@@ -1,0 +1,41 @@
+info:
+  name: shoppingCartV4-insertItem
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/webapi/ShoppingCartV4/InsertItem?v=0&shopId={{shopId}}&lang=zh-TW"
+  headers:
+    - name: Cookie
+      value: ""
+  params:
+    - name: v
+      value: "0"
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+    - name: lang
+      value: zh-TW
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "shopId": 10230,
+          "salePageId": 885038,
+          "saleProductSKUId": 1272052,
+          "qty": 5,
+          "optionalTypeDef": "",
+          "optionalTypeId": 0,
+          "IsSkuQtyAccumulate": true,
+          "optionalInfo": null
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

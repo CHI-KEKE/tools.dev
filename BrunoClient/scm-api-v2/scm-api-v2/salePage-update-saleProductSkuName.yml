@@ -1,0 +1,120 @@
+info:
+  name: salePage-update-saleProductSkuName
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/SCM/V2/SalePage/UpdateSaleProductSkuName?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "SalePageId": 61863,
+          "ShopId":5,
+          "Content": [
+                  {
+                      "OptionDefaultName": "顏色",
+                      "OptionTargetName": "顏色",
+                      "ItemDefaultName": [
+                          "藍天藍白天白改",
+                          "綠",
+                          "白偷偷改成粉紅色"
+                      ],
+                      "ItemTargetName": [
+                          "藍天藍白天白",
+                          "綠",
+                          "白偷偷改成粉紅色"
+                      ]
+                  },
+                  {
+                      "OptionDefaultName": "SAN",
+                      "OptionTargetName": "SAN",
+                      "ItemDefaultName": [
+                          "高",
+                          "中",
+                          "低"
+                      ],
+                      "ItemTargetName": [
+                          "高",
+                          "中",
+                          "低"
+                      ]
+                  }
+              ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |+
+  {
+      "SalePageId": 61892,
+      "ShopId":2,
+      "Content": [
+              {
+                  "OptionDefaultName": "尺寸啦DEMO改_0619",
+                  "OptionTargetName": "尺寸啦DEMO改_0619",
+                  "ItemDefaultName": [
+                      "M爹斯DEMO改_0619"
+                  ],
+                  "ItemTargetName": [
+                      "M爹斯DEMO改_0619"
+                  ]
+              },
+               {
+                  "OptionDefaultName": "顏色改_0619",
+                  "OptionTargetName": "顏色改_0619",
+                  "ItemDefaultName": [
+                      "紅紅的改_0619"
+                  ],
+                  "ItemTargetName": [
+                      "紅紅的改_0619"
+                  ]
+              }
+          ]
+  }
+
+
+
+  {
+      "SalePageId": 61892,
+      "ShopId":2,
+      "Content": [
+              {
+                  "OptionDefaultName": "尺寸",
+                  "OptionTargetName": "尺寸啦",
+                  "ItemDefaultName": [
+                      "M"
+                  ],
+                  "ItemTargetName": [
+                      "M"
+                  ]
+              },
+               {
+                  "OptionDefaultName": "顏色啦",
+                  "OptionTargetName": "顏色啦",
+                  "ItemDefaultName": [
+                      "紅紅紅"
+                  ],
+                  "ItemTargetName": [
+                      "紅紅紅"
+                  ]
+              }
+          ]
+  }
+

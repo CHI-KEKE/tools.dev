@@ -1,0 +1,36 @@
+info:
+  name: 🏪 [shop API]  訂單狀態
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/scm/V2/SalesOrder/CheckIsValid?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: "{\r
+
+      \    \"shopId\": 83,\r
+
+      \    \"SourceType\": \"SalesOrderGroup\",\r
+
+      \    \"SourceCode\": \"MG260126T00001\"\r
+
+      } "
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

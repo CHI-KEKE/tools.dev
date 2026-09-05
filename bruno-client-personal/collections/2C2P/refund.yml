@@ -1,0 +1,174 @@
+info:
+  name: refund
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: https://demo2.2c2p.com/2C2PFrontend/PaymentAction/2.0/action
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const jose = require("jose");
+
+        const getVal = (name) =>
+          bru.getRequestVar(name) ||
+          bru.getCollectionVar(name) ||
+          bru.getEnvVar(name);
+
+        function chunkString(str, size) {
+          const chunks = [];
+          for (let i = 0; i < str.length; i += size) {
+            chunks.push(str.slice(i, i + size));
+          }
+          return chunks.join("\n");
+        }
+
+        function base64CertToPem(base64Cert) {
+          return `-----BEGIN CERTIFICATE-----\n${chunkString(base64Cert, 64)}\n-----END CERTIFICATE-----`;
+        }
+
+        function base64PrivateKeyToPem(base64PrivateKey) {
+          return `-----BEGIN PRIVATE KEY-----\n${chunkString(base64PrivateKey, 64)}\n-----END PRIVATE KEY-----`;
+        }
+
+        const merchantId = getVal("merchant-id");
+        const invoiceNo = getVal("invoice-no");
+        const refundAmount = getVal("refund-amount");
+        const processType = getVal("process-type") || "R";
+        const version = getVal("refund-version") || "3.8";
+
+        const receiverPublicKeyBase64 = getVal("receiver-public-key");
+        const senderPrivateKeyBase64 = getVal("sender-private-key");
+
+        if (!merchantId) throw new Error('缺少 "merchant-id"');
+        if (!invoiceNo) throw new Error('缺少 "invoice-no"');
+        if (!refundAmount) throw new Error('缺少 "refund-amount"');
+        if (!receiverPublicKeyBase64) throw new Error('缺少 "receiver-public-key"');
+        if (!senderPrivateKeyBase64) throw new Error('缺少 "sender-private-key"');
+
+        const payload =
+          `<PaymentProcessRequest>` +
+          `<version>${version}</version>` +
+          `<merchantID>${merchantId}</merchantID>` +
+          `<invoiceNo>${invoiceNo}</invoiceNo>` +
+          `<actionAmount>${refundAmount}</actionAmount>` +
+          `<processType>${processType}</processType>` +
+          `</PaymentProcessRequest>`;
+
+        async function buildRefundRequest() {
+          const receiverPublicCertPem = base64CertToPem(receiverPublicKeyBase64);
+          const senderPrivateKeyPem = base64PrivateKeyToPem(senderPrivateKeyBase64);
+
+          const receiverPublicKey = await jose.importX509(receiverPublicCertPem, "RSA-OAEP");
+          const senderPrivateKey = await jose.importPKCS8(senderPrivateKeyPem, "PS256");
+
+          const encoder = new TextEncoder();
+
+          // Step 1: JWE
+          const jweRequest = await new jose.CompactEncrypt(encoder.encode(payload))
+            .setProtectedHeader({ alg: "RSA-OAEP", enc: "A256GCM" })
+            .encrypt(receiverPublicKey);
+
+          // Step 2: JWS（簽 raw string，不是 JSON claims）
+          const jwsRequest = await new jose.CompactSign(encoder.encode(jweRequest))
+            .setProtectedHeader({ alg: "PS256" })
+            .sign(senderPrivateKey);
+
+          bru.setVar("refund-xml-payload", payload);
+          bru.setVar("refund-jwe-request", jweRequest);
+          bru.setVar("refund-jws-request", jwsRequest);
+
+          req.setBody(jwsRequest);
+
+          console.log("==== Refund XML Payload ====");
+          console.log(payload);
+
+          console.log("==== Refund JWE Request ====");
+          console.log(jweRequest);
+
+          console.log("==== Refund JWS Request ====");
+          console.log(jwsRequest);
+        }
+
+        return buildRefundRequest();
+    - type: after-response
+      code: |-
+        const jose = require("jose");
+
+        const getVal = (name) =>
+          bru.getRequestVar(name) ||
+          bru.getCollectionVar(name) ||
+          bru.getEnvVar(name);
+
+        function chunkString(str, size) {
+          const chunks = [];
+          for (let i = 0; i < str.length; i += size) {
+            chunks.push(str.slice(i, i + size));
+          }
+          return chunks.join("\n");
+        }
+
+        function base64CertToPem(base64Cert) {
+          return `-----BEGIN CERTIFICATE-----\n${chunkString(base64Cert, 64)}\n-----END CERTIFICATE-----`;
+        }
+
+        function base64PrivateKeyToPem(base64PrivateKey) {
+          return `-----BEGIN PRIVATE KEY-----\n${chunkString(base64PrivateKey, 64)}\n-----END PRIVATE KEY-----`;
+        }
+
+        const receiverPublicKeyBase64 = getVal("receiver-public-key");
+        const senderPrivateKeyBase64 = getVal("sender-private-key");
+
+        if (!receiverPublicKeyBase64) throw new Error('缺少 "receiver-public-key"');
+        if (!senderPrivateKeyBase64) throw new Error('缺少 "sender-private-key"');
+
+        let responseBody = res.getBody();
+
+        if (!responseBody) {
+          throw new Error("Response body 為空");
+        }
+
+        if (typeof responseBody !== "string") {
+          responseBody = JSON.stringify(responseBody);
+        }
+
+        async function decodeRefundResponse() {
+          const receiverPublicCertPem = base64CertToPem(receiverPublicKeyBase64);
+          const senderPrivateKeyPem = base64PrivateKeyToPem(senderPrivateKeyBase64);
+
+          const verifyKey = await jose.importX509(receiverPublicCertPem, "PS256");
+          const decryptKey = await jose.importPKCS8(senderPrivateKeyPem, "RSA-OAEP");
+
+          // Step 1: Verify JWS，取出原始 JWE 字串
+          const verified = await jose.compactVerify(responseBody, verifyKey);
+          const jweResponse = new TextDecoder().decode(verified.payload);
+
+          // Step 2: Decrypt JWE
+          const decrypted = await jose.compactDecrypt(jweResponse, decryptKey);
+          const finalResponse = new TextDecoder().decode(decrypted.plaintext);
+
+          bru.setVar("refund-jws-response", responseBody);
+          bru.setVar("refund-jwe-response", jweResponse);
+          bru.setVar("refund-final-response", finalResponse);
+
+          console.log("==== Refund JWS Response ====");
+          console.log(responseBody);
+
+          console.log("==== Refund JWE Response ====");
+          console.log(jweResponse);
+
+          console.log("==== Refund Final Response ====");
+          console.log(finalResponse);
+        }
+
+        return decodeRefundResponse();
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

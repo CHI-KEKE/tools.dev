@@ -1,0 +1,46 @@
+### QA
+#@host=https://salepage-service-api-internal.qa.91dev.tw/
+#@host=https://salepage-service-api-internal.qa1.hk.91dev.tw/
+@host=https://salepage-service-api-internal.qa1.my.91dev.tw/
+
+### PP
+##@host=https://salepage-service-api-internal.pp.91dev.tw/
+
+### Prod
+#@host=https://salepage-service-api-internal.91app.io/
+#@host=https://salepage-service-api-internal.hk.91app.io/
+#@host=https://salepage-service-api-internal.my.91app.io/
+
+@traceId=TEST-{{$guid}}
+@shopId=2
+@collectionId=f_371602421048813312
+
+### 詢問 FixedSalepageCollection 的結果有哪些 salepage ids，能依 salepage id 來過濾
+POST {{host}}api/fixed-salepage-collections/{{collectionId}}:query-for-salepages
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+{
+  "selection": "item-id-only",
+  "pagination": {
+    "pageIndex": 0,
+    "pageSize": 10
+  }
+}
+
+### 傳入一批 salepage ids，回傳 salepage ids 分別在哪些圈選內 (FilterBySalepageCollectionIds)
+POST {{host}}api/salepage-collections:match
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+{
+   "salepageIds":[
+    62094
+   ],
+   "matchType":"FilterBySalepageCollectionIds",
+   "targetSalepageCollectionIds":[
+      "f_371602421048813312"
+   ]
+}

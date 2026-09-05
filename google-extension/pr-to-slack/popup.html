@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PR to Slack</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      width: 380px;
+      background: #f8f9fa;
+      color: #1d1c1d;
+    }
+
+    .header {
+      background: #4a154b;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .header svg { flex-shrink: 0; }
+
+    .section {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e8e8e8;
+      background: white;
+    }
+
+    .section label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #616061;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .pr-info {
+      font-size: 13px;
+      color: #1d1c1d;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .pr-title { font-weight: 600; margin-bottom: 4px; }
+    .pr-url   { color: #1264a3; font-size: 12px; }
+
+    .not-pr {
+      font-size: 13px;
+      color: #e8912d;
+      background: #fff8ee;
+      border: 1px solid #f0d9b5;
+      border-radius: 4px;
+      padding: 8px 10px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 110px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 8px;
+      font-size: 13px;
+      resize: vertical;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+
+    textarea:focus { outline: none; border-color: #4a154b; }
+
+    .templates {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .tpl-btn {
+      font-size: 11px;
+      padding: 3px 8px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      color: #616061;
+    }
+
+    .tpl-btn:hover { border-color: #4a154b; color: #4a154b; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #616061;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+
+    input[type="text"]:focus { outline: none; border-color: #4a154b; }
+
+    .webhook-hint {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .footer {
+      padding: 12px 16px;
+      background: white;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    #sendBtn {
+      flex: 1;
+      background: #4a154b;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 0;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #sendBtn:hover   { background: #611f69; }
+    #sendBtn:disabled { background: #aaa; cursor: not-allowed; }
+
+    #resetBtn {
+      background: white;
+      color: #616061;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 9px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    #resetBtn:hover { border-color: #888; color: #1d1c1d; }
+
+    #status {
+      font-size: 12px;
+      text-align: center;
+      padding: 6px 16px 10px;
+      min-height: 24px;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    .status-ok  { color: #2eb886; font-weight: 600; }
+    .status-err { color: #e01e5a; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <svg width="20" height="20" viewBox="0 0 54 54" fill="none">
+      <path d="M19.7 0C17 0 14.8 2.2 14.8 4.9s2.2 4.9 4.9 4.9h4.9V4.9C24.6 2.2 22.4 0 19.7 0z" fill="#E01E5A"/>
+      <path d="M19.7 13.1H4.9C2.2 13.1 0 15.3 0 18s2.2 4.9 4.9 4.9h14.8c2.7 0 4.9-2.2 4.9-4.9s-2.2-4.9-4.9-4.9z" fill="#E01E5A"/>
+      <path d="M54 18c0-2.7-2.2-4.9-4.9-4.9s-4.9 2.2-4.9 4.9v4.9h4.9c2.7 0 4.9-2.2 4.9-4.9z" fill="#36C5F0"/>
+      <path d="M40.9 18v14.8c0 2.7 2.2 4.9 4.9 4.9s4.9-2.2 4.9-4.9V18c0-2.7-2.2-4.9-4.9-4.9s-4.9 2.2-4.9 4.9z" fill="#36C5F0"/>
+      <path d="M34.3 54c2.7 0 4.9-2.2 4.9-4.9s-2.2-4.9-4.9-4.9h-4.9v4.9c0 2.7 2.2 4.9 4.9 4.9z" fill="#2EB886"/>
+      <path d="M34.3 40.9H49.1c2.7 0 4.9-2.2 4.9-4.9s-2.2-4.9-4.9-4.9H34.3c-2.7 0-4.9 2.2-4.9 4.9s2.2 4.9 4.9 4.9z" fill="#2EB886"/>
+      <path d="M0 36c0 2.7 2.2 4.9 4.9 4.9s4.9-2.2 4.9-4.9v-4.9H4.9C2.2 31.1 0 33.3 0 36z" fill="#ECB22E"/>
+      <path d="M13.1 36V21.2c0-2.7-2.2-4.9-4.9-4.9S3.3 18.5 3.3 21.2V36c0 2.7 2.2 4.9 4.9 4.9s4.9-2.2 4.9-4.9z" fill="#ECB22E"/>
+    </svg>
+    PR to Slack
+  </div>
+
+  <!-- PR 資訊 -->
+  <div class="section" id="prSection">
+    <label>🕊️ PR 見つけた！</label>
+    <div class="pr-info" id="prInfo">載入中...</div>
+  </div>
+
+  <!-- 訊息編輯 -->
+  <div class="section">
+    <label>💬 Slack メッセージ（編集可能）</label>
+    <div class="templates">
+      <button class="tpl-btn" data-tpl="review">🔍 レビューを依頼する</button>
+      <button class="tpl-btn" data-tpl="merged">✅ マージ済み</button>
+      <button class="tpl-btn" data-tpl="simple">📎 純リンク</button>
+    </div>
+    <label class="checkbox-row">
+      <input type="checkbox" id="autoSend" checked />
+      Auto Send Mode（<!here> from @allenlin）
+    </label>
+    <label class="checkbox-row">
+      <input type="checkbox" id="showBranch" checked />
+      顯示 Branch Name
+    </label>
+    <label class="checkbox-row">
+      <input type="checkbox" id="aiReview" />
+      ✅已確認 ai code review 結果
+    </label>
+    <textarea id="msgArea" placeholder="メッセージは自動で入力されます..."></textarea>
+  </div>
+
+  <!-- Slack Channel -->
+  <div class="section">
+    <label>📢 Slack Channel</label>
+    <input type="text" id="slackChannel" placeholder="e.g. rd-sg-slacktest" />
+    <div class="webhook-hint">設定後會自動儲存</div>
+  </div>
+
+  <!-- 發送按鈕 -->
+  <div class="footer">
+    <button id="resetBtn">重置</button>
+    <button id="sendBtn">發送到 Slack ▶</button>
+  </div>
+  <div id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

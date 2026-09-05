@@ -1,0 +1,34 @@
+info:
+  name: 🟧 [multilingualContent] getList
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{base-url}}/Scm/V2/MultilingualContent/GetList?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 12944,
+        "Ids": [951191],
+        "LangArray": ["en-US","ja-JP"],
+        "Module": "SalePage"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

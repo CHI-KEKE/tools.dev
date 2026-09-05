@@ -1,0 +1,83 @@
+info:
+  name: 🟧 [multilingualContent] insertOrUpdate
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{base-url}}/Scm/V2/MultilingualContent/InsertOrUpdate?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "ShopId": 5,
+          "Id": "61864",
+          "Module": "SaleProductSKU",
+          "Lang": "en-US",
+          "Content": [
+                  {
+                      "OptionDefault": "甜度",
+                      "OptionTarget": "Sweet",
+                      "ItemDefault": [
+                          "無糖",
+                          "少糖",
+                          "abc"
+                      ],
+                      "ItemTarget": [
+                          "NoSugar",
+                          "LessSugar",
+                          "idontknow"
+                      ]
+                  },
+                  {
+                      "OptionDefault": "冰塊",
+                      "OptionTarget": "Ice",
+                      "ItemDefault": [
+                          "去冰",
+                          "無冰"
+                      ],
+                      "ItemTarget": [
+                          "NoIce",
+                          "NoIceAtall"
+                      ]
+                  }
+              ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## sku
+
+
+  {
+     "Data": "{\"ShopId\":5,\"Id\":\"61864\",\"Module\":\"SaleProductSKU\",\"Lang\":\"en-US\",\"Content\":[{\"OptionDefault\":\"甜度\",\"OptionTarget\":\"Sweet\",\"ItemDefault\":[\"無糖\",\"少糖\"],\"ItemTarget\":[\"NoSugarOHOH\",\"LessSugar\"]},{\"OptionDefault\":\"冰塊\",\"OptionTarget\":\"Ice\",\"ItemDefault\":[\"去冰\",\"無冰\"],\"ItemTarget\":[\"NoIce\",\"LessIce\"]}]}"
+  }
+
+
+  ## salepage
+
+  {
+     "Data": "{\"ShopId\": 5,\"Id\": \"61340\",\"Module\": \"SalePage\",\"Lang\": \"zh-HK\",\"Content\": {\"Title\": \"豪南\",\"SEOTitle\": \"\",\"SEOKeywords\": \"\",\"SEODescription\": \"\",\"LangId\": \"zh-HK\"}}"
+  }
+
+  ## saleproductdesc
+
+  {
+     "Data": "{\"ShopId\": 5,\"Id\": \"980\",\"Module\": \"SaleProductDesc\",\"Lang\": \"en-US\",\"Content\": {\"SubDescript\": \"test2\",\"ShortContent\": \"test2\\nTEST\\nTEST\",\"Content\": \"<p>test3<br></p>\",\"LangId\": \"en-US\"}}"
+  }

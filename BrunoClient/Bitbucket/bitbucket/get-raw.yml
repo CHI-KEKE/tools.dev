@@ -1,0 +1,17 @@
+info:
+  name: get-raw
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: https://api.bitbucket.org/2.0/repositories/allenlin0000/nineyi.databases/src/bd8d7c283710a5c286e11593f6c8b6b5cd64b13d/CrmDB/Programmability/StoredProcedures/csp_AssignECouponMultiCustomVerificationCode.sql
+  auth:
+    type: bearer
+    token: ATCTT3xFfGN0EzhP-LXJWr0chclLp-o11i5RGxnjiXKVemmb6GIeAxkJpjb9V9akwi-istQboujNPcJiG2ZSOBVgSCl8h0KHPZygSoHvyQNNTvtwrRlQBC_h-qrvSEsMuy2u9UTgtOHN2DZu6A2UPVDhoOGjOsK3Q7kv-x2c1dUT_ZRI6eSz_k0=0E2229E0
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

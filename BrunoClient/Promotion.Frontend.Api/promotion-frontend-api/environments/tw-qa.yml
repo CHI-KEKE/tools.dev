@@ -1,0 +1,4 @@
+name: tw-qa
+variables:
+  - name: base-url
+    value: https://promotion-api-frontend-internal.qa.91dev.tw

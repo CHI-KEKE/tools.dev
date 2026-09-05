@@ -1,0 +1,1093 @@
+info:
+  name: cart-calculate
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/cart-calculate"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+    - name: N1-TRACE-ID
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+        "Shop": {
+          "Id": 2,
+          "Tags": [
+            "EnableAddOns"
+          ]
+        },
+        "User": {
+          "Id": "33132",
+          "Tags": [
+            "AllUserScope",
+            "CrmShopMemberCard:32"
+          ],
+          "OuterId": "tina20241018",
+          "ShopMemberCode": "syKJM0lLY09hSeIEGA6U2Q=="
+        },
+        "Shipping": {
+          "ShippingProfileTypeDef": "LocationPickup",
+          "ShippingAreaId": 0,
+          "CountryProfileId": 1,
+          "LocationId": 0
+        },
+        "Payment": {
+          "PayProfileTypeDef": "CreditCardOnce_Stripe"
+        },
+        "Channel": "Web",
+        "CurrencyDecimalDigits": 2,
+        "SalepageSkuList": [
+          {
+            "SalepageId": 61383,
+            "SkuId": 85168,
+            "Price": 19.90,
+            "SuggestPrice": 99.90,
+            "Qty": 2,
+            "Flags": [
+              "AddOnsSalepageMajor"
+            ],
+            "OuterId": "",
+            "Tags": null,
+            "OptionalTypeDef": "",
+            "OptionalTypeId": 0,
+            "CartExtendInfoItemGroup": 0,
+            "CartExtendInfoItemType": "Major",
+            "PointsPayPair": null,
+            "CartExtendInfos": [
+              {
+                "RuleTypeDef": "AddOnsSalepageExtraPurchase",
+                "RuleId": 10000026,
+                "RelatedItemCartIds": [],
+                "RelatedSubItemCount": 0
+              }
+            ],
+            "CartId": 44211
+          }
+        ],
+        "FeeList": [
+          {
+            "Id": 38,
+            "Type": "ShippingFee",
+            "Price": 0,
+            "Payment": 0,
+            "ExtendInfo": {
+              "ShippingProfileTypeDef": "LocationPickup",
+              "IsDomesticWeightPricing": false,
+              "TemperatureTypeDef": "Normal",
+              "ShippingType": "38",
+              "ShippingAreaId": 1,
+              "IsLocal": false
+            }
+          }
+        ],
+        "Promotion": {
+          "Code": null,
+          "PromoCodePoolGroupId": null,
+          "SelectedDesignatePaymentPromotionId": 0
+        },
+        "CouponSetting": {
+          "MultipleRedeem": {
+            "Discount": {
+              "IsMultiple": true,
+              "Qty": 10
+            },
+            "Gift": {
+              "IsMultiple": true,
+              "Qty": 9999
+            },
+            "Shipping": {
+              "IsMultiple": false,
+              "Qty": 1
+            }
+          },
+          "CouponList": [],
+          "Options": {
+            "IsVerbose": false,
+            "IsCouponPreSelect": false,
+            "IncludeRecordDetail": false
+          },
+          "LoyaltyPoint": {
+            "CheckoutPoint": 0,
+            "CheckoutDiscountPrice": 0,
+            "IsSelected": false,
+            "IsSetDiscountPrice": false,
+            "TotalPoint": 832191.0000
+          }
+        }
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+    "Shop": {
+      "Id": 2,
+      "Tags": [
+        "EnableAddOns"
+      ]
+    },
+    "User": {
+      "Id": "32905",
+      "Tags": [
+        "AllUserScope",
+        "CrmShopMemberCard:31"
+      ],
+      "OuterId": "tina20241018",
+      "ShopMemberCode": "qDDkYy5/lcEcdXEj9YTfXg=="
+    },
+    "Shipping": {
+      "ShippingProfileTypeDef": "Home",
+      "ShippingAreaId": 0,
+      "CountryProfileId": 85,
+      "LocationId": 0
+    },
+    "Payment": {
+      "PayProfileTypeDef": "CreditCardOnce_Stripe"
+    },
+    "Channel": "Web",
+    "CurrencyDecimalDigits": 2,
+    "SalepageSkuList": [
+      {
+        "SalepageId": 62210,
+        "SkuId": 86588,
+        "Price": 1.00,
+        "SuggestPrice": 1.00,
+        "Qty": 15,
+        "Flags": [
+          "AddOnsSalepageMajor"
+        ],
+        "OuterId": "allen0505",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 0,
+        "CartExtendInfoItemType": "Major",
+        "PointsPayPair": null,
+        "CartExtendInfos": [
+          {
+            "RuleTypeDef": "AddOnsSalepageExtraPurchase",
+            "RuleId": 10000026,
+            "RelatedItemCartIds": [],
+            "RelatedSubItemCount": 0
+          }
+        ],
+        "CartId": 44360
+      }
+    ],
+    "FeeList": [
+      {
+        "Id": 440,
+        "Type": "ShippingFee",
+        "Price": 0,
+        "Payment": 0,
+        "ExtendInfo": {
+          "ShippingProfileTypeDef": "Home",
+          "IsDomesticWeightPricing": false,
+          "TemperatureTypeDef": "Normal",
+          "ShippingType": "440",
+          "ShippingAreaId": 84,
+          "IsLocal": true
+        }
+      }
+    ],
+    "Promotion": {
+      "Code": null,
+      "PromoCodePoolGroupId": null,
+      "SelectedDesignatePaymentPromotionId": 0
+    },
+    "CouponSetting": {
+      "MultipleRedeem": {
+        "Discount": {
+          "IsMultiple": true,
+          "Qty": 10
+        },
+        "Gift": {
+          "IsMultiple": true,
+          "Qty": 9999
+        },
+        "Shipping": {
+          "IsMultiple": false,
+          "Qty": 1
+        }
+      },
+      "CouponList": [],
+      "Options": {
+        "IsVerbose": false,
+        "IsCouponPreSelect": false,
+        "IncludeRecordDetail": false
+      },
+      "LoyaltyPoint": {
+        "CheckoutPoint": 0,
+        "CheckoutDiscountPrice": 0,
+        "IsSelected": false,
+        "IsSetDiscountPrice": false,
+        "TotalPoint": 78978.0000
+      }
+    }
+  }
+
+
+
+
+  {
+    "Shop": {
+      "Id": 2,
+      "Tags": ["EnableAddOns"]
+    },
+    "User": {
+      "Id": "33162",
+      "Tags": [
+        "AllUserScope",
+        "CrmShopMemberCard:5"
+      ],
+      "OuterId": "tina20241018",
+      "ShopMemberCode": "AaDXmnAATUgiKVxjoxIciQ=="
+    },
+    "Shipping": {
+      "ShippingProfileTypeDef": "SFBusinessStores",
+      "ShippingAreaId": 0,
+      "CountryProfileId": 85,
+      "LocationId": 0
+    },
+    "Payment": {
+      "PayProfileTypeDef": "CreditCardOnce_Stripe"
+    },
+    "Channel": "Web",
+    "CurrencyDecimalDigits": 2,
+    "SalepageSkuList": [
+      {
+        "SalepageId": 62210,
+        "SkuId": 86588,
+        "Price": 1,
+        "SuggestPrice": 1,
+        "Qty": 100,
+        "Flags": ["AddOnsSalepageMajor"],
+        "OuterId": "allen0505",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 0,
+        "CartExtendInfoItemType": "Major",
+        "PointsPayPair": null,
+        "CartExtendInfos": [
+          {
+            "RuleTypeDef": "AddOnsSalepageExtraPurchase",
+            "RuleId": 10000026,
+            "RelatedItemCartIds": [],
+            "RelatedSubItemCount": 0
+          }
+        ],
+        "CartId": 44118
+      }
+    ],
+    "FeeList": [
+      {
+        "Id": 466,
+        "Type": "ShippingFee",
+        "Price": 0,
+        "Payment": 0,
+        "ExtendInfo": {
+          "ShippingProfileTypeDef": "SFBusinessStores",
+          "IsDomesticWeightPricing": false,
+          "TemperatureTypeDef": "Normal",
+          "ShippingType": "466",
+          "ShippingAreaId": 0,
+          "IsLocal": true
+        }
+      }
+    ],
+    "Promotion": {
+      "Code": null,
+      "PromoCodePoolGroupId": null,
+      "SelectedDesignatePaymentPromotionId": 0
+    },
+    "CouponSetting": {
+      "MultipleRedeem": {
+        "Discount": {
+          "IsMultiple": true,
+          "Qty": 10
+        },
+        "Gift": {
+          "IsMultiple": true,
+          "Qty": 9999
+        },
+        "Shipping": {
+          "IsMultiple": false,
+          "Qty": 1
+        }
+      },
+      "CouponList": [
+        {
+          "CouponId": 2111,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-04-30T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970201,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2111,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-04-30T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970202,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2096,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-29T00:00:00",
+          "RedeemEndDateTime": "2025-05-03T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970074,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2096,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-29T00:00:00",
+          "RedeemEndDateTime": "2025-05-03T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970075,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2104,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-11-14T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970170,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2104,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-11-14T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970171,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2104,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-11-14T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970200,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        }
+      ],
+
+      "LoyaltyPoint": {
+        "CheckoutPoint": 0,
+        "CheckoutDiscountPrice": 0,
+        "IsSelected": false,
+        "IsSetDiscountPrice": false,
+        "TotalPoint": 153349.0000
+      }
+    },
+        "Options": {
+        "IsVerbose": true,
+        "IsCouponPreSelect": false,
+        "IncludeRecordDetail": false
+      }
+  }
+
+
+
+  {
+    "Shop": {
+      "Id": 11,
+      "Tags": ["EnableAddOns"]
+    },
+    "User": {
+      "Id": "33502",
+      "Tags": [
+        "AllUserScope",
+        "CrmShopMemberCard:24",
+        "FirstPurchase"
+      ],
+      "OuterId": null,
+      "ShopMemberCode": "97+Gy73RMbUYz5ZqI4EuEA=="
+    },
+    "Shipping": {
+      "ShippingProfileTypeDef": "Home",
+      "ShippingAreaId": 0,
+      "CountryProfileId": 85,
+      "LocationId": 0
+    },
+    "Payment": {
+      "PayProfileTypeDef": "TwoCTwoP"
+    },
+    "Channel": "AppIOS",
+    "CurrencyDecimalDigits": 2,
+    "SalepageSkuList": [
+      {
+        "SalepageId": 62227,
+        "SkuId": 86642,
+        "Price": 4.5,
+        "SuggestPrice": 10000.0,
+        "Qty": 14,
+        "Flags": ["AddOnsSalepageMajor"],
+        "OuterId": "123",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 1748912653812,
+        "CartExtendInfoItemType": "Major",
+        "PointsPayPair": null,
+        "CartExtendInfos": [
+          {
+            "RuleTypeDef": "AddOnsSalepageExtraPurchase",
+            "RuleId": 10000050,
+            "RelatedItemCartIds": [45514],
+            "RelatedSubItemCount": 0
+          }
+        ],
+        "CartId": 45513
+      },
+      {
+        "SalepageId": 60393,
+        "SkuId": 84109,
+        "Price": 6.66,
+        "SuggestPrice": 100.0,
+        "Qty": 1,
+        "Flags": ["AddOnsSalepageSub"],
+        "OuterId": "",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 1748912653812,
+        "CartExtendInfoItemType": "Sub",
+        "PointsPayPair": null,
+        "CartExtendInfos": [
+          {
+            "RuleTypeDef": "AddOnsSalepageExtraPurchase",
+            "RuleId": 10000050,
+            "RelatedItemCartIds": [],
+            "RelatedSubItemCount": 0
+          }
+        ],
+        "CartId": 45514
+      }
+    ],
+    "FeeList": [
+      {
+        "Id": 221,
+        "Type": "ShippingFee",
+        "Price": 0,
+        "Payment": 0,
+        "ExtendInfo": {
+          "ShippingProfileTypeDef": "Home",
+          "IsDomesticWeightPricing": false,
+          "TemperatureTypeDef": "Normal",
+          "ShippingType": "221",
+          "ShippingAreaId": 84,
+          "IsLocal": true
+        }
+      }
+    ],
+    "Promotion": {
+      "Code": null,
+      "PromoCodePoolGroupId": null,
+      "SelectedDesignatePaymentPromotionId": 0
+    },
+    "CouponSetting": {
+      "MultipleRedeem": {
+        "Discount": {
+          "IsMultiple": false,
+          "Qty": 1
+        },
+        "Gift": {
+          "IsMultiple": true,
+          "Qty": 9999
+        },
+        "Shipping": {
+          "IsMultiple": false,
+          "Qty": 1
+        }
+      },
+      "CouponList": [],
+      "Options": {
+        "IsVerbose": false,
+        "IsCouponPreSelect": true,
+        "IncludeRecordDetail": false
+      },
+      "LoyaltyPoint": {
+        "CheckoutPoint": 0,
+        "CheckoutDiscountPrice": 0,
+        "IsSelected": false,
+        "IsSetDiscountPrice": false,
+        "TotalPoint": 0.0
+      }
+    }
+  }
+
+
+  ## 10230
+
+  {
+    "Shop": {
+      "Id": 10230,
+      "Tags": [
+        "EnableAddOns"
+      ]
+    },
+    "User": {
+      "Id": "189931",
+      "Tags": [
+        "AllUserScope",
+        "CrmShopMemberCard:1092"
+      ],
+      "OuterId": "WEN0000128",
+      "ShopMemberCode": "GxIsTyOcziwP+pJhkSLFmQ=="
+    },
+    "Shipping": {
+      "ShippingProfileTypeDef": "Family",
+      "ShippingAreaId": 0,
+      "CountryProfileId": 1,
+      "LocationId": 0
+    },
+    "Payment": {
+      "PayProfileTypeDef": "Family",
+      "MultiPayItems": []
+    },
+    "Channel": "Web",
+    "CurrencyDecimalDigits": 0,
+    "SalepageSkuList": [
+      {
+        "SalepageId": 1517244,
+        "SkuId": 2112836,
+        "Price": 99.0,
+        "SuggestPrice": 100.0,
+        "Qty": 2,
+        "Flags": [],
+        "OuterId": "20109-2003F",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 0,
+        "CartExtendInfoItemType": "Major",
+        "PointsPayPair": null,
+        "CartExtendInfos": [],
+        "CartId": 3734119
+      }
+    ],
+    "FeeList": [
+      {
+        "Id": 29764,
+        "Type": "ShippingFee",
+        "Price": 0,
+        "Payment": 0,
+        "ExtendInfo": {
+          "ShippingProfileTypeDef": "Family",
+          "IsDomesticWeightPricing": false,
+          "TemperatureTypeDef": "Normal",
+          "ShippingType": "29764",
+          "ShippingAreaId": 0,
+          "IsLocal": true
+        }
+      }
+    ],
+    "Promotion": {
+      "Code": null,
+      "PromoCodePoolGroupId": null,
+      "SelectedDesignatePaymentPromotionId": 0
+    },
+    "CouponSetting": {
+      "MultipleRedeem": {
+        "Discount": {
+          "IsMultiple": true,
+          "Qty": 10
+        },
+        "Gift": {
+          "IsMultiple": true,
+          "Qty": 1
+        },
+        "Shipping": {
+          "IsMultiple": false,
+          "Qty": 1
+        }
+      },
+      "CouponList": [
+        {
+          "CouponId": 30028,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-08-01T00:00:00",
+          "RedeemEndDateTime": "2025-08-10T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 2197445639,
+          "OrderMaxDiscountRate": 0.0,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 29772,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-08-01T00:00:00",
+          "RedeemEndDateTime": "2025-08-20T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 2197445638,
+          "OrderMaxDiscountRate": 0.0,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 29680,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-08-01T00:00:00",
+          "RedeemEndDateTime": "2025-11-08T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 2197445637,
+          "OrderMaxDiscountRate": 0.0,
+          "IsOverOrderMaxDiscount": false
+        }
+      ],
+      "Options": {
+        "IsVerbose": false,
+        "IsCouponPreSelect": true,
+        "IncludeRecordDetail": false
+      },
+      "LoyaltyPoint": {
+        "CheckoutPoint": 0,
+        "CheckoutDiscountPrice": 0,
+        "IsSelected": false,
+        "IsSetDiscountPrice": false,
+        "TotalPoint": 91464.0
+      }
+    }
+  }
+
+
+
+  {
+    "Shop": {
+      "Id": 2,
+      "Tags": [
+        "EnableAddOns"
+      ]
+    },
+    "User": {
+      "Id": "32905",
+      "Tags": [
+        "AllUserScope",
+        "CrmShopMemberCard:31"
+      ],
+      "OuterId": "tina20241018",
+      "ShopMemberCode": "qDDkYy5/lcEcdXEj9YTfXg=="
+    },
+    "Shipping": {
+      "ShippingProfileTypeDef": "Home",
+      "ShippingAreaId": 0,
+      "CountryProfileId": 85,
+      "LocationId": 0
+    },
+    "Payment": {
+      "PayProfileTypeDef": "CreditCardOnce_Stripe"
+    },
+    "Channel": "Web",
+    "CurrencyDecimalDigits": 2,
+    "SalepageSkuList": [
+      {
+        "SalepageId": 62210,
+        "SkuId": 86588,
+        "Price": 1.00,
+        "SuggestPrice": 1.00,
+        "Qty": 15,
+        "Flags": [
+          "AddOnsSalepageMajor"
+        ],
+        "OuterId": "allen0505",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 0,
+        "CartExtendInfoItemType": "Major",
+        "PointsPayPair": null,
+        "CartExtendInfos": [
+          {
+            "RuleTypeDef": "AddOnsSalepageExtraPurchase",
+            "RuleId": 10000026,
+            "RelatedItemCartIds": [],
+            "RelatedSubItemCount": 0
+          }
+        ],
+        "CartId": 44360
+      }
+    ],
+    "FeeList": [
+      {
+        "Id": 440,
+        "Type": "ShippingFee",
+        "Price": 0,
+        "Payment": 0,
+        "ExtendInfo": {
+          "ShippingProfileTypeDef": "Home",
+          "IsDomesticWeightPricing": false,
+          "TemperatureTypeDef": "Normal",
+          "ShippingType": "440",
+          "ShippingAreaId": 84,
+          "IsLocal": true
+        }
+      }
+    ],
+    "Promotion": {
+      "Code": null,
+      "PromoCodePoolGroupId": null,
+      "SelectedDesignatePaymentPromotionId": 0
+    },
+    "CouponSetting": {
+      "MultipleRedeem": {
+        "Discount": {
+          "IsMultiple": true,
+          "Qty": 10
+        },
+        "Gift": {
+          "IsMultiple": true,
+          "Qty": 9999
+        },
+        "Shipping": {
+          "IsMultiple": false,
+          "Qty": 1
+        }
+      },
+      "CouponList": [],
+      "Options": {
+        "IsVerbose": false,
+        "IsCouponPreSelect": false,
+        "IncludeRecordDetail": false
+      },
+      "LoyaltyPoint": {
+        "CheckoutPoint": 0,
+        "CheckoutDiscountPrice": 0,
+        "IsSelected": false,
+        "IsSetDiscountPrice": false,
+        "TotalPoint": 78978.0000
+      }
+    }
+  }
+
+
+  {
+    "Shop": {
+      "Id": 2,
+      "Tags": [
+        "EnableAddOns"
+      ]
+    },
+    "User": {
+      "Id": "32905",
+      "Tags": [
+        "AllUserScope",
+        "CrmShopMemberCard:31"
+      ],
+      "OuterId": "tina20241018",
+      "ShopMemberCode": "qDDkYy5/lcEcdXEj9YTfXg=="
+    },
+    "Shipping": {
+      "ShippingProfileTypeDef": "Home",
+      "ShippingAreaId": 0,
+      "CountryProfileId": 85,
+      "LocationId": 0
+    },
+    "Payment": {
+      "PayProfileTypeDef": "CreditCardOnce_Stripe"
+    },
+    "Channel": "Web",
+    "CurrencyDecimalDigits": 2,
+    "SalepageSkuList": [
+      {
+        "SalepageId": 62210,
+        "SkuId": 86588,
+        "Price": 1.00,
+        "SuggestPrice": 1.00,
+        "Qty": 15,
+        "Flags": [
+          "AddOnsSalepageMajor"
+        ],
+        "OuterId": "allen0505",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 0,
+        "CartExtendInfoItemType": "Major",
+        "PointsPayPair": null,
+        "CartExtendInfos": [
+          {
+            "RuleTypeDef": "AddOnsSalepageExtraPurchase",
+            "RuleId": 10000026,
+            "RelatedItemCartIds": [],
+            "RelatedSubItemCount": 0
+          }
+        ],
+        "CartId": 44360
+      }
+    ],
+    "FeeList": [
+      {
+        "Id": 440,
+        "Type": "ShippingFee",
+        "Price": 0,
+        "Payment": 0,
+        "ExtendInfo": {
+          "ShippingProfileTypeDef": "Home",
+          "IsDomesticWeightPricing": false,
+          "TemperatureTypeDef": "Normal",
+          "ShippingType": "440",
+          "ShippingAreaId": 84,
+          "IsLocal": true
+        }
+      }
+    ],
+    "Promotion": {
+      "Code": null,
+      "PromoCodePoolGroupId": null,
+      "SelectedDesignatePaymentPromotionId": 0
+    },
+    "CouponSetting": {
+      "MultipleRedeem": {
+        "Discount": {
+          "IsMultiple": true,
+          "Qty": 10
+        },
+        "Gift": {
+          "IsMultiple": true,
+          "Qty": 9999
+        },
+        "Shipping": {
+          "IsMultiple": false,
+          "Qty": 1
+        }
+      },
+      "CouponList": [],
+      "Options": {
+        "IsVerbose": false,
+        "IsCouponPreSelect": false,
+        "IncludeRecordDetail": false
+      },
+      "LoyaltyPoint": {
+        "CheckoutPoint": 0,
+        "CheckoutDiscountPrice": 0,
+        "IsSelected": false,
+        "IsSetDiscountPrice": false,
+        "TotalPoint": 78978.0000
+      }
+    }
+  }
+
+
+  {
+    "Shop": {
+      "Id": 2,
+      "Tags": ["EnableAddOns"]
+    },
+    "User": {
+      "Id": "33162",
+      "Tags": [
+        "AllUserScope",
+        "CrmShopMemberCard:5"
+      ],
+      "OuterId": "tina20241018",
+      "ShopMemberCode": "AaDXmnAATUgiKVxjoxIciQ=="
+    },
+    "Shipping": {
+      "ShippingProfileTypeDef": "SFBusinessStores",
+      "ShippingAreaId": 0,
+      "CountryProfileId": 85,
+      "LocationId": 0
+    },
+    "Payment": {
+      "PayProfileTypeDef": "CreditCardOnce_Stripe"
+    },
+    "Channel": "Web",
+    "CurrencyDecimalDigits": 2,
+    "SalepageSkuList": [
+      {
+        "SalepageId": 62210,
+        "SkuId": 86588,
+        "Price": 1,
+        "SuggestPrice": 1,
+        "Qty": 100,
+        "Flags": ["AddOnsSalepageMajor"],
+        "OuterId": "allen0505",
+        "Tags": null,
+        "OptionalTypeDef": "",
+        "OptionalTypeId": 0,
+        "CartExtendInfoItemGroup": 0,
+        "CartExtendInfoItemType": "Major",
+        "PointsPayPair": null,
+        "CartExtendInfos": [
+          {
+            "RuleTypeDef": "AddOnsSalepageExtraPurchase",
+            "RuleId": 10000026,
+            "RelatedItemCartIds": [],
+            "RelatedSubItemCount": 0
+          }
+        ],
+        "CartId": 44118
+      }
+    ],
+    "FeeList": [
+      {
+        "Id": 466,
+        "Type": "ShippingFee",
+        "Price": 0,
+        "Payment": 0,
+        "ExtendInfo": {
+          "ShippingProfileTypeDef": "SFBusinessStores",
+          "IsDomesticWeightPricing": false,
+          "TemperatureTypeDef": "Normal",
+          "ShippingType": "466",
+          "ShippingAreaId": 0,
+          "IsLocal": true
+        }
+      }
+    ],
+    "Promotion": {
+      "Code": null,
+      "PromoCodePoolGroupId": null,
+      "SelectedDesignatePaymentPromotionId": 0
+    },
+    "CouponSetting": {
+      "MultipleRedeem": {
+        "Discount": {
+          "IsMultiple": true,
+          "Qty": 10
+        },
+        "Gift": {
+          "IsMultiple": true,
+          "Qty": 9999
+        },
+        "Shipping": {
+          "IsMultiple": false,
+          "Qty": 1
+        }
+      },
+      "CouponList": [
+        {
+          "CouponId": 2111,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-04-30T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970201,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2111,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-04-30T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970202,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2096,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-29T00:00:00",
+          "RedeemEndDateTime": "2025-05-03T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970074,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2096,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-29T00:00:00",
+          "RedeemEndDateTime": "2025-05-03T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970075,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2104,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-11-14T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970170,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2104,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-11-14T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970171,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        },
+        {
+          "CouponId": 2104,
+          "Tags": null,
+          "RedeemStartDateTime": "2025-04-28T00:00:00",
+          "RedeemEndDateTime": "2025-11-14T23:59:59",
+          "IsSelected": false,
+          "GlobalExcludedSalepageIds": null,
+          "CouponSlaveId": 65970200,
+          "OrderMaxDiscountRate": 0.00,
+          "IsOverOrderMaxDiscount": false
+        }
+      ],
+
+      "LoyaltyPoint": {
+        "CheckoutPoint": 0,
+        "CheckoutDiscountPrice": 0,
+        "IsSelected": false,
+        "IsSetDiscountPrice": false,
+        "TotalPoint": 153349.0000
+      }
+    },
+        "Options": {
+        "IsVerbose": false,
+        "IsCouponPreSelect": false,
+        "IncludeRecordDetail": false
+      }
+  }

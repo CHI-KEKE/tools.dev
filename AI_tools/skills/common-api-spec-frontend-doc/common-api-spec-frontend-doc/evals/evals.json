@@ -1,0 +1,105 @@
+{
+    "skill_name": "common-api-spec-frontend-doc",
+    "evals": [
+        {
+            "id": 1,
+            "prompt": "幫我開這支 API 的文件：Controllers/Apis/ContractApiController.cs 裡的 GetContractList",
+            "expected_output": "產出 Variant A（GET with route params 或 POST）格式的 API 規格文件，以 4 個 backtick 的 ````md 圍起，包含基本資訊表（路徑、權限）、Request 欄位說明表、Response JSON 範例與欄位說明表、注意事項與阻擋邏輯區塊。",
+            "files": [],
+            "assertions": [
+                "輸出以 ````md 開頭（4 個 backtick），不是 ```md（3 個 backtick）",
+                "文件包含「基本資訊」表格，且有路徑（含 HTTP verb）與權限欄位",
+                "文件包含「Request 欄位說明」表格，欄位名稱以 backtick inline code 呈現",
+                "文件包含「Response」區塊，含 JSON 範例",
+                "文件包含「注意事項與阻擋邏輯」區塊",
+                "文件包含「錯誤回應」區塊，且包含至少一列 HTTP 狀態碼表格",
+                "文件末尾包含產出時間戳記（格式含年月日）",
+                "文件不包含 Markdown 超連結（[text](path) 格式）",
+                "auth / session context 衍生的欄位（如 tenant ID、current user 等）不出現在 Request 欄位說明表中",
+                "Request 區塊不包含括號指令文字（如「POST / PUT：附完整 JSON 範例」）"
+            ]
+        },
+        {
+            "id": 2,
+            "prompt": "幫我開 API 規格文件：WebSite/Controllers/Apis/DropdownApiController.cs 的 GetOrderStatusOptions，這是一個 GET 沒有任何參數的下拉選單 API",
+            "expected_output": "產出 Variant B（No-param GET）格式的 API 規格文件，Request 區塊只有「無」一個字，不包含 JSON 範例或欄位表，Response 包含 JSON 範例與欄位說明。",
+            "files": [],
+            "assertions": [
+                "輸出以 ````md 開頭（4 個 backtick）",
+                "Request 區塊僅包含「無」，不包含 JSON 程式碼區塊",
+                "Request 區塊不包含任何欄位說明表格",
+                "Response 包含 JSON 範例",
+                "基本資訊表不包含 Content-Type 列（Variant B 規定省略）",
+                "文件包含「錯誤回應」區塊，且包含至少一列 HTTP 狀態碼表格",
+                "文件末尾包含產出時間戳記（格式含年月日）"
+            ]
+        },
+        {
+            "id": 3,
+            "prompt": "請幫我產出 ExportApiController.cs 裡 ExportOrderToExcel 這支 API 的規格文件，它會下載 Excel 檔",
+            "expected_output": "產出 Variant C（File Download）格式的 API 規格文件，Response 區塊只有一行說明 Content-Type 為 Excel MIME type，不包含 JSON 範例或欄位表。",
+            "files": [],
+            "assertions": [
+                "輸出以 ````md 開頭（4 個 backtick）",
+                "Response 區塊包含 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet 說明",
+                "Response 區塊不包含 JSON 程式碼區塊",
+                "Response 區塊不包含欄位說明表格",
+                "包含 Request 欄位說明表（含必填、預設值欄位）",
+                "文件包含「錯誤回應」區塊，且包含至少一列 HTTP 狀態碼表格",
+                "文件末尾包含產出時間戳記（格式含年月日）"
+            ]
+        },
+        {
+            "id": 4,
+            "prompt": "API 說明：Web.Api/Controllers/OrderController.cs 的 CreateOrder，這是 POST 建立訂單的端點",
+            "expected_output": "產出 Variant A（POST with request body）格式的 API 規格文件，Request 區塊包含完整 JSON 範例與欄位說明表（含必填、預設值），Response 包含 JSON 範例與欄位說明表，注意事項列出所有阻擋邏輯。",
+            "files": [],
+            "assertions": [
+                "輸出以 ````md 開頭（4 個 backtick）",
+                "基本資訊表包含 Content-Type: application/json 列",
+                "Request 區塊包含 JSON 程式碼範例",
+                "Request 欄位說明表包含「必填」與「預設值」欄位",
+                "Response 區塊包含 JSON 範例",
+                "「注意事項與阻擋邏輯」區塊至少包含一個條目",
+                "文件包含「錯誤回應」區塊，且包含至少一列 HTTP 狀態碼表格",
+                "文件末尾包含產出時間戳記（格式含年月日）",
+                "Request 區塊不包含括號指令文字（如「POST / PUT：附完整 JSON 範例」）"
+            ]
+        },
+        {
+            "id": 5,
+            "prompt": "#sym:Get 給我IMS規格",
+            "expected_output": "識別 AllocationPlanController 的 Get action（GET with query param），產出 Variant A（GET with route params）格式的 API 規格文件，以 4 個 backtick 的 ````md 圍起，包含基本資訊表（路徑、權限）、Request 欄位說明表、Response JSON 範例與欄位說明表、注意事項與阻擋邏輯區塊。",
+            "files": [
+                "src/NineYi.OMS.WebSite/Controllers/Apis/AllocationPlanController.cs"
+            ],
+            "assertions": [
+                "輸出以 ````md 開頭（4 個 backtick），不是 ```md（3 個 backtick）",
+                "文件包含「基本資訊」表格，且有路徑（含 HTTP verb GET）與權限欄位",
+                "文件包含「Request 欄位說明」表格",
+                "文件包含「Response」區塊，含欄位說明表",
+                "文件包含「注意事項與阻擋邏輯」區塊",
+                "文件包含「錯誤回應」區塊，且包含至少一列 HTTP 狀態碼表格",
+                "文件末尾包含產出時間戳記（格式含年月日）",
+                "文件不包含 Markdown 超連結（[text](path) 格式）"
+            ]
+        },
+        {
+            "id": 6,
+            "prompt": "AllocationPlanController.cs 的 Update，給前端的規格",
+            "expected_output": "產出 Variant A（POST with request body）格式的 API 規格文件，以 4 個 backtick 的 ````md 圍起，包含基本資訊表（路徑、權限）、Request JSON 範例與欄位說明表、Response 區塊、注意事項與阻擋邏輯區塊。",
+            "files": [
+                "src/NineYi.OMS.WebSite/Controllers/Apis/AllocationPlanController.cs"
+            ],
+            "assertions": [
+                "輸出以 ````md 開頭（4 個 backtick）",
+                "文件包含「基本資訊」表格，且路徑含 POST 與 /api/AllocationPlan/Update",
+                "文件包含「Request 欄位說明」表格",
+                "文件包含「Response」區塊",
+                "文件包含「錯誤回應」區塊，且包含至少一列 HTTP 狀態碼表格",
+                "文件末尾包含產出時間戳記（格式含年月日）",
+                "文件不包含 Markdown 超連結（[text](path) 格式）"
+            ]
+        }
+    ]
+}

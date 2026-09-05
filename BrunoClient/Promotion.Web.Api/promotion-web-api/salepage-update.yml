@@ -1,0 +1,26 @@
+info:
+  name: salepage-update
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/salepage-update"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: '{"Id":7634,"ModifyType":"Add","SalePageIds":[62212],"Tag":null,"ShopId":2}'
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

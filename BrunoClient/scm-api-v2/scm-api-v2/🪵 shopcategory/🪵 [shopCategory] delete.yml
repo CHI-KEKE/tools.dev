@@ -1,0 +1,32 @@
+info:
+  name: 🪵 [shopCategory] delete
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/SCM/V2/ShopCategory/Delete?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "ShopId":2,
+          "Id":924
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

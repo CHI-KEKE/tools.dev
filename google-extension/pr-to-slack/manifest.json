@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "PR to Slack",
+  "version": "1.0",
+  "description": "一鍵將 GitHub PR 標題與網址組裝成訊息發送至 Slack",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "https://api.infra.91app.io/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+P",
+        "mac": "Alt+Shift+P"
+      },
+      "description": "開啟 PR to Slack 視窗"
+    }
+  }
+}

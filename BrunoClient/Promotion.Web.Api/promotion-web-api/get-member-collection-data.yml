@@ -1,0 +1,23 @@
+info:
+  name: get-member-collection-data
+  type: http
+  seq: 14
+
+http:
+  method: GET
+  url: "{{base-url}}/api/member-collections/{{collectionId2}}"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  auth: inherit
+
+runtime:
+  variables:
+    - name: collectionId
+      value: 72358179-1014-4eca-a59c-14a49f1ceed7
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

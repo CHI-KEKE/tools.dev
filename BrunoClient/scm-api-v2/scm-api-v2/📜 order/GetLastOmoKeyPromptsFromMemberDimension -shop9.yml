@@ -1,0 +1,51 @@
+info:
+  name: GetLastOmoKeyPromptsFromMemberDimension -shop9
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/Location/GetLastOmoKeyPromptsFromMemberDimension?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 2,
+        "LocationId": 181,
+        "LocationEmployeeId": 11,
+        "Source": "",
+        "MemberId": 33037,
+        "IsIncludeSalePageGift": false,
+        "VipMemberId": 33043,
+        "CellPhone": "92331459",
+        "CountryCode": "852",
+        "CountryProfileId": 85,
+        "IsRecordMemberInStore": false,
+        "AppVersion": "",
+        "IsLastCalculation": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+      "ShopId": 83,
+      "TGCode": "MG260127M00002",
+      "TMCode": "MM260127M00002",
+      "TSCode": "MS260127M000003"
+  }

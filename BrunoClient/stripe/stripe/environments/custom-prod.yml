@@ -1,0 +1,4 @@
+name: custom-product
+variables:
+  - name: x-secret
+    value: 

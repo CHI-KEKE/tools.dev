@@ -1,0 +1,227 @@
+{
+  "info": {
+    "_postman_id": "a6e463cd-a7ab-4406-993f-e74033670485",
+    "name": "通知多語系",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "37476413"
+  },
+  "item": [
+    {
+      "name": "GetTemplate",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{Notification_ApiUrl}}/api/Templates/SCMEmail_RefundRequestFail_RazorTemplate/-1",
+          "host": [
+            "{{Notification_ApiUrl}}"
+          ],
+          "path": [
+            "api",
+            "Templates",
+            "SCMEmail_RefundRequestFail_RazorTemplate",
+            "-1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetETag",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{Notification_ApiUrl}}/api/Templates/etag?ShopId=4&Name=SCMEmail_TradesOrderV2_RazorTemplate&Lang=en-US",
+          "host": [
+            "{{Notification_ApiUrl}}"
+          ],
+          "path": [
+            "api",
+            "Templates",
+            "etag"
+          ],
+          "query": [
+            {
+              "key": "ShopId",
+              "value": "4"
+            },
+            {
+              "key": "Name",
+              "value": "SCMEmail_TradesOrderV2_RazorTemplate"
+            },
+            {
+              "key": "Lang",
+              "value": "en-US"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetTemplateByETag",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{Notification_ApiUrl}}/api/Templates/get-by-etag?Name=TestSCMEmail_TradesOrderV2_RazorTemplate&ETag=79238dbf089998697e7ed6600c0366ff&Lang=zh-CN&ShopId=5",
+          "host": [
+            "{{Notification_ApiUrl}}"
+          ],
+          "path": [
+            "api",
+            "Templates",
+            "get-by-etag"
+          ],
+          "query": [
+            {
+              "key": "Name",
+              "value": "TestSCMEmail_TradesOrderV2_RazorTemplate"
+            },
+            {
+              "key": "ETag",
+              "value": "79238dbf089998697e7ed6600c0366ff"
+            },
+            {
+              "key": "Lang",
+              "value": "zh-CN"
+            },
+            {
+              "key": "ShopId",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CreateTemplate",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"type\": \"PushNotification\",\r\n    \"name\": \"OrderCreated_Normal_Template\",\r\n    \"shopId\": -1,\r\n    \"language\": \"zh-TW\",\r\n    \"parameters\": [\r\n        {\r\n            \"name\": \"sys_shop_name\",\r\n            \"type\": \"System\",\r\n            \"length\": 30\r\n        },\r\n        {\r\n            \"name\": \"TradesOrderGroup\",\r\n            \"type\": \"Custom\",\r\n            \"length\": 16\r\n        }\r\n    ],\r\n    \"template\": {\r\n        \"NotificationType\": \"TradesOrderDetail\",\r\n        \"NotificationTargetType\": \"TradesOrderDetail\",\r\n        \"NotificationSource\": \"TradesOrder\",\r\n        \"NotificationCountType\": \"\",\r\n        \"NeedPush\": \"true\",\r\n        \"NeedStatistics\": \"false\",\r\n        \"Title\": \"\",\r\n        \"Content\": \"訂單通知：您在{{sys_shop_name}}的訂單{{TradesOrderGroup}}已完成訂購，感謝您的支持與購買。\"\r\n    },\r\n    \"messageType\": \"TradesOrder\",\r\n    \"editor\": \"JackyHu\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{Notification_ApiUrl}}/api/Templates/Create",
+          "host": [
+            "{{Notification_ApiUrl}}"
+          ],
+          "path": [
+            "api",
+            "Templates",
+            "Create"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "UpdateTemplate",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"templateKey\": \"SCMEmail/SCMEmail_RefundRequestFail_RazorTemplate/-1/zh-HK\",\r\n    \"parameters\": [],\r\n    \"template\": {\r\n        \"Title\": \"訂單退款訊息通知(退款失敗) - {0}\",\r\n        \"Content\": \"@inherits RazorEngine.Templating.TemplateBase<NineYi.ERP.Backend.BE.Email.RefundRequestFailTemplateEntity>\\r\\n<!DOCTYPE html PUBLIC \\\"-//W3C//DTD XHTML 1.0 Transitional//EN\\\" \\\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\\\">\\r\\n<html>\\r\\n<head>\\r\\n    <meta charset=\\\"utf-8\\\" />\\r\\n    <meta http-equiv=\\\"content-language\\\" content=\\\"zh-tw\\\" />\\r\\n    <meta http-equiv=\\\"X-UA-Compatible\\\" content=\\\"IE=edge\\\" />\\r\\n    <title>退款失敗通知</title>\\r\\n</head>\\r\\n<body>\\r\\n    <div style=\\\"width:100%;font-family:\\\\5FAE\\\\8F6F\\\\96C5\\\\9ED1;background-color:#f1f1f1;border-top:15px solid #f1f1f1;border-bottom:20px solid #f1f1f1\\\">\\r\\n        <div style=\\\"max-width:748px;font-size:12px;border:1px solid #979797;border-top:6px solid #e41c10;margin:0 auto\\\">\\r\\n            <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" style=\\\"width:100%;max-width:748px;padding:0;background-color:#fff;margin:0\\\">\\r\\n                <!-- Header Start -->\\r\\n                <tr>\\r\\n                    <td>\\r\\n                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0;border:0;border-top:5px solid #fff\\\">\\r\\n                            <tr>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                                <td>\\r\\n                                    <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                        <tr>\\r\\n                                            <td height=\\\"20\\\" style=\\\"font-size:.9em;text-align:right;padding:0;margin:0\\\">\\r\\n                                                發送日期 :\\r\\n                                                <span style=\\\"font-size:1em;text-align:right;padding:0;margin:0\\\">\\r\\n                                                    @Model.Header.SendDate\\r\\n                                                </span>\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td>\\r\\n                                                <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                                    <tr>\\r\\n                                                        <td width=\\\"115\\\" height=\\\"48\\\">\\r\\n                                                            <a href=\\\"javascript:void(0)\\\"\\r\\n                                                               style=\\\"padding:0;margin:0;border:0 none\\\">\\r\\n                                                                <img src=\\\"@Model.Header.ShopLogoImageURL\\\"\\r\\n                                                                     width=\\\"115\\\" height=\\\"48\\\" border=\\\"0\\\" />\\r\\n                                                            </a>\\r\\n                                                        </td>\\r\\n                                                        <td width=\\\"70%\\\">&nbsp;</td>\\r\\n                                                        <td width=\\\"100%\\\" height=\\\"48\\\" style=\\\"text-align:right\\\">\\r\\n                                                            \\r\\n                                                            <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" height=\\\"48\\\" style=\\\"padding:0;margin:0;border-top:15px solid #fff\\\">\\r\\n                                                                <tr>\\r\\n                                                                    <!-- OfficialDevice Start -->\\r\\n                                                                    @foreach (NineYi.ERP.Backend.BE.Email.OfficialDeviceTemplateEntity officialDevice in Model.Header.OfficialDeviceList)\\r\\n                                                                    {\\r\\n                                                                        <td width=\\\"3\\\">&nbsp;</td>\\r\\n                                                                        <td>\\r\\n                                                                            <table width=\\\"100%\\\" style=\\\"display:block;float:right;max-width:100px;color:#9d2424;padding:0;margin:0;border-radius:5px;\\r\\n                                                                            background-color:@officialDevice.BackgroundColor;\\r\\n                                                                            border-bottom:@officialDevice.BorderBottom\\\">\\r\\n                                                                                <tr>\\r\\n                                                                                    <td height=\\\"3\\\" colspan=\\\"4\\\" style=\\\"font-size:3px;line-height:3px;padding:0;margin:0\\\">\\r\\n                                                                                    </td>\\r\\n                                                                                </tr>\\r\\n                                                                                <tr>\\r\\n                                                                                    <td width=\\\"15\\\" height=\\\"20\\\" line-height=\\\"20px;padding:0;margin:0\\\">&nbsp;</td>\\r\\n                                                                                    <td height=\\\"20\\\" line-height=\\\"20px;padding:0;margin:0\\\">\\r\\n                                                                                        <img src=\\\"@officialDevice.ImageURL\\\" border=\\\"0\\\" style=\\\"vertical-align:inherit;padding:0;margin:0\\\"\\r\\n                                                                                             width=\\\"@officialDevice.ImageWidth\\\"\\r\\n                                                                                             height=\\\"@officialDevice.ImageHeight\\\"/>\\r\\n                                                                                    </td>\\r\\n                                                                                    <td width=\\\"100%\\\" height=\\\"20\\\" style=\\\"font-size:1em;text-align:left;line-height:20px;padding:0;margin:0\\\">\\r\\n                                                                                        <a href=\\\"@officialDevice.ActionURL\\\"\\r\\n                                                                                           style=\\\"display:block;min-width:50px;color:#fff;word-break:keep-all;text-decoration:none;padding:0;margin:0\\\">\\r\\n                                                                                            @officialDevice.Name\\r\\n                                                                                        </a>\\r\\n                                                                                    </td>\\r\\n                                                                                    <td width=\\\"15\\\" height=\\\"20\\\" line-height=\\\"20px;padding:0;margin:0\\\">&nbsp;</td>\\r\\n                                                                                </tr>\\r\\n                                                                                <tr>\\r\\n                                                                                    <td height=\\\"3\\\" colspan=\\\"4\\\" style=\\\"font-size:3px;line-height:3px;padding:0;margin:0\\\">&nbsp;</td>\\r\\n                                                                                </tr>\\r\\n                                                                            </table>\\r\\n                                                                        </td>\\r\\n                                                                    }\\r\\n                                                                    <!-- OfficialDevice End -->\\r\\n                                                                </tr>\\r\\n                                                            </table>\\r\\n                                                            \\r\\n                                                        </td>\\r\\n                                                    </tr>\\r\\n                                                    <tr>\\r\\n                                                        <td width=\\\"100%\\\" height=\\\"5\\\" colspan=\\\"5\\\" style=\\\"font-size:5px;line-height:5px;padding:0;margin:0\\\">&nbsp;</td>\\r\\n                                                    </tr>\\r\\n                                                    <tr>\\r\\n                                                        <td colspan=\\\"5\\\">\\r\\n                                                            <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"border-top:1px solid #979797\\\">\\r\\n                                                                <tr>\\r\\n                                                                    <td height=\\\"25\\\" style=\\\"font-size:1em;line-height:1em;color:#666;padding:0;margin:0\\\">\\r\\n                                                                        此郵件是系統自動傳送，請勿直接回覆此郵件\\r\\n                                                                    </td>\\r\\n                                                                </tr>\\r\\n                                                            </table>\\r\\n                                                        </td>\\r\\n                                                    </tr>\\r\\n                                                </table>\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                    </table>\\r\\n                                </td>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                        </table>\\r\\n                    </td>\\r\\n                </tr>\\r\\n                <!-- Header End -->\\r\\n                <tr>\\r\\n                    <td>\\r\\n                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"font-size:12px;padding:0;margin:0;border-top:10px solid #fff\\\">\\r\\n                            <tr>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                                <td width=\\\"94.654%\\\">\\r\\n                                    <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                        <tr>\\r\\n                                            <td height=\\\"30\\\" style=\\\"line-height:30px\\\">\\r\\n                                                <span style=\\\"font-size:1.25em;line-height:1.25em;padding:0;margin:0\\\">\\r\\n                                                    親愛的客戶 您好：\\r\\n                                                </span>\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td>\\r\\n                                                <span style=\\\"font-size:1.08em;line-height:1.08em;padding:0;margin:5px 0\\\">\\r\\n                                                    @Raw(string.Format(\\\"您在<span style='font-size:1.08em;line-height:1.08em;padding:0;margin:0'>{0}</span><span style='line-height: 24px'>申請商品退貨退款，因帳戶資料有誤致退款失敗，請協助重新確認帳戶資料。<br />請您至【訂單查詢】點選【重新填寫退款資訊】並填寫提供正確的帳戶資料。<br />待您的退款資料齊全後，預計於7~10個工作日內為您匯入。退款完成後將發信通知您，謝謝您的配合！</span>\\\", Model.ShopName))\\r\\n                                                </span>\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"100%\\\" height=\\\"10\\\" style=\\\"font-size:10px;line-height:10px\\\">&nbsp;</td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td>\\r\\n                                                <span style=\\\"color:#666;font-size:1.08em;line-height:1.08em;padding:0;margin:0\\\">\\r\\n                                                    本次退款明細如下：\\r\\n                                                </span>\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                    </table>\\r\\n                                </td>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                            <tr>\\r\\n                                <td width=\\\"100%\\\" height=\\\"10\\\" colspan=\\\"3\\\" style=\\\"font-size:10px;line-height:10px\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                        </table>\\r\\n                    </td>\\r\\n                </tr>\\r\\n                <tr>\\r\\n                    <td>\\r\\n                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" height=\\\"43\\\" style=\\\"font-size:12px;padding:0;margin:0\\\">\\r\\n                            <tr>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                                <td>\\r\\n                                    <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" height=\\\"43\\\" style=\\\"padding:0;margin:0;background-color:#fafaf8;border-bottom:2px solid #e41c10\\\">\\r\\n                                        <tr>\\r\\n                                            <td>\\r\\n                                                <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" height=\\\"43\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                                    <tr>\\r\\n                                                        <td width=\\\"3.546%\\\" height=\\\"43\\\">&nbsp;</td>\\r\\n                                                        <td width=\\\"96.454%\\\" height=\\\"43\\\">\\r\\n                                                            <span style=\\\"color:#000;font-size:1.5em;padding:0;margin:0\\\">\\r\\n                                                                【退款明細】\\r\\n                                                            </span>\\r\\n                                                        </td>\\r\\n                                                    </tr>\\r\\n                                                </table>\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                    </table>\\r\\n                                </td>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                        </table>\\r\\n                    </td>\\r\\n                </tr>\\r\\n                <tr>\\r\\n                    <td>\\r\\n                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" height=\\\"43\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                            <tr>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                                <td>\\r\\n                                    <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0;background-color:#fafaf8;border-bottom:1px dotted #999\\\">\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"100%\\\" height=\\\"20\\\" colspan=\\\"2\\\" style=\\\"font-size:20px;line-height:20px\\\">&nbsp;</td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"3.546%\\\" height=\\\"28\\\">&nbsp;</td>\\r\\n                                            <td width=\\\"96.454%\\\" height=\\\"28\\\" style=\\\"color:#333;padding:0;margin:0\\\">\\r\\n                                                <span style=\\\"color:#333;font-size:1.16em;padding:0;margin:0 10px 0 0\\\">\\r\\n                                                    購物車訂單編號：\\r\\n                                                </span>\\r\\n                                                @Model.TGCode\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"3.546%\\\" height=\\\"28\\\">&nbsp;</td>\\r\\n                                            <td width=\\\"96.454%\\\" height=\\\"28\\\" style=\\\"color:#333;padding:0;margin:0\\\">\\r\\n                                                <span style=\\\"color:#333;font-size:1.16em;padding:0;margin:0 10px 0 0\\\">\\r\\n                                                    付款方式：\\r\\n                                                </span>\\r\\n                                                @Model.PayType\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"3.546%\\\" height=\\\"28\\\">&nbsp;</td>\\r\\n                                            <td width=\\\"96.454%\\\" height=\\\"28\\\" style=\\\"color:#333;padding:0;margin:0\\\">\\r\\n                                                <span style=\\\"color:#333;font-size:1.16em;padding:0;margin:0 10px 0 0\\\">\\r\\n                                                    訂購日期：\\r\\n                                                </span>\\r\\n                                                @Model.OrderDateTime\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"100%\\\" height=\\\"20\\\" colspan=\\\"2\\\" style=\\\"font-size:20px;line-heihgt:20px\\\">&nbsp;</td>\\r\\n                                        </tr>\\r\\n                                    </table>\\r\\n                                </td>\\r\\n                                <td></td>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                        </table>\\r\\n                    </td>\\r\\n                </tr>\\r\\n                <tr>\\r\\n                    <td>\\r\\n                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                            <!-- RefundRequestFailSlave Start -->\\r\\n                            <tr>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                                <td>\\r\\n                                    <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0;border-bottom:1px dotted #999\\\">\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"3.546%\\\">&nbsp;</td>\\r\\n                                            <td>\\r\\n                                                <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                                    <tr>\\r\\n                                                        <td width=\\\"100%\\\" height=\\\"8\\\" colspan=\\\"2\\\" style=\\\"font-size:8px;line-height:8px\\\">&nbsp;</td>\\r\\n                                                    </tr>\\r\\n                                                    @foreach (NineYi.ERP.Backend.BE.Email.RefundRequestFailSlaveTemplateEntity refundRequestFailSlave in Model.RefundRequestFailSlaveList)\\r\\n                                                    {\\r\\n                                                        <tr>\\r\\n                                                            <td height=\\\"17\\\" colspan=\\\"2\\\" style=\\\"color:#999;font-size:1.08em;padding:0;margin:0\\\">\\r\\n                                                                @refundRequestFailSlave.TSCode\\r\\n                                                            </td>\\r\\n                                                        </tr>\\r\\n                                                        <tr>\\r\\n                                                            <td width=\\\"70%\\\" height=\\\"25\\\" style=\\\"color:#333;font-size:1.33em;padding:0;margin:0\\\">\\r\\n                                                                @refundRequestFailSlave.ProductName\\r\\n                                                            </td>\\r\\n                                                            <td width=\\\"30%\\\" height=\\\"25\\\" style=\\\"color:#333;font-size:1.33em;text-align:right;padding:0;margin:0\\\">\\r\\n                                                                @refundRequestFailSlave.ProductPrice\\r\\n                                                            </td>\\r\\n                                                        </tr>\\r\\n                                                        <tr>\\r\\n                                                            <td width=\\\"70%\\\" height=\\\"17\\\" style=\\\"color:#666;font-size:1.08em;padding:0;margin:0\\\">\\r\\n                                                                @refundRequestFailSlave.ProductSkuName\\r\\n                                                            </td>\\r\\n                                                            <td width=\\\"30%\\\" height=\\\"17\\\" style=\\\"color:#666;font-size:1.33em;text-align:right;padding:0;margin:0\\\">\\r\\n                                                                x @refundRequestFailSlave.ProductQty\\r\\n                                                            </td>\\r\\n                                                        </tr>\\r\\n                                                    }\\r\\n                                                    <tr>\\r\\n                                                        <td width=\\\"100%\\\" height=\\\"8\\\" colspan=\\\"2\\\" style=\\\"font-size:8px;line-height:8px\\\">&nbsp;</td>\\r\\n                                                    </tr>\\r\\n                                                </table>\\r\\n                                            </td>\\r\\n                                            <td width=\\\"3.546%\\\">&nbsp;</td>\\r\\n                                        </tr>\\r\\n                                    </table>\\r\\n                                </td>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                            <!-- RefundRequestFailSlave End -->\\r\\n                        </table>\\r\\n                    </td>\\r\\n                </tr>\\r\\n                <tr>\\r\\n                    <td>\\r\\n                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                            <tr>\\r\\n                                <td width=\\\"100%\\\" height=\\\"20\\\" colspan=\\\"3\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                            <tr>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                                <td width=\\\"94.654%\\\">\\r\\n                                    <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"30%\\\">&nbsp;</td>\\r\\n                                            <td width=\\\"260\\\" height=\\\"45\\\" style=\\\"min-width:260px;text-align:center;line-height:45px;text-decoration:none;background-color:#e7462b;border-bottom:3px solid #cf3020;border-radius:5px;padding:0;margin:0 auto;box-shadow:0 2px 4px rgba(0,0,0,.3)\\\">\\r\\n                                                <a href=\\\"@Model.OrderRefURL\\\"\\r\\n                                                   style=\\\"display:block;width:100%;height:45px;color:#fff;font-size:1.41em;vertical-align:middle;text-align:center;line-height:45px;text-decoration:none\\\">\\r\\n                                                    訂單查詢\\r\\n                                                </a>\\r\\n                                            </td>\\r\\n                                            <td width=\\\"30%\\\">&nbsp;</td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td height=\\\"10\\\" colspan=\\\"3\\\" style=\\\"font-size:10px;line-height:10px\\\">&nbsp;</td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td height=\\\"35\\\" colspan=\\\"3\\\" style=\\\"color:#1e1e1e;font-size:1em;text-align:center;padding:0;margin:0\\\">\\r\\n                                                若您無法順利開啟,\\r\\n                                                <a href=\\\"@Model.OrderURL\\\"\\r\\n                                                    style=\\\"color:#3e92c8;font-size:1em;text-decoration:none;padding:0;margin:0\\\">\\r\\n                                                    請點這裡查看\\r\\n                                                </a>\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                    </table>\\r\\n                                </td>\\r\\n                                <td width=\\\"2.673%\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                        </table>\\r\\n                    </td>\\r\\n                </tr>\\r\\n            <!-- Footer Start -->\\r\\n                @if (string.IsNullOrEmpty(Model.Footer.AppDownloadAreaStyle))\\r\\n                {\\r\\n                    <tr>\\r\\n                        <td>\\r\\n                            <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"background-color:#f0f6fa\\\">\\r\\n                                <tr>\\r\\n                                    <td height=\\\"10\\\" colspan=\\\"3\\\" style=\\\"font-size:10px;line-height:10px\\\">&nbsp;</td>\\r\\n                                </tr>\\r\\n                                <tr>\\r\\n                                    <td width=\\\"1.337%\\\">&nbsp;</td>\\r\\n                                    <td>\\r\\n                                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\">\\r\\n                                            <tr>\\r\\n                                                <td height=\\\"10\\\" colspan=\\\"3\\\" style=\\\"font-size:10px;line-height:10px\\\">&nbsp;</td>\\r\\n                                            </tr>\\r\\n                                            <tr>\\r\\n                                                <td width=\\\"1.337%\\\">&nbsp;</td>\\r\\n                                                <td width=\\\"97.326%\\\">\\r\\n                                                    <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                                        <tr>\\r\\n                                                            <td>\\r\\n                                                                <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                                                    <tr>\\r\\n                                                                        <td width=\\\"60\\\">\\r\\n                                                                            <img src=\\\"@Model.Footer.ShopIconImageURL\\\"\\r\\n                                                                                 width=\\\"52\\\" height=\\\"52\\\" border-right=\\\"10px solid #f0f6fa\\\"/>\\r\\n                                                                        </td>\\r\\n                                                                        <td width=\\\"10\\\" style=\\\"padding:0;margin:0\\\">&nbsp;</td>\\r\\n                                                                        <td>\\r\\n                                                                            <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"padding:0;margin:0\\\">\\r\\n                                                                                <tr>\\r\\n                                                                                    <td height=\\\"22\\\" style=\\\"font-size:1.16em;padding:0;margin:0\\\">\\r\\n                                                                                        @Raw(string.Format(\\\"感謝您購買 {0} 商品\\\", Model.Footer.ShopNameWithoutMall))\\r\\n                                                                                    </td>\\r\\n                                                                                </tr>\\r\\n                                                                                <tr>\\r\\n                                                                                    <td height=\\\"22\\\" style=\\\"font-size:1.16em;padding:0;margin:0\\\">\\r\\n                                                                                        下載官方APP，即時搶到限時優惠，追蹤訂單進度 !\\r\\n                                                                                    </td>\\r\\n                                                                                </tr>\\r\\n                                                                            </table>\\r\\n                                                                        </td>\\r\\n                                                                    </tr>\\r\\n                                                                </table>\\r\\n                                                            </td>\\r\\n                                                        </tr>\\r\\n                                                        <tr>\\r\\n                                                            <td height=\\\"10\\\" colspan=\\\"3\\\" style=\\\"font-size:10px;line-height:10px;padding:0;margin:0\\\">&nbsp;</td>\\r\\n                                                        </tr>\\r\\n                                                    </table>\\r\\n                                                </td>\\r\\n                                            </tr>\\r\\n                                        </table>\\r\\n                                    </td>\\r\\n                                </tr>\\r\\n                            </table>\\r\\n                        </td>\\r\\n                    </tr>\\r\\n                    <tr>\\r\\n                        <td>\\r\\n                            <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"background-color:#f0f6fa\\\">\\r\\n                                <tr>\\r\\n                                    <td width=\\\"1.337%\\\">&nbsp;</td>\\r\\n                                    <td width=\\\"97.326%\\\">\\r\\n                                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"background-color:#e1e9ee;padding:0;border-top:10px solid #e1e9ee\\\">\\r\\n                                            <tr>\\r\\n                                                <td width=\\\"30%\\\">&nbsp;</td>\\r\\n                                                <td width=\\\"130\\\">\\r\\n                                                    <a href=\\\"@Model.Footer.IosIconActionURL\\\"\\r\\n                                                       style=\\\"background-color:#e1e9ee;padding:0;margin:0;border:0 none\\\">\\r\\n                                                        <img src=\\\"@Model.Footer.IosIconImageURL\\\"\\r\\n                                                             width=\\\"125\\\" height=\\\"40\\\" border=\\\"0\\\"/>\\r\\n                                                    </a>\\r\\n                                                    <span style=\\\"display:block\\\">&nbsp;</span>\\r\\n                                                </td>\\r\\n                                                <td width=\\\"3%\\\">&nbsp;</td>\\r\\n                                                <td width=\\\"130\\\">\\r\\n                                                    <a href=\\\"@Model.Footer.AndroidIconActionURL\\\"\\r\\n                                                       style=\\\"background-color:#e1e9ee;padding:0;margin:0;border:0 none\\\">\\r\\n                                                        <img src=\\\"@Model.Footer.AndroidIconImageURL\\\"\\r\\n                                                             width=\\\"125\\\" height=\\\"40\\\" border=\\\"0\\\"/>\\r\\n                                                    </a>\\r\\n                                                    <span style=\\\"display:block\\\">&nbsp;</span>\\r\\n                                                </td>\\r\\n                                                <td width=\\\"30%\\\">&nbsp;</td>\\r\\n                                            </tr>\\r\\n                                        </table>\\r\\n                                    </td>\\r\\n                                    <td width=\\\"1.337%\\\">&nbsp;</td>\\r\\n                                </tr>\\r\\n                            </table>\\r\\n                        </td>\\r\\n                    </tr>\\r\\n                }\\r\\n                <tr>\\r\\n                    <td>\\r\\n                        <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"background-color:#f0f6fa;border-top:10px solid #f0f6fa\\\">\\r\\n                            <tr>\\r\\n                                <td width=\\\"1.337%\\\">&nbsp;</td>\\r\\n                                <td>\\r\\n                                    <table cellspacing=\\\"0\\\" cellpadding=\\\"0\\\" width=\\\"100%\\\" style=\\\"border:10px solid #f0f6fa\\\">\\r\\n                                        <tr>\\r\\n                                            <td height=\\\"25\\\" style=\\\"color:#596f7d;font-size:1.05em;padding:0;margin:0\\\" colspan=\\\"3\\\">\\r\\n                                                此郵件是系統自動傳送，請勿直接回覆此郵件\\r\\n                                            </td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td height=\\\"5\\\" style=\\\"font-size:5px;line-height:5px\\\" colspan=\\\"3\\\">&nbsp;</td>\\r\\n                                        </tr>\\r\\n                                        <tr>\\r\\n                                            <td width=\\\"33%\\\"></td>\\r\\n                                            <td height=\\\"25\\\" width=\\\"33%\\\" style=\\\"color:#666;text-align:center;font-size:1em;padding:0;margin:0\\\">\\r\\n                                                @if (string.IsNullOrEmpty(Model.Footer.EmailNotificationStyle))\\r\\n                                                {\\r\\n                                                    <span @Model.Footer.EmailNotificationStyle ><a href=\\\"@Model.Footer.EmailNotificationURL\\\">取消訂閱</a></span>\\r\\n                                                }\\r\\n                                            </td>\\r\\n                                            <td width=\\\"33%\\\"></td>\\r\\n                                        </tr>\\r\\n                                    </table>\\r\\n                                </td>\\r\\n                                <td width=\\\"1.337%\\\">&nbsp;</td>\\r\\n                            </tr>\\r\\n                        </table>\\r\\n                    </td>\\r\\n                </tr>\\r\\n                <!-- Footer End -->\\r\\n            </table>\\r\\n        </div>\\r\\n    </div>\\r\\n</body>\\r\\n</html>\"\r\n    },\r\n    \"editor\": \"JackyHu\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{Notification_ApiUrl}}/api/Templates/Update",
+          "host": [
+            "{{Notification_ApiUrl}}"
+          ],
+          "path": [
+            "api",
+            "Templates",
+            "Update"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DeleteTemplate",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n\t\"TemplateKey\": \"SCMEmail/SCMEmail_TradesOrderV2_RazorTemplatea/-1/en-US\",\r\n\t\"Editor\":\"JackyHu\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{Notification_ApiUrl}}/api/Templates/Delete",
+          "host": [
+            "{{Notification_ApiUrl}}"
+          ],
+          "path": [
+            "api",
+            "Templates",
+            "Delete"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "API_URL",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}

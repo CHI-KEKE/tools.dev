@@ -1,0 +1,7 @@
+{
+    "InstanceId": "nine1-sample-project",
+    "Market": "Local",
+    "DataCenter": "ny-tpe-1",
+    "InitialDate": "{{INITIAL_DATE}}",
+    "ContactEmail": "upd@91app.com"
+}

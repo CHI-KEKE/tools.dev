@@ -1,0 +1,66 @@
+﻿info:
+  name: S01_CreatePromotion_ReachPiece_多階_測試用
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/CreatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "TypeDef": "CartReachPieceExtraPurchase",
+        "Name": "[T]滿件加購多階Runner",
+        "StartDateTime": "2029-06-01T00:00:00.000Z",
+        "EndDateTime": "2029-06-30T23:59:59.000Z",
+        "Description": "Bruno Runner 測試用",
+        "CustomCampaignCode": "TEST",
+        "CanUseECoupon": false,
+        "IsCartExtraPurchaseThresholdEligible": true,
+        "TargetMemberTypeDef": "All",
+        "PromotionTargetRegionTypeDef": "All",
+        "IsCyclable": false,
+        "ExtraPurchaseRuleList": [
+          { "ConditionId": 1, "ReachPiece": 2, "ReachPrice": 0, "LimitQty": 10 },
+          { "ConditionId": 2, "ReachPiece": 5, "ReachPrice": 0, "LimitQty": 5 }
+        ],
+        "TargetTypeDef": "SalePage",
+        "ExcludeTargetTypeDef": "None",
+        "CalculateTypeDef": "Compatible",
+        "TargetPlatformTypeList": [
+          { "Platform": "Web", "IsEnabled": true },
+          { "Platform": "AppIOS", "IsEnabled": true },
+          { "Platform": "AppAndroid", "IsEnabled": true }
+        ]
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = res.getBody();
+        if (res.getStatus() === 200 && body && body.Data && body.Data.Id) {
+          bru.setEnvVar("promotionId", String(body.Data.Id));
+          console.log("setupok promotionId =", body.Data.Id);
+        } else {
+          console.error("setup failed:", JSON.stringify(body));
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

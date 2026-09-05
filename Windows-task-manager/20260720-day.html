@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026-07-20 WindowsTaskManager.Monitor 問題與解法整理</title>
+<style>
+  :root {
+    --purple: #8E44AD;
+    --red: #E01E5A;
+    --yellow: #ECB22E;
+    --green: #2EB67D;
+    --gray: #95A5A6;
+    --bg: #f5f6f8;
+    --card-bg: #ffffff;
+    --text: #2c3338;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(135deg, #1a1f36, #2d3561);
+    color: #fff;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 8px; font-size: 28px; }
+  header p { margin: 0; color: #cbd2f0; font-size: 15px; }
+  .container {
+    max-width: 980px;
+    margin: -30px auto 60px;
+    padding: 0 20px;
+  }
+  .summary-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 20px;
+    margin-bottom: 28px;
+  }
+  .summary-item {
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+    padding: 8px;
+  }
+  .summary-item .num { font-size: 26px; font-weight: 700; color: #2d3561; }
+  .summary-item .label { font-size: 13px; color: var(--muted); }
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    margin-bottom: 18px;
+    overflow: hidden;
+    border-left: 6px solid var(--gray);
+  }
+  .card.type-feature { border-left-color: #4A6FDC; }
+  .card.type-bugfix { border-left-color: var(--red); }
+  .card.type-improve { border-left-color: var(--yellow); }
+  .card.type-newfeature { border-left-color: var(--green); }
+  .card-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-header:hover { background: #fafbff; }
+  .badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .badge.feature { background: #4A6FDC; }
+  .badge.bugfix { background: var(--red); }
+  .badge.improve { background: #d69e14; }
+  .badge.newfeature { background: var(--green); }
+  .no { font-size: 13px; color: var(--muted); font-weight: 700; min-width: 26px; }
+  .title { font-size: 16.5px; font-weight: 700; flex: 1; }
+  .chevron { color: var(--muted); transition: transform 0.2s; }
+  .card.open .chevron { transform: rotate(90deg); }
+  .card-body {
+    display: none;
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid #eef0f4;
+  }
+  .card.open .card-body { display: block; }
+  .section-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 16px 0 6px;
+  }
+  .section-label:first-child { margin-top: 16px; }
+  .problem-box, .solution-box {
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14.5px;
+  }
+  .problem-box { background: #fdf1f4; color: #7a1030; }
+  .solution-box { background: #f1f8f4; color: #16543a; }
+  .solution-box ul { margin: 6px 0 0; padding-left: 20px; }
+  .solution-box li { margin-bottom: 4px; }
+  code {
+    background: #eef0f6;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #34406b;
+  }
+  .files {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .files code { margin-right: 6px; }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 30px 0 50px;
+  }
+  .toggle-all {
+    text-align: right;
+    margin-bottom: 12px;
+  }
+  .toggle-all button {
+    background: #2d3561;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .toggle-all button:hover { background: #1a1f36; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📋 WindowsTaskManager.Monitor 問題排查與優化整理</h1>
+  <p>整理日期：2026-07-20｜排程監控告警系統（Task Scheduler Monitor + Slack 告警）</p>
+</header>
+
+<div class="container">
+
+  <div class="summary-bar">
+    <div class="summary-item"><div class="num">20</div><div class="label">問題／需求項目</div></div>
+    <div class="summary-item"><div class="num">4</div><div class="label">真正的 Bug 修復</div></div>
+    <div class="summary-item"><div class="num">1</div><div class="label">新功能（每日健康回報）</div></div>
+    <div class="summary-item"><div class="num">15</div><div class="label">功能/體驗優化</div></div>
+  </div>
+
+  <div class="toggle-all"><button onclick="toggleAll()">全部展開／收合</button></div>
+
+  <!-- 1 -->
+  <div class="card type-feature">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">01</span>
+      <span class="badge feature">新增功能</span>
+      <span class="title">建立 Slack 告警通知機制</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">原本只有 Log Error 記錄漏排/執行異常的排程，維運人員需要主動去看 Log 才會知道，無法即時通知團隊。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        <ul>
+          <li>新增 <code>SlackOptions</code> 設定（Webhook URL、Enabled、TimeoutSeconds）</li>
+          <li>新增 <code>SlackAlertNotifier</code>，透過 HttpClient 呼叫 Slack Incoming Webhook</li>
+          <li>新增 <code>CompositeAlertNotifier</code>，讓 Log 記錄與 Slack 通知並行、互不影響（其中一個失敗不影響另一個）</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Options\SlackOptions.cs</code> <code>Services\SlackAlertNotifier.cs</code> <code>Services\CompositeAlertNotifier.cs</code> <code>Program.cs</code></div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card type-improve">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">02</span>
+      <span class="badge improve">體驗優化</span>
+      <span class="title">告警訊息資訊太少，補齊完整排程資訊</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">第一版告警訊息只有「任務名稱、預期執行時間、狀態」，資訊量太少，無法判斷問題。且使用 :rotating_light: 警燈 emoji 不適合表達「漏排」的感覺。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        <ul>
+          <li>新增 <code>TaskDetailInfo</code>（排程名稱、位置、建立者、描述、觸發條件、執行動作）並在告警時一併讀取顯示</li>
+          <li>「漏排告警」emoji 從 <code>:rotating_light:</code> 改為 <code>:ghost:</code>，更貼近「漏掉／不見」的感覺</li>
+          <li>失敗/異常告警同樣套用完整資訊格式，維持一致體驗</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Models\MonitoredTask.cs</code> <code>Services\SchedulerReader.cs</code>（GetTaskDetail）<code>Services\SlackAlertNotifier.cs</code></div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="card type-improve">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">03</span>
+      <span class="badge improve">體驗優化</span>
+      <span class="title">Slack 訊息左側加上顏色分類線</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">參考截圖範例（如 CyberSource Payment 告警），希望 Slack 訊息左側有一條顏色線美化告警訊息、快速分辨告警類型。第一次嘗試在 <code>blocks</code> 格式下加 <code>color</code> 無效。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        <ul>
+          <li>查證發現 Slack 規則：attachment 一旦使用 <code>blocks</code> 格式，<code>color</code> 屬性就會失效</li>
+          <li>改用 Slack 舊式 classic attachment 格式（<code>fields</code> + <code>pretext</code>），才能正確顯示左側顏色線</li>
+          <li>依告警類型上色：漏排 <code>#8E44AD</code> 紫、失敗 <code>#E01E5A</code> 紅、心跳停止 <code>#ECB22E</code> 黃</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Services\SlackAlertNotifier.cs</code>（BuildAttachment）</div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card type-improve">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">04</span>
+      <span class="badge improve">釐清說明</span>
+      <span class="title">「執行動作」內容顯示「...」被以為是省略</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">告警訊息中執行動作顯示 <code>cmd.exe /c echo ... & exit /b 1</code>，使用者以為系統把內容截斷省略了。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">確認 <code>ExecAction.ToString()</code>（Microsoft.Win32.TaskScheduler 套件）本身沒有任何截斷邏輯，「...」只是測試時手動輸入的示意文字，並非程式實際輸出，無需修改程式碼。</div>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card type-feature">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">05</span>
+      <span class="badge feature">新增功能</span>
+      <span class="title">告警訊息加上市場／環境提示，並可透過 Config 調整</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">多個市場/環境（如 HK／QA）同時監控時，收到告警無法立即分辨來源，需要能方便修改的設定。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        <ul>
+          <li>新增 <code>SlackOptions.Market</code> / <code>SlackOptions.Environment</code> 設定值</li>
+          <li>告警訊息第一個欄位顯示 <code>:globe_with_meridians: 市場 HK／環境 QA</code>（任一有設定才顯示）</li>
+          <li>純 Config 調整，不需改程式碼</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>appsettings.json</code> <code>Options\SlackOptions.cs</code></div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="card type-bugfix">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">06</span>
+      <span class="badge bugfix">Bug 修復</span>
+      <span class="title">誤判「執行失敗」：ResultCode 267009 其實是正常執行中</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">Prod 實測收到 <code>DispatchInActiveConversationNotification</code> 執行失敗告警（ResultCode=267009），但網站歷史紀錄顯示 38/38 全部成功，完全看不出是哪一筆失敗。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        根本原因：<code>267009</code>（<code>0x00041301</code>）是 Windows 的 <code>SCHED_S_TASK_RUNNING</code>，屬於「目前仍在執行中」的資訊性代碼，並非真正的失敗。
+        <ul>
+          <li>新增 <code>IsGenuineFailureResultCode()</code>，將已知的 <code>SCHED_S_*</code> 資訊性代碼（267009 執行中、267010 已停用、267011 尚未執行等）排除在「真正失敗」判斷之外</li>
+          <li>刻意保留 267014（<code>SCHED_S_TASK_TERMINATED</code>，強制終止）仍視為失敗，因為這種情況仍值得告警</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Workers\TaskMonitorWorker.cs</code></div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="card type-bugfix">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">07</span>
+      <span class="badge bugfix">Bug 修復</span>
+      <span class="title">Prod 執行 Console 顯示「實際納入監控 0 個」，不合理</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">在 Prod 直接執行 Monitor Console，Log 顯示總計 103 個任務全被判定為系統任務、實際納入監控 0 個，但截圖顯示 Task Scheduler 裡明明有許多自訂排程資料夾（ETL Service、Member、OTM 等）。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        根本原因：經典 UAC 權限問題 — Console 若未以「系統管理員身分執行」，Task Scheduler COM API 會「無異常地」只回傳過濾後 Token 可見的任務（通常只有 <code>\Microsoft\...</code>），看起來像是掃描乾淨、但其實是權限不足。
+        <ul>
+          <li>掃描開始時記錄目前可見的頂層資料夾清單，只有 Microsoft 時給出提示</li>
+          <li>新增 <code>IsRunningElevated()</code> 檢查，未提升權限時記錄明確 Warning，建議以系統管理員身分執行或部署為 Windows Service</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Services\SchedulerReader.cs</code></div>
+    </div>
+  </div>
+
+  <!-- 8 -->
+  <div class="card type-feature">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">08</span>
+      <span class="badge feature">新增功能</span>
+      <span class="title">告警連結網域可設定化</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">告警訊息中提供的歷史紀錄連結網域是寫死在程式碼中的，無法因應不同市場/環境切換。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">新增 <code>SlackOptions.WebsiteBaseUrl</code> 設定，<code>BuildHistoryUrl</code> 改為依此參數組出連結；未設定時顯示提示文字而非產生無效連結，不需改程式碼即可切換網域。</div>
+      <div class="files">涉及檔案：<code>appsettings.json</code> <code>Services\SlackAlertNotifier.cs</code></div>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="card type-improve">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">09</span>
+      <span class="badge improve">體驗優化</span>
+      <span class="title">網站 History 頁面：無 Event Log 紀錄時容易誤判「沒執行過」</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box"><code>\Order\SE_Order_ETL_ElemisOfflineOrder</code> 顯示「沒有執行歷史記錄」，但實際上 OSM Log 檔案確實存在，維運人員需要手動觸發「Log 查詢」才能發現，容易誤判為漏排。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        <ul>
+          <li>在 History 頁面加上提示：Event Log 是環狀緩衝區，可能已遺失紀錄，需要進一步確認 Log 檔案</li>
+          <li>當 ETL 任務沒有 Event Log 歷史時，網頁載入即自動帶入 3 天區間並自動觸發既有的「Log 查詢（依時間窗精準比對）」功能，直接顯示 OSM Log 證據，不需要再手動操作</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Pages\Tasks\History.cshtml</code>（WindowsTaskManager 網站專案）</div>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="card type-bugfix">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">10</span>
+      <span class="badge bugfix">Bug 修復（核心）</span>
+      <span class="title">Monitor 誤發漏排告警：心跳型任務未考慮觸發器「作用時間窗」</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">同一個問題再次確認後，發現真正的 Bug 是 <b>Monitor 本身誤發告警</b>，而非網站顯示問題。<code>\Order\SE_Order_ETL_ElemisOfflineOrder</code> 每天固定被誤發「心跳已停止」告警。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        根本原因：該任務觸發器是「每天 11:08 PM 開始，每 30 分鐘重複一次，持續 3 小時」— 也就是只在 23:08~02:08 這 3 小時內是「心跳作用中」，之後自然安靜 21 小時到隔天。原本的判斷只看「現在時間 - 最後執行時間 > 閾值」，完全沒有意識到觸發器只在特定時間窗內才會重複，導致整個安靜期每 30 分鐘都誤發一次告警。
+        <ul>
+          <li>新增 <code>TaskMonitorPlan.IsWithinHeartbeatWindow</code>，透過 <code>Task.GetRunTimes()</code> 查詢目前是否仍在觸發器的重複時間窗內</li>
+          <li><code>CheckHeartbeatTask()</code> 判斷 gap 超過閾值時，若已不在心跳作用視窗內，判定為「正常（心跳視窗外的安靜期）」，直接跳過、不告警</li>
+          <li>邊界情況處理：查詢範圍取 <code>max(最後執行時間, 現在-閾值)</code> 並只採計「大於最後執行時間」的時間點，避免視窗剛結束瞬間仍誤判一次</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Models\MonitoredTask.cs</code> <code>Services\SchedulerReader.cs</code> <code>Workers\TaskMonitorWorker.cs</code></div>
+    </div>
+  </div>
+
+  <!-- 11 -->
+  <div class="card type-improve">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">11</span>
+      <span class="badge improve">釐清說明</span>
+      <span class="title">確認心跳型判斷邏輯：仍需檢查時間窗內是否有應執行時間點</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">使用者提問確認：即使判定為心跳型任務，是否仍需要確認檢查時間窗內有應執行的時間點才會告警？</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">確認邏輯為「兩個條件同時成立」才會告警：① gap（距上次執行的時間差）超過閾值，且 ② 目前時間仍在觸發器的重複作用視窗內。任一條件不成立就不告警。</div>
+    </div>
+  </div>
+
+  <!-- 12 -->
+  <div class="card type-feature">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">12</span>
+      <span class="badge feature">新增功能</span>
+      <span class="title">失敗原因 ResultCode 不易讀懂 + 加上負責團隊 Slack Tag</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">
+        1. 失敗告警顯示如「有執行紀錄但結果為失敗（3762504530）」，維運人員看不懂這串數字代表什麼。<br>
+        2. 希望告警標題可以像 <code>:x: 排程執行失敗告警，請 xxx 團隊協助確認</code> 一樣，直接 tag 負責團隊。
+      </div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        <ul>
+          <li>新增 <code>ResultCodeFormatter</code>，將原始 ResultCode 轉換成 <code>0xXXXXXXXX（友善說明）</code> 格式（例如 <code>0xE0434352</code> = .NET 未捕捉例外），邏輯移植自網站既有的 <code>GetFriendlyErrorMessage</code></li>
+          <li>新增 <code>SlackOptions.Teams</code>（團隊清單：G11N、SG ECom RDs、SG OMO RDs 及對應 Slack User Group ID）與 <code>TaskTeamMappings</code>（任務路徑萬用字元 → 團隊名稱對應規則）</li>
+          <li>比對成功時在標題後方加上真正的 Slack User Group @mention（<code>&lt;!subteam^ID|@handle&gt;</code>），會實際觸發通知給該團隊所有成員</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Services\ResultCodeFormatter.cs</code>（新增）<code>Options\SlackOptions.cs</code> <code>Services\SlackAlertNotifier.cs</code> <code>appsettings.json</code></div>
+    </div>
+  </div>
+
+  <!-- 13 -->
+  <div class="card type-improve">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">13</span>
+      <span class="badge improve">釐清說明</span>
+      <span class="title">確認：沒比對到負責團隊時維持原樣，不加提示文字</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">確認當 <code>TaskTeamMappings</code> 沒有比對成功時，標題不應該加上「請 xxx 協助確認」這句話。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">確認既有實作已符合需求：<code>FindResponsibleTeam</code> 找不到對應團隊時回傳 <code>null</code>，此時 <code>teamMentionText</code> 為空字串，標題完全維持原樣，無需修改程式碼。</div>
+    </div>
+  </div>
+
+  <!-- 14 -->
+  <div class="card type-bugfix">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">14</span>
+      <span class="badge bugfix">Bug 修復</span>
+      <span class="title">加上團隊 @mention 後，標題粗體效果失效</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">實測發現有 tag 團隊時，Slack 訊息標題變成「排程執行失敗告警，請 @sg-ecom 協助確認」，「排程執行失敗告警」這幾個字沒有正常套用粗體。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">根本原因：粗體標記 <code>*text*</code> 結尾緊接全形標點「，」、中間沒有空白時，Slack mrkdwn 會判斷邊界失敗而不套用粗體。修正為在星號結尾與後面文字之間加一個半形空白（<code>*標題* ，請...</code>），確保粗體正常顯示。</div>
+      <div class="files">涉及檔案：<code>Services\SlackAlertNotifier.cs</code>（BuildAttachment，pretext 組字邏輯）</div>
+    </div>
+  </div>
+
+  <!-- 15 -->
+  <div class="card type-bugfix">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">15</span>
+      <span class="badge bugfix">Bug 修復</span>
+      <span class="title">ResultCode 3762504530 仍顯示原始數字，格式化沒生效</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">即使已加上 <code>ResultCodeFormatter</code>，實測訊息仍顯示「有執行紀錄但結果為失敗（3762504530）」，格式化沒有生效。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">根本原因：<code>3762504530</code> 超過 <code>int.MaxValue</code>（約 21 億），原本用 <code>int.TryParse</code> 解析十進位字串會直接失敗，導致邏輯掉到「無法解析、原樣回傳」的分支。修正為改用 <code>long</code> 承接十進位字串、再安全轉型為 <code>uint</code>，涵蓋完整的 ResultCode 範圍（0~4294967295）。修正後正確顯示為 <code>0xE0434352（.NET 程式丟出未捕捉的例外（CLR Exception））</code>。</div>
+      <div class="files">涉及檔案：<code>Services\ResultCodeFormatter.cs</code></div>
+    </div>
+  </div>
+
+  <!-- 16 -->
+  <div class="card type-newfeature">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="no">16</span>
+      <span class="badge newfeature">新增功能</span>
+      <span class="title">每日健康回報：固定時間發送「監控服務仍正常運作」訊息</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">問題</div>
+      <div class="problem-box">希望每天固定時間確認 Monitor 監控服務今天有持續正常運作、沒有中斷或當機，並主動發訊息到頻道告知團隊「今日 ETL 監控排程順利執行完成」，且時間點要能透過 Config 隨時調整。</div>
+      <div class="section-label">解法</div>
+      <div class="solution-box">
+        <ul>
+          <li>新增 <code>SlackOptions.DailyHeartbeat</code> 設定：<code>Enabled</code>（是否啟用）、<code>SendTime</code>（每天發送時間，格式 <code>HH:mm</code>，目前設為 <code>17:00</code>，可隨時修改）、<code>Message</code>（訊息文字，可自訂）</li>
+          <li>搭上既有巡檢週期（每 30 分鐘一輪）判斷：當天尚未發送過，且現在時間已到達或超過設定時間，就發送一次並記錄「今天已發送」</li>
+          <li>新增 <code>SlackAlertNotifier.NotifyDailyHeartbeat()</code>，獨立於一般告警邏輯，發送綠色 <code>:white_check_mark:</code> 訊息，同樣附帶市場/環境資訊</li>
+        </ul>
+      </div>
+      <div class="files">涉及檔案：<code>Options\SlackOptions.cs</code>（DailyHeartbeatOptions）<code>Services\SlackAlertNotifier.cs</code> <code>Workers\TaskMonitorWorker.cs</code>（CheckDailyHeartbeat）<code>appsettings.json</code></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  WindowsTaskManager.Monitor ｜ 排程監控與 Slack 告警優化紀錄 ｜ 2026-07-20
+</footer>
+
+<script>
+function toggle(header) {
+  header.parentElement.classList.toggle('open');
+}
+function toggleAll() {
+  var cards = document.querySelectorAll('.card');
+  var anyClosed = Array.from(cards).some(c => !c.classList.contains('open'));
+  cards.forEach(c => c.classList.toggle('open', anyClosed));
+}
+</script>
+
+</body>
+</html>

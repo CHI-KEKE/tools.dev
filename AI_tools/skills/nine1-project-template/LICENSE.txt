@@ -1,0 +1,6 @@
+Proprietary
+
+Copyright (c) 91APP, Inc. All rights reserved.
+
+This skill and associated scripts are proprietary to 91APP, Inc.
+Unauthorized copying, distribution, or use is prohibited.

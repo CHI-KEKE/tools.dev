@@ -1,0 +1,4 @@
+name: pp
+variables:
+  - name: base-url
+    value: https://promotion-api-frontend-internal.pp.91dev.tw

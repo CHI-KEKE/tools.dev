@@ -1,0 +1,35 @@
+info:
+  name: category-update
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/category-update"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "Id": 6578,
+        "ModifyType": "Add",
+        "CategoryIds": [
+          3
+        ],
+        "ShopId": 2,
+        "IsNeedRecordIo":true
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

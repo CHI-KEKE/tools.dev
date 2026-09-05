@@ -1,0 +1,38 @@
+name: hk-qa
+variables:
+  - name: base-url
+    value: http://10.51.102.231
+  - name: scm_api
+    value: https://api.91mai.com
+  - name: shop_Id
+    value: "2"
+  - name: token
+    value: "123456782"
+  - name: api_key
+    value: d80f29af-e686-4a25-8b62-7dc9f4f70417
+  - name: salt_key
+    value: "73073046"
+  - name: phone
+    value: "+886977156238"
+  - name: request_id
+    value: aaa
+  - name: machine_code
+    value: NY0643
+  - name: location_code
+    value: "1234999"
+  - name: employee_code
+    value: "124"
+  - name: outermembercode
+    value: M9192066
+  - name: member_code
+    value: 70000330F0
+  - name: timestamp
+    value: "1765984845"
+  - name: signature
+    value: 541f64de0dc9cbab073b46261b5e42ddd692f9df9fc8de5deeac2b292dd08d1a7ad598ce830e1dde972aa59ed7118e72d7c598d885778eab154fa8c155cfdfe7
+  - name: request_body
+    value: '{"OuterMemberCode":"M9192066","MemberCode":"70000330F0","CellPhone":"phone","UsingChannelType":"ASA"}'
+  - name: usingChannelType
+    value: Online
+  - name: phone2
+    value: "+886909871212"

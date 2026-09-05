@@ -1,0 +1,103 @@
+info:
+  name: payment-inquery
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: https://sandbox-pgw.2c2p.com/payment/4.3/paymentInquiry
+  body:
+    type: json
+    data: |-
+      {
+        "merchantID": "{{merchant-id}}",
+        "invoiceNo": "{{TG}}",
+        "locale": "en"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const jwt = require("jsonwebtoken");
+
+        const getVal = (name) =>
+          bru.getRequestVar(name) ||
+          bru.getCollectionVar(name) ||
+          bru.getEnvVar(name);
+
+        const secretKey = getVal("secret-key");
+
+        if (!secretKey || !String(secretKey).trim()) {
+          throw new Error('找不到 "secret-key"');
+        }
+
+        const payload = {
+          merchantID: getVal("merchant-id"),
+          invoiceNo: getVal("invoice-no"),
+          locale: "en"
+        };
+
+        const jwtToken = jwt.sign(payload, secretKey, {
+          algorithm: "HS256",
+          noTimestamp: true
+        });
+
+        bru.setVar("query-jwt-token", jwtToken);
+
+        req.setBody({
+          payload: jwtToken
+        });
+
+        console.log(JSON.stringify(payload, null, 2));
+    - type: after-response
+      code: |-
+        const jwt = require("jsonwebtoken");
+
+        let responseBody = res.getBody();
+
+        if (typeof responseBody === "string") {
+          responseBody = JSON.parse(responseBody);
+        }
+
+        if (!responseBody.payload) {
+          throw new Error('Response 裡找不到 "payload"');
+        }
+
+        const decoded = jwt.decode(responseBody.payload);
+
+        if (!decoded) {
+          throw new Error("JWT decode 失敗");
+        }
+
+        const decodedClaims = Object.entries(decoded).map(([key, value]) => ({
+          Type: key,
+          Value: value == null ? "" : String(value)
+        }));
+
+        const firstOrDefault = (type) =>
+          decodedClaims.find(claim => claim.Type === type)?.Value || "";
+
+        const responseEntity = {
+          ReturnCode: firstOrDefault("respCode") === "0000" ? "Success" : "Failed",
+          ReturnMessage: `${firstOrDefault("respCode")},${firstOrDefault("respDesc")}`,
+          QueryResult: decoded,
+          ExtendInfo: {
+            RawData: responseBody,
+            RawDataDecrypt: decodedClaims
+          }
+        };
+
+        bru.setVar("query-response-entity", JSON.stringify(responseEntity));
+        bru.setVar("query-resp-code", firstOrDefault("respCode"));
+        bru.setVar("query-resp-desc", firstOrDefault("respDesc"));
+
+        console.log(JSON.stringify(decoded, null, 2));
+        console.log(JSON.stringify(responseEntity, null, 2));
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

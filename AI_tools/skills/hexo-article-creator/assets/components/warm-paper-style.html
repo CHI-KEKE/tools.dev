@@ -1,0 +1,227 @@
+<!--
+元件：溫暖紙感風格（warm-paper-style）
+用途：知識整理／技術解析類文章想要「明亮、乾淨、專業但不冷硬」的觀感時使用，取代深色終端機風或冷色調儀表板風。
+實戰來源：91APP 退費計算系列文章（`退費計算-視覺化解析.html` / `退費計算-Qty與TotalPayment.md`）比較深色版與淺色紙感版後，使用者明確偏好本風格。
+
+視覺語言拆解：
+  - 底色走「米白紙張」而非純白或深色：background 用 #fbf9f4（近似牛皮紙/道林紙），搭配左上/右上角落極淡的暖橘、紫色放射狀漸層做點綴（rgba 透明度 .08~.18），避免整頁死白。
+  - 卡片一律純白 (#ffffff) + 細邊框 (#ece7dc) + 大範圍柔和陰影 (box-shadow: 0 10px 30px -12px rgba(31,36,48,.15))，讓卡片「浮」在紙面上，不用重色塊分隔。
+  - 主題強調色是珊瑚橙到杏黃的漸層 (#ff6b4a → #ffb648)，用在：section 編號徽章、hero eyebrow 標籤底色、時間軸數字圓圈、卡片頂部色條。輔助色有：teal 藍綠 (#12a594)、violet 紫 (#7c6cf7)、blue (#3b82f6)，用來區分不同語意分類（不是危險分級，是同一套暖色系底下的分類色）。
+  - 字體維持系統字體（Segoe UI / PingFang TC / Microsoft JhengHei），不用等寬字體做正文，只有程式碼區塊 (`pre`) 才切換成深色終端機感（深藍黑底 #1c1f2b + 亮色語法上色），形成「紙感內文＋深色程式碼窗」的對比，讓程式碼片段更顯眼好辨識。
+  - 圓角普遍偏大（14~20px），營造柔和、現代感，不用直角或小圓角。
+  - 表格走「白底+細邊框圓角容器」，表頭用極淡米色底 (#f3f0e8) 區隔，hover 列淡橘底 (#fffaf2) 提示閱讀位置。
+  - 段落主文字用深墨藍灰 (#1f2430)，輔助說明文字用中性灰藍 (#5b6472)，不用純黑也不用純灰，維持整體偏暖的中性色調。
+
+適用情境：
+  - 技術邏輯/計算規則拆解、系統行為說明、FAQ 式問答整理，希望讀起來像一份「精緻的技術白皮書」而非警示看板或終端機日誌。
+  - 需要在同一篇文章中放大量表格、程式碼片段、條列步驟，但又不想要深色系造成的視覺壓迫感。
+
+不適合情境：
+  - 事件回顧/故障排查等需要明確「紅=急迫、琥珀=待觀察、綠=已解決」風險分級語意的文章，此風格的配色是分類語意，非危險分級語意，若硬套用會讓警示程度不明顯，改用 vertical-timeline 或 medical-chart。
+  - 品牌／自然／生態主題，那類請改用 organic-glass-style（深綠棕大地色系）。
+
+包含區塊：
+  1. wp-hero：開場橫幅，米白底 + 暖橘 eyebrow 標籤 + 大標題 + 說明文字 + 徽章列
+  2. wp-section-head：章節標題（圓角徽章編號 + h2），徽章可用 .ok/.warn/.purple 變化色彩區分章節分類
+  3. wp-card：白色卡片容器，通用於任何段落內容包裝
+  4. wp-callout：提示框（info/warn/danger/ok 四種語意色，底色極淡、邊框對應色系）
+  5. wp-summary-grid + wp-box：三欄摘要卡片網格，每張卡頂部一條色條（trait/risk/fix 三種分類）
+  6. wp-flow + wp-step：橫向流程步驟（含 .cond 條件分支樣式與箭頭連接）
+  7. wp-steps + wp-stepcard：直向時間軸步驟卡（左側圓形編號 + 卡片說明）
+  8. wp-checklist：條列核取清單（打勾圖示）
+  9. wp-evidence：案例佐證框（標籤 + 案例內容）
+  10. pre.wp-pre：深色終端機風程式碼區塊（與紙感底色對比，語法上色 class：.kw/.str/.cm/.fn/.type/.num/.op）
+
+同一篇文章內若要用多個章節，`<style>` 只需在第一個出現的 tab 定義一次，之後每個 tab 直接重複使用 class 即可。
+-->
+
+<style>
+.wp{
+  display:block;
+  font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'PingFang TC','Microsoft JhengHei',sans-serif;
+  background:
+    radial-gradient(700px 400px at 90% -5%, rgba(255,182,72,.18), transparent 60%),
+    radial-gradient(900px 500px at -5% 10%, rgba(124,108,247,.10), transparent 55%),
+    #fbf9f4;
+  color:#1f2430!important;
+  line-height:1.75;
+  border-radius:20px;
+  padding:1px 0 28px;
+  margin:0 0 20px;
+  overflow:hidden;
+  --ink:#1f2430; --sub:#5b6472; --card:#ffffff; --line:#ece7dc;
+  --brand:#ff6b4a; --brand2:#ffb648; --teal:#12a594; --violet:#7c6cf7; --blue:#3b82f6; --danger:#e5484d;
+  --shadow:0 10px 30px -12px rgba(31,36,48,.15);
+}
+.wp *{box-sizing:border-box;}
+.wp a{color:var(--brand)!important;text-decoration:none;}
+.wp a:hover{text-decoration:underline;}
+.wp .wp-hero{padding:48px 6vw 34px;text-align:center;position:relative;overflow:hidden;}
+.wp .wp-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,182,72,.10), transparent 70%);pointer-events:none;}
+.wp .wp-eyebrow{display:inline-block;font-size:.78rem;letter-spacing:.16em;color:var(--brand)!important;text-transform:uppercase;font-weight:700;margin-bottom:12px;background:rgba(255,107,74,.1);padding:6px 14px;border-radius:999px;}
+.wp .wp-hero h1{font-size:1.7rem;margin:0 0 12px;color:var(--ink)!important;font-weight:800;}
+.wp .wp-hero p{color:var(--sub)!important;max-width:700px;margin:0 auto;font-size:1rem;}
+.wp .wp-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.wp .wp-badge{background:var(--card);border:1px solid var(--line);padding:6px 14px;border-radius:999px;font-size:.8rem;color:var(--sub)!important;box-shadow:var(--shadow);}
+.wp .wp-container{padding:0 5vw;}
+.wp section{margin-bottom:44px;}
+.wp .wp-section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.wp .wp-section-head .wp-chip{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;background:linear-gradient(135deg,#1f2430,#485068);color:#fff!important;font-size:1rem;box-shadow:var(--shadow);}
+.wp .wp-section-head.ok .wp-chip{background:linear-gradient(135deg,#12a594,#5ee6bf);}
+.wp .wp-section-head.warn .wp-chip{background:linear-gradient(135deg,#ff6b4a,#ffb648);}
+.wp .wp-section-head.purple .wp-chip{background:linear-gradient(135deg,#7c6cf7,#a78bfa);}
+.wp .wp-section-head h2{margin:0;font-size:1.3rem;font-weight:800;color:var(--ink)!important;}
+.wp h3{font-size:1.08rem;margin:26px 0 10px;color:var(--ink)!important;border-left:4px solid var(--brand);padding-left:10px;}
+.wp p{color:var(--sub)!important;}
+.wp .wp-card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 22px;margin:14px 0;}
+.wp table{width:auto;max-width:100%;border-collapse:separate;border-spacing:0;background:var(--card)!important;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:14px 0 22px;font-size:.88rem;box-shadow:var(--shadow);}
+.wp thead th{background:#f3f0e8!important;color:var(--ink)!important;text-align:left;padding:13px 16px;font-weight:800;border-bottom:1px solid var(--line);}
+.wp tbody td{padding:13px 16px;border-bottom:1px solid var(--line);color:#3b4150!important;vertical-align:top;background:var(--card)!important;}
+.wp tbody tr:last-child td{border-bottom:none;}
+.wp tbody tr:hover td{background:#fffaf2!important;}
+.wp tbody td strong{color:var(--ink)!important;}
+.wp tbody td code{color:#c2410c!important;}
+.wp code{font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace;background:#f1eee6!important;color:#c2410c!important;padding:2px 7px;border-radius:6px;font-size:.88em;border:1px solid #e9e3d5;}
+.wp pre.wp-pre{background:#1c1f2b!important;border:none;border-radius:16px;padding:20px 22px;overflow-x:auto;margin:16px 0;position:relative;color:#e9ecf7!important;font-size:.85rem!important;line-height:1.7!important;font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace!important;white-space:pre!important;box-shadow:var(--shadow);}
+.wp pre.wp-pre::before{content:attr(data-lang);position:absolute;top:12px;right:16px;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#8a92b2!important;font-family:'Segoe UI',sans-serif;}
+.wp .kw{color:#ff9d6c!important;} .wp .str{color:#c3e88d!important;} .wp .cm{color:#6b7394!important;font-style:italic;} .wp .fn{color:#7fd0ff!important;} .wp .type{color:#ffd479!important;} .wp .num{color:#c3e88d!important;} .wp .op{color:#ff6b9d!important;}
+.wp .wp-callout{border-radius:16px;padding:18px 22px;margin:18px 0;border:1px solid transparent;display:flex;gap:14px;}
+.wp .wp-callout .wp-icon{font-size:1.3rem;flex:none;}
+.wp .wp-callout.info{background:#eff6ff;border-color:#bfdbfe;}
+.wp .wp-callout.warn{background:#fffbeb;border-color:#fde68a;}
+.wp .wp-callout.danger{background:#fef2f2;border-color:#fecaca;}
+.wp .wp-callout.ok{background:#ecfdf5;border-color:#a7f3d0;}
+.wp .wp-callout p{margin:0;font-size:.92rem;color:#3b4150!important;}
+.wp .wp-callout strong{color:var(--ink)!important;}
+.wp .wp-file-path{font-family:Consolas,monospace;font-size:.76rem;color:var(--sub)!important;background:#f1eee6!important;display:inline-block;padding:3px 10px;border-radius:6px;margin:4px 0 12px;border:1px solid var(--line);}
+.wp .wp-tag{display:inline-block;font-size:.72rem;font-weight:800;padding:3px 11px;border-radius:999px;letter-spacing:.02em;}
+.wp .wp-tag.danger{background:#fee2e2!important;color:#b91c1c!important;}
+.wp .wp-tag.ok{background:#dcfce7!important;color:#15803d!important;}
+.wp .wp-tag.warn{background:#fef3c7!important;color:#b45309!important;}
+.wp .wp-tag.info{background:#e0f2fe!important;color:#0369a1!important;}
+.wp .wp-tag.purple{background:#ede9fe!important;color:#6d28d9!important;}
+.wp .wp-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0;}
+.wp .wp-summary-grid .wp-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--brand);position:relative;overflow:hidden;}
+.wp .wp-summary-grid .wp-box.trait{border-top-color:var(--brand);}
+.wp .wp-summary-grid .wp-box.risk{border-top-color:var(--brand2);}
+.wp .wp-summary-grid .wp-box.fix{border-top-color:var(--teal);}
+.wp .wp-summary-grid .wp-box h4{margin:0 0 8px;color:var(--ink)!important;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;}
+.wp .wp-summary-grid .wp-box p{margin:0;font-size:.87rem;color:var(--sub)!important;}
+@media (max-width:780px){.wp .wp-summary-grid{grid-template-columns:1fr;}}
+.wp .wp-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0;}
+.wp .wp-flow .wp-step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:.85rem;font-weight:700;color:var(--ink)!important;box-shadow:var(--shadow);}
+.wp .wp-flow .wp-step.cond{background:#fffbeb;border-color:#fde68a;color:#b45309!important;}
+.wp .wp-flow .wp-arrow{color:var(--violet)!important;font-size:1.2rem;font-weight:900;}
+.wp .wp-steps{display:flex;flex-direction:column;gap:14px;margin:16px 0 22px;}
+.wp .wp-stepcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;position:relative;padding-left:60px;box-shadow:var(--shadow);}
+.wp .wp-stepcard .wp-stepnum{position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff!important;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
+.wp .wp-stepcard.cond .wp-stepnum{background:linear-gradient(135deg,#ffb454,#c97f2a);}
+.wp .wp-stepcard .wp-step-title{font-weight:700;color:var(--ink)!important;font-size:1rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.wp .wp-stepcard p{margin:6px 0;font-size:.9rem;color:var(--sub)!important;}
+.wp .wp-checklist{list-style:none;padding:0;margin:16px 0;}
+.wp .wp-checklist li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);color:var(--sub)!important;}
+.wp .wp-checklist li:last-child{border-bottom:none;}
+.wp .wp-checklist li::before{content:"✓";flex:none;width:22px;height:22px;border-radius:7px;background:#dcfce7;color:#15803d!important;font-size:.75rem;display:flex;align-items:center;justify-content:center;margin-top:2px;font-weight:900;}
+.wp .wp-evidence{border:1px solid var(--line);background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px;margin:16px 0 22px;}
+.wp .wp-evidence .wp-evidence-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.wp .wp-evidence .wp-evidence-head .wp-tag{background:var(--ink)!important;color:#fff!important;}
+.wp footer{text-align:center;padding:30px 5vw 6px;color:var(--sub)!important;font-size:.82rem;border-top:1px solid var(--line);margin-top:8px;}
+</style>
+
+<div class="wp">
+<div class="wp-hero">
+<span class="wp-eyebrow">範例 · Warm Paper Style</span>
+<h1>🧾 溫暖紙感風格範例</h1>
+<p>這是一份示範文章的開場橫幅說明，用來展示米白底、暖橘強調色與白卡片陰影的整體觀感。</p>
+<div class="wp-badges">
+<span class="wp-badge">範例徽章一</span>
+<span class="wp-badge">範例徽章二</span>
+</div>
+</div>
+<div class="wp-container">
+
+<section>
+<div class="wp-section-head">
+<div class="wp-chip">01</div>
+<h2>章節標題範例</h2>
+</div>
+<p>章節說明文字，顏色使用中性灰藍 <code>--sub</code>。</p>
+
+<div class="wp-card">
+<p>這是一張白色卡片，內容可以放任何段落文字或表格。</p>
+</div>
+
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td><code>ExampleField</code></td><td>範例說明文字</td></tr>
+</tbody>
+</table>
+
+<div class="wp-callout info">
+<span class="wp-icon">💡</span>
+<p><strong>提示：</strong>這是資訊性提示框，底色為淡藍。</p>
+</div>
+
+<div class="wp-callout warn">
+<span class="wp-icon">⚠️</span>
+<p><strong>注意：</strong>這是警示提示框，底色為淡黃。</p>
+</div>
+
+<div class="wp-summary-grid">
+<div class="wp-box trait">
+<h4>分類一</h4>
+<p>說明文字。</p>
+</div>
+<div class="wp-box risk">
+<h4>分類二</h4>
+<p>說明文字。</p>
+</div>
+<div class="wp-box fix">
+<h4>分類三</h4>
+<p>說明文字。</p>
+</div>
+</div>
+
+<div class="wp-flow">
+<div class="wp-step">開始</div>
+<div class="wp-arrow">→</div>
+<div class="wp-step cond">條件判斷</div>
+<div class="wp-arrow">→</div>
+<div class="wp-step">結束</div>
+</div>
+
+<div class="wp-steps">
+<div class="wp-stepcard">
+<div class="wp-stepnum">1</div>
+<div class="wp-step-title">步驟一標題</div>
+<p>步驟說明文字。</p>
+</div>
+<div class="wp-stepcard cond">
+<div class="wp-stepnum">2</div>
+<div class="wp-step-title">步驟二標題（條件分支）</div>
+<p>步驟說明文字。</p>
+</div>
+</div>
+
+<ul class="wp-checklist">
+<li>檢查項目一</li>
+<li>檢查項目二</li>
+</ul>
+
+<div class="wp-evidence">
+<div class="wp-evidence-head">
+<span class="wp-tag">案例</span>
+<strong>範例案例編號</strong>
+</div>
+<p>案例佐證說明文字。</p>
+</div>
+
+<pre class="wp-pre" data-lang="csharp"><span class="kw">var</span> <span class="fn">result</span> = <span class="type">Entity</span>.Calculate(<span class="num">1</span>); <span class="cm">// 註解說明</span></pre>
+
+</section>
+
+<footer>整理自範例來源</footer>
+
+</div>
+</div>

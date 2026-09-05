@@ -1,0 +1,167 @@
+opencollection: 1.0.0
+
+info:
+  name: pose-api
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  headers:
+    - name: NY-SHOP-ID
+      value: "{{shop_Id}}"
+    - name: x-request-id
+      value: "{{request_id}}"
+    - name: x-pos-content-machine-code
+      value: "{{machine_code}}"
+    - name: x-pos-content-location-code
+      value: "{{location_code}}"
+    - name: x-pos-content-employee-code
+      value: "{{employee_code}}"
+  scripts:
+    - type: before-request
+      code: |-
+        const phone = bru.getEnvVar("phone");
+        const outermembercode = bru.getEnvVar("outermembercode");
+        const membercode = bru.getEnvVar("member_code");
+        const shopId = parseInt(bru.getEnvVar("shop_id"));
+        // 修改request-body
+        var body = {
+            "OuterMemberCode": outermembercode,
+            "MemberCode": membercode,
+            "CellPhone": phone
+        }
+
+        var body_data = JSON.stringify(body)
+
+        // 取得Timestamp
+        await bru.sendRequest({
+            url: bru.getEnvVar("scm_api") + '/scm/v1/Utils/GetCurrentTime',
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+            }
+        }, async function(err, response) {
+            const timestamp = response.data
+            // console.log("取得Timestamp : " + timestamp)
+            bru.setEnvVar("timestamp", timestamp);
+
+            var body =  body_data.toLowerCase();
+            // 取得Signature
+            var content = "ts=" + bru.getEnvVar("timestamp") + "&data=" + body + "&sk=" + bru.getEnvVar("salt_key")
+
+            console.log("取得Signature : " + content)
+            await bru.sendRequest({
+                url: bru.getEnvVar("scm_api") + '/scm/v1/Sample/GetEncryptData',
+                method: 'POST',
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    },
+                data: {
+                    "key": bru.getEnvVar("api_key"),
+                    "content": content
+                }
+            }, async function(err, response) {
+                const signature = response.data.Data
+                bru.setEnvVar("signature", signature);
+            });
+        });
+
+        request_body = body_data
+        // console.log("4. 取得request_body:" + request_body)
+        bru.setEnvVar("request_body", request_body);
+
+        function interpolate (value) {
+            const {Property} = require('pm-collection');
+            return Property.replaceSubstitutions(value, bru.getAllVars());
+        }
+
+docs:
+  content: |
+    ## pm prescript
+
+    const phone = pm.collectionVariables.get("phone");
+    const outermembercode = pm.collectionVariables.get("outermembercode");
+    const membercode = pm.collectionVariables.get("member_code");
+    const shopId = parseInt(pm.collectionVariables.get("shop_id"));
+    const usingChannelType = pm.collectionVariables.get("usingChannelType");
+
+    // 修改request-body
+    var body = {
+        "OuterMemberCode": outermembercode,
+        "MemberCode": membercode,
+        "CellPhone": phone,
+        "UsingChannelType":usingChannelType
+    }
+
+    var body_data = JSON.stringify(body)
+
+    // 取得Timestamp
+    pm.sendRequest({
+        url: 'https://api.91mai.com' + '/scm/v1/Utils/GetCurrentTime',
+        method: 'POST',
+        header: {
+            'content-type': 'application/json',
+        }
+    }, function (err, response) {
+        const timestamp = response.json()
+        // console.log("取得Timestamp : " + timestamp)
+        pm.collectionVariables.set("timestamp", timestamp);
+
+        var body =  body_data.toLowerCase();
+        // 取得Signature
+        var content = "ts=" + pm.collectionVariables.get("timestamp") + "&data=" + body + "&sk=" + pm.collectionVariables.get("salt_key")
+
+         console.log("取得Signature : " + content)
+        pm.sendRequest({
+            url: 'https://api.91mai.com' + '/scm/v1/Sample/GetEncryptData',
+            method: 'POST',
+            header: {
+                'Content-Type': 'multipart/form-data',
+                },
+            body: {
+                mode: 'formdata',
+                formdata: [
+                {
+                    key: "key", 
+                    value: pm.collectionVariables.get("api_key"), 
+                    disabled: false, 
+                    description: {content:"", type:"text/plain"}
+                    },
+                {
+                    key: "content", 
+                    value: content, 
+                    disabled: false, 
+                    description: {content:"", type:"text/plain"}
+                    }
+                ]
+            }
+        },  function(err, response) {
+            const signature = response.json().Data
+            pm.collectionVariables.set("signature", signature);
+        });
+    });
+
+    request_body = body_data
+    // console.log("4. 取得request_body:" + request_body)
+    pm.collectionVariables.set("request_body", request_body);
+
+    function interpolate (value) {
+        const {Property} = require('postman-collection');
+        return Property.replaceSubstitutions(value, pm.collectionVariables.toObject());
+    }
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

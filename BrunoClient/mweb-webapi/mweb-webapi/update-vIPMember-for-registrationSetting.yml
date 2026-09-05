@@ -1,0 +1,34 @@
+info:
+  name: update-vIPMember-for-registrationSetting
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{base-url}}/webapi/VIPMember/UpdateVIPMemberForRegistrationSetting?lang=zh-TW&shopId={{shopId}}"
+  params:
+    - name: lang
+      value: zh-TW
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "vipMemberInfo": {
+          "Birthday": null,
+          "BirthdayString": ""
+        },
+        "shopId": 44,
+        "memberCardId": 29,
+        "isOptIn": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

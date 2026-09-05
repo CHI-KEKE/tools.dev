@@ -1,0 +1,27 @@
+info:
+  name: refund
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/Refund/TwoCTwoP/{{TG}}"
+  body:
+    type: json
+    data: |-
+      {
+         "request_id": "{{$guid}}",
+         "transaction_id": "{{TG}}",
+         "amount": 100.00,
+         "currency": "{{currency-code}}",
+         "extend_info": {
+         "tradesOrderSlaveCode" : "{{TS}}"
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,77 @@
+info:
+  name: 🐞 [promotion] update
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  headers:
+    - name: Accept-Language
+      value: zh-TW
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "Id": 40575,
+        "ShopId": 10230,
+        "TypeDef": "CartReachPriceExtraPurchase",
+        "Name": "滿額-不循環-多-限購-update",
+        "StartDateTime": "2029-05-25T09:20:00.000Z",
+        "EndDateTime": "2029-05-26T11:50:00.000Z",
+        "Description": "CC",
+        "CustomCampaignCode": "91APP",
+        "CanUseECoupon":false,
+        "IsCartExtraPurchaseThresholdEligible":true,
+        "TargetMemberTypeDef": "All",
+        "PromotionTargetRegionTypeDef": "All",
+        "IsCyclable": false,
+        "ExtraPurchaseRuleList": [
+           {
+             "ConditionId": 1,
+             "ReachPiece": 0,
+             "ReachPrice": 1,
+             "LimitQty": 10
+           },
+               {
+             "ConditionId": 1,
+             "ReachPiece": 0,
+             "ReachPrice": 3,
+             "LimitQty": 12
+           }
+         ],
+        "TargetTypeDef" : "SalePage",
+        "ExcludeTargetTypeDef": "None",
+        "CalculateTypeDef":"Compatible",
+        "TargetPlatformTypeList": [
+              {
+                  "Platform": "Web",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "AppIOS",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "AppAndroid",
+                  "IsEnabled": true
+              }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

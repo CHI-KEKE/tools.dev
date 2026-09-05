@@ -1,0 +1,20 @@
+info:
+  name: dynamic-get
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{base-url}}/api/dynamic-salepage-collections/{{dynamic-collectionId}}"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+    - name: N1-TRACE-ID
+      value: "{{traceId}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

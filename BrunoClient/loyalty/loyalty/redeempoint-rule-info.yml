@@ -1,0 +1,21 @@
+info:
+  name: redeempoint-rule-info
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://loyalty-api.qa1.91dev.tw/redeempoint/rule-info
+  headers:
+    - name: N1-SHOP-ID
+      value: ""
+  body:
+    type: json
+    data: "{}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

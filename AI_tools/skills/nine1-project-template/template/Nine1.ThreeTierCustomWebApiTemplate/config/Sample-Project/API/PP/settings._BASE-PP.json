@@ -1,0 +1,31 @@
+{
+    "_N1CONFIG": {},
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft": "Warning",
+            "Microsoft.Hosting.Lifetime": "Information"
+        }
+    },
+    "AllowedHosts": "*",
+    "Kestrel": {
+        "Endpoints": {
+            "Http": {
+                "Url": "http://*:5566"
+            }
+        }
+    },
+    "FeatureManagement": {
+      "Release_OMO_Member_Demo": {
+        "EnabledFor": [
+          {
+            "Name": "ReleaseToggle",
+            "Parameters": {
+              "IsEnabled": false,
+              "ExpirationDate": "2022-09-01"
+            }
+          }
+        ]
+      }
+    }
+}

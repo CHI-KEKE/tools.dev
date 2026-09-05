@@ -1,0 +1,21 @@
+info:
+  name: add-module
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v3/projects/{{project-name}}/modules"
+  body:
+    type: json
+    data: |-
+      {
+          "Module":"{{module-name}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NineYi.Scm.ApiV2 — API 設計缺陷討論</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#151a21;
+    --panel-alt:#1b212b;
+    --border:#293040;
+    --text:#e6e8ec;
+    --text-dim:#94a0b3;
+    --accent:#3fb6c9;
+    --accent-dim:#1e5a63;
+    --ok:#4caf7d;
+    --err:#d9636c;
+    --warn:#e8a33d;
+    --code-bg:#0f141b;
+    --radius:10px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(63,182,201,0.07), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(232,163,61,0.05), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Segoe UI","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+    line-height:1.6;
+    padding-bottom:80px;
+  }
+  code, pre, .mono{ font-family:"Cascadia Code","JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace; }
+
+  header{
+    border-bottom:1px solid var(--border);
+    padding:36px 6vw 28px;
+    background:linear-gradient(180deg, rgba(63,182,201,0.06), transparent);
+  }
+  header .eyebrow{ color:var(--accent); font-size:13px; letter-spacing:.12em; text-transform:uppercase; font-weight:600; margin-bottom:8px; }
+  header h1{ margin:0 0 10px; font-size:clamp(24px,3.2vw,36px); font-weight:700; letter-spacing:-0.01em; }
+  header p{ margin:0; color:var(--text-dim); max-width:780px; font-size:15px; }
+
+  .stat-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-top:26px; }
+  .stat{ border:1px solid var(--border); background:var(--panel-alt); border-radius:var(--radius); padding:14px 16px; }
+  .stat .n{ font-size:26px; font-weight:800; color:var(--text); }
+  .stat .n.high{ color:var(--err); }
+  .stat .n.mid{ color:var(--warn); }
+  .stat .l{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+
+  main{ padding:0 6vw; max-width:1280px; margin:0 auto; }
+  section{ margin-top:56px; }
+  .section-head{ display:flex; align-items:baseline; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
+  .section-head .num{
+    font-family:"Cascadia Code",monospace; color:var(--accent); font-size:14px;
+    border:1px solid var(--accent-dim); background:rgba(63,182,201,0.08); padding:2px 9px; border-radius:6px;
+  }
+  .section-head h2{ margin:0; font-size:21px; font-weight:700; }
+  .section-head .sub{ color:var(--text-dim); font-size:13.5px; margin-left:auto; }
+
+  .issue{
+    border:1px solid var(--border); background:var(--panel); border-radius:var(--radius);
+    padding:20px 24px; margin-bottom:16px;
+  }
+  .issue h3{ margin:0 0 6px; font-size:16.5px; font-weight:700; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .issue h3 .tag{
+    font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--text-dim); border:1px solid var(--border); padding:2px 8px; border-radius:5px;
+  }
+  .issue .evidence{ color:var(--text-dim); font-size:13.5px; margin:6px 0 12px; }
+  .issue pre{
+    background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+    padding:11px 14px; font-size:12px; overflow-x:auto; margin:0 0 10px; color:#c9d1d9;
+  }
+  .issue pre .k{ color:#e8a33d; } .issue pre .s{ color:#7ec699; } .issue pre .c{ color:#6a7383; } .issue pre .n{ color:#d9636c; } .issue pre .m{ color:var(--accent); }
+  .issue .path{ font-size:11px; color:#7d8494; margin-bottom:10px; word-break:break-all; }
+  .issue .impact{
+    margin-top:8px; border-left:3px solid var(--accent-dim); padding:8px 14px;
+    background:rgba(63,182,201,0.05); border-radius:0 8px 8px 0; font-size:13px; color:#a9d4db;
+  }
+  .issue .impact b{ color:var(--accent); }
+
+  /* before / after compare */
+  .compare{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0 10px;
+  }
+  @media (max-width:700px){ .compare{ grid-template-columns:1fr; } }
+  .compare .col{
+    border:1px solid var(--border); border-radius:8px; overflow:hidden;
+  }
+  .compare .col-head{
+    font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:700;
+    padding:7px 12px;
+  }
+  .compare .col.now .col-head{ background:rgba(217,99,108,0.12); color:var(--err); }
+  .compare .col.rec .col-head{ background:rgba(76,175,125,0.12); color:var(--ok); }
+  .compare .col pre{ margin:0; border:none; border-radius:0; background:var(--code-bg); }
+
+  table{
+    width:100%; border-collapse:collapse; font-size:13.5px;
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+  }
+  thead th{
+    text-align:left; background:var(--panel-alt); color:var(--text-dim); font-weight:600; font-size:12px;
+    text-transform:uppercase; letter-spacing:.04em; padding:12px 16px; border-bottom:1px solid var(--border);
+  }
+  tbody td{ padding:13px 16px; border-bottom:1px solid var(--border); vertical-align:top; color:var(--text-dim); }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody td.main{ color:var(--text); font-weight:600; }
+  .verb{
+    display:inline-block; font-size:11px; font-weight:800; padding:2px 8px; border-radius:5px;
+    font-family:"Cascadia Code",monospace;
+  }
+  .verb.post{ background:rgba(232,163,61,0.15); color:var(--warn); }
+  .verb.get{ background:rgba(91,155,213,0.15); color:#5b9bd5; }
+  .verb.put{ background:rgba(76,175,125,0.15); color:var(--ok); }
+  .verb.delete{ background:rgba(217,99,108,0.15); color:var(--err); }
+
+  .prio{ display:inline-block; font-size:11px; padding:2px 8px; border-radius:5px; font-weight:700; }
+  .prio.p0{ background:rgba(217,99,108,0.15); color:#f0a3a8; }
+  .prio.p1{ background:rgba(232,163,61,0.15); color:var(--warn); }
+  .prio.p2{ background:rgba(63,182,201,0.15); color:var(--accent); }
+
+  footer{
+    margin-top:60px; padding:24px 6vw; border-top:1px solid var(--border);
+    color:#6b7280; font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">NineYi.Scm.ApiV2 &nbsp;/&nbsp; API Contract Review</div>
+  <h1>API 設計缺陷討論</h1>
+  <p>本篇聚焦在 <b>對外契約層面</b> 的設計問題（HTTP 語意、路由風格、狀態碼、版本管理），與前兩篇「架構問題」「Request/Response 流程」不同角度——這裡討論的是「呼叫端會直接感受到」的 API 設計品質。</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="n high">0</div><div class="l">PUT / DELETE / PATCH 端點</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">用了 [HttpGet] 的 Controller（共 121 個）</div></div>
+    <div class="stat"><div class="n high">0</div><div class="l">回傳 HttpStatusCode.NotFound 的次數</div></div>
+    <div class="stat"><div class="n mid">1</div><div class="l">Swagger 硬編碼版本（永遠 "v1"）</div></div>
+    <div class="stat"><div class="n mid">4</div><div class="l">命名含 "Obsolete" 但仍在服務中的端點</div></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ 1. HTTP VERB MISUSE ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>HTTP 動詞語意誤用</h2>
+      <span class="sub">幾乎所有端點都是 POST，即使是查詢</span>
+    </div>
+
+    <div class="issue">
+      <h3>查詢類 API 仍使用 POST，而非 GET <span class="tag">HTTP Semantics</span></h3>
+      <div class="evidence">全站 121 個 Controller 中，只有 <code>Health</code>、<code>Ops</code>、<code>Translation</code> 三個用了 <code>[HttpGet]</code>，其餘（包含所有純查詢 API）一律用 <code>[HttpPost]</code>。</div>
+      <pre><span class="m">[HttpPost]</span>
+[Route(<span class="s">"GetPermission"</span>)]
+<span class="k">public</span> LocationWizardPermissionEntity GetPermission(LocationBaseRequestEntity request)
+{
+  <span class="k">return</span> <span class="k">this</span>._locationService.GetLocationWizardPermissions(request.ShopId);
+}
+
+<span class="m">[HttpPost]</span>
+[Route(<span class="s">"GetMemberBasicInfo"</span>)]
+<span class="k">public</span> MemberBasicInfoResponseEntity GetMemberBasicInfo(GetMemberBasicInfoRequestEntity request)</pre>
+      <div class="path">WebSite/Controllers/Apis/LocationController.cs · SalesOrderController.cs（GetList 也是 POST）</div>
+      <div class="impact"><b>影響：</b>失去 HTTP GET 天生的語意優勢——瀏覽器/CDN 快取、瀏覽器歷史記錄、可加書籤的查詢 URL、冪等性保證全都用不上；呼叫端也無法用標準工具（如瀏覽器直接開連結）測試查詢類 API。</div>
+    </div>
+
+    <div class="issue">
+      <h3>完全沒有 PUT / DELETE / PATCH <span class="tag">CRUD Semantics</span></h3>
+      <div class="evidence">掃描全部 Controller，找不到任何 <code>[HttpPut]</code>、<code>[HttpDelete]</code>、<code>[HttpPatch]</code>，更新/刪除操作全部用 POST + 自訂動詞路由名稱表示。</div>
+      <div class="compare">
+        <div class="col now">
+          <div class="col-head">現行做法（RPC 風格）</div>
+          <pre>POST /SalesOrder/UpdateNote
+POST /SalesOrder/CancelOrder
+POST /SalesOrder/UpdateShippingOrderCode
+POST /Location/UpdateLocationEmployeePassword</pre>
+        </div>
+        <div class="col rec">
+          <div class="col-head">REST 慣例（建議方向）</div>
+          <pre>PATCH /sales-orders/{id}/note
+POST  /sales-orders/{id}/cancel   (動作類保留POST合理)
+PATCH /sales-orders/{id}/shipping-code
+PUT   /locations/{id}/employee-password</pre>
+        </div>
+      </div>
+      <div class="impact"><b>影響：</b>呼叫端無法從 HTTP Method 判斷操作是否為「更新」「刪除」，所有語意都得靠讀 URL 路徑名稱猜測，增加對接與維護成本。</div>
+    </div>
+  </section>
+
+  <!-- ============ 2. ROUTING / NAMING ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>路由與命名風格 — RPC 而非 Resource-Oriented</h2>
+      <span class="sub">動詞在前 vs 名詞資源</span>
+    </div>
+
+    <div class="issue">
+      <h3>路由以「動作命名」而非「資源命名」 <span class="tag">Routing</span></h3>
+      <div class="evidence">路由設計走 RPC 風格：<code>{RoutePrefix}/{動詞+受詞}</code>，例如 <code>SalesOrder/GetList</code>、<code>SalesOrder/ConfirmSalesOrderSlave</code>、<code>SalesOrder/CloseOrderReturn</code>，而非 REST 慣例的「名詞資源 + HTTP 動詞」。</div>
+      <table>
+        <thead><tr><th>目前路由</th><th>HTTP Method</th><th>對應的 REST 慣例寫法</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">SalesOrder/GetList</td><td><span class="verb post">POST</span></td><td class="mono">GET /sales-orders?...</td></tr>
+          <tr><td class="mono">SalesOrder/CancelOrder</td><td><span class="verb post">POST</span></td><td class="mono">POST /sales-orders/{id}/cancel</td></tr>
+          <tr><td class="mono">SalesOrder/UpdateNote</td><td><span class="verb post">POST</span></td><td class="mono">PATCH /sales-orders/{id}</td></tr>
+          <tr><td class="mono">Location/GetMemberBasicInfo</td><td><span class="verb post">POST</span></td><td class="mono">GET /locations/{id}/members/{memberId}</td></tr>
+        </tbody>
+      </table>
+      <div class="impact"><b>影響：</b>路由清單等同於方法清單而非資源清單，隨著功能增加，端點數量線性膨脹（單一 Controller 內 20~90 個 Route 很常見），難以用 REST 慣例快速理解「這個資源能做哪些操作」。</div>
+    </div>
+  </section>
+
+  <!-- ============ 3. STATUS CODE ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>狀態碼與錯誤語意扁平化</h2>
+      <span class="sub">幾乎只用 200 / 400 / 500 三種</span>
+    </div>
+
+    <div class="issue">
+      <h3>不使用標準 HTTP 狀態碼表達結果 <span class="tag">Status Code</span></h3>
+      <div class="evidence">全站掃描不到一次 <code>HttpStatusCode.NotFound</code>（404）的使用；成功一律 200，失敗依例外分類落在 400 或 500，真正的語意改用回應 Body 裡的 <code>Status: "Success"/"Failure"</code> 字串欄位表達。</div>
+      <pre>{
+  <span class="k">"ErrorId"</span>: <span class="s">""</span>,
+  <span class="k">"Status"</span>: <span class="s">"Failure"</span>,    <span class="c">// ⚠️ 語意在 Body 裡，不是 HTTP Status</span>
+  <span class="k">"Data"</span>: null,
+  <span class="k">"ErrorMessage"</span>: <span class="s">"找不到該筆訂單"</span>,
+  <span class="k">"TimeStamp"</span>: <span class="s">"2026-07-27T16:00:00"</span>
+}
+<span class="c">// 實際 HTTP Response 卻是 200 OK 或統一 400</span></pre>
+      <div class="impact"><b>影響：</b>標準 HTTP Client / API Gateway / 監控系統（如依 Status Code 做告警）無法單靠 Status Code 判斷「資源不存在」「未授權」「驗證失敗」等差異，都得解析 Body 內容才知道真正結果，增加整合複雜度，也不利於标準化的 API Monitoring。</div>
+    </div>
+  </section>
+
+  <!-- ============ 4. VERSIONING ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>API 版本管理機制缺失</h2>
+      <span class="sub">SwaggerConfig.cs</span>
+    </div>
+
+    <div class="issue">
+      <h3>Swagger 版本號硬編碼，路由無版本區隔 <span class="tag">Versioning</span></h3>
+      <div class="evidence">Solution 名稱是 <code>NineYi.Scm.ApiV2</code>（暗示存在 V1），但 Swagger 設定寫死 <code>SingleApiVersion("v1", ...)</code>，路由也沒有 <code>/v2/xxx</code> 這類版本區隔（少數 BatchUpload 例外走 <code>v2/batchupload/</code>）。</div>
+      <pre><span class="c">// App_Start/SwaggerConfig.cs</span>
+c.SingleApiVersion(<span class="s">"v1"</span>, <span class="s">"NineYi.Scm.ApiV2.WebSite"</span>);
+<span class="c">// MultipleApiVersions 相關程式碼被註解掉，從未真正啟用</span></pre>
+      <div class="path">App_Start/SwaggerConfig.cs</div>
+      <div class="impact"><b>影響：</b>沒有正式的版本演進機制，要改變既有 API 的 Contract（例如欄位型別、必填規則）時，只能直接修改既有端點，容易造成 Breaking Change 波及所有既有呼叫方，無法讓新舊版本並存讓客戶端逐步遷移。</div>
+    </div>
+
+    <div class="issue">
+      <h3>Deprecated 端點沒有正式下架機制 <span class="tag">API Lifecycle</span></h3>
+      <div class="evidence">程式碼中可見 <code>CheckIsValidObsolete</code> 等命名帶有 "Obsolete" 字樣的端點，代表已知過時卻仍留在正式路由裡繼續對外服務，缺乏 <code>[Obsolete]</code> 標記、Sunset Header 或版本化下架流程。</div>
+      <div class="impact"><b>影響：</b>呼叫方無從得知該用哪一支「現行」API，也沒有機制提醒被棄用的端點應該遷移，技術債只會持續累積不會被清理。</div>
+    </div>
+  </section>
+
+  <!-- ============ 5. CONTRACT CONSISTENCY ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">05</span>
+      <h2>Request / Response 契約不一致</h2>
+      <span class="sub">同一份 API 文件下，實際行為卻有例外</span>
+    </div>
+
+    <div class="issue">
+      <h3>統一信封格式（Envelope）有硬編碼白名單例外 <span class="tag">Contract</span></h3>
+      <div class="evidence">多數 API 走 <code>{ "Data": "..." }</code> 信封格式，但 <code>virtualpayment</code>、PDF 下載、<code>ops/healthcheck</code> 等路徑會被 <code>UnifiedResultHandler</code> 硬編碼路徑字串排除，直接回傳原始格式。</div>
+      <div class="impact"><b>影響：</b>同一份 Swagger 文件下，實際上有兩種不同的 Request/Response 約定，呼叫端必須額外知道「這支 API 是不是特例」，容易出錯，且新增例外只能靠改程式碼裡的字串清單，沒有宣告式（如 Attribute 標記）的方式管理。</div>
+    </div>
+
+    <div class="issue">
+      <h3>DTO 命名洩漏了內部分層術語 <span class="tag">Naming</span></h3>
+      <div class="evidence">對外的 Request/Response 型別大量使用 <code>XxxRequestEntity</code> / <code>XxxResultEntity</code> 命名，"Entity" 一詞在多數團隊慣例中代表 DB 對應實體，卻被拿來當作 API 契約 DTO 的命名，容易讓人誤解這是資料庫實體直接暴露給外部。</div>
+      <div class="impact"><b>影響：</b>對新加入的工程師或第三方文件閱讀者而言，容易混淆「這是 API 契約」還是「這是資料庫結構」，增加理解成本。</div>
+    </div>
+  </section>
+
+  <!-- ============ RECOMMENDATION ============ -->
+  <section>
+    <div class="section-head">
+      <span class="num">06</span>
+      <h2>改善方向建議</h2>
+      <span class="sub">新站台可以直接採用的 API 設計原則</span>
+    </div>
+
+    <table>
+      <thead><tr><th>優先度</th><th>項目</th><th>建議做法</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="prio p0">P0</span></td>
+          <td class="main">新 API 一律走正確 HTTP 動詞</td>
+          <td>查詢用 GET（參數走 Query String，不強制帶 Body）、建立用 POST、整批更新用 PUT、部分更新用 PATCH、刪除用 DELETE。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p0">P0</span></td>
+          <td class="main">使用標準狀態碼表達結果</td>
+          <td>找不到資源回 404、未授權回 401/403、驗證失敗回 422、成功建立回 201，減少讓呼叫端只能靠解析 Body 判斷結果。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p1">P1</span></td>
+          <td class="main">路由改為資源導向</td>
+          <td>採用 <code>/{resource}/{id}/{sub-resource}</code> 結構，動作類（如 cancel、confirm）可保留為子路徑但語意仍要清楚。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p1">P1</span></td>
+          <td class="main">導入正式版本策略</td>
+          <td>透過 URL Path（/v2/...）或 Header 做版本區隔，讓新舊 Contract 可並存，逐步淘汰 Obsolete 端點並提供明確 Deprecation 時程。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p2">P2</span></td>
+          <td class="main">移除信封格式白名單</td>
+          <td>新架構直接用原生 JSON Body，不需要 Data 信封 + 白名單例外這種雙軌設計。</td>
+        </tr>
+        <tr>
+          <td><span class="prio p2">P2</span></td>
+          <td class="main">DTO 命名脫離 Entity 字眼</td>
+          <td>對外契約改用 <code>XxxRequest</code> / <code>XxxResponse</code>，與資料庫 <code>XxxEntity</code> 明確區分。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>
+  <span>NineYi.Scm.ApiV2 — API 設計缺陷討論（依實際程式碼掃描產出）</span>
+  <span>盤點時間：2026-07-27 16:04</span>
+</footer>
+
+</body>
+</html>

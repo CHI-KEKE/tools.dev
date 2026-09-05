@@ -1,0 +1,323 @@
+opencollection: 1.0.0
+
+info:
+  name: scm-api-v2
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  scripts:
+    - type: before-request
+      code: |-
+        const axios = require("axios");
+
+           // 1. 產生 timestamp
+           const timestamp = getTimestamp();
+           bru.setVar("timestamp", String(timestamp));
+
+           // 2. 讀變數
+           const baseUrl = bru.getEnvVar("base-url");
+           const apiKey = bru.getEnvVar("apiKey");
+           const saltKey = bru.getEnvVar("saltKey");
+           const token = bru.getVar("token") || bru.getEnvVar("token");
+
+           // 3. 讀目前 request body，先做變數展開，再 parse
+           let body = req.getBody() || {};
+           let bodyObject = body;
+
+           console.log("raw body:", body);
+           console.log("raw body type:", typeof body);
+
+           if (typeof body === "string") {
+             const interpolatedBody = bru.interpolate(body);
+             console.log("interpolated body:", interpolatedBody);
+
+             try {
+               bodyObject = JSON.parse(interpolatedBody);
+             } catch (error) {
+               console.log("JSON parse failed:", error.message);
+               throw new Error(
+                 "Request body 不是合法 JSON。請檢查 body 格式或變數展開後內容。body = " + interpolatedBody
+               );
+             }
+           }
+
+           const bodyJson = JSON.stringify(bodyObject);
+
+           // ----------------------------------------------------------------
+           // 判斷是否為不需要簽章驗證的特殊 API（直接送 JSON body）
+           // 新增特殊 API 時，將路徑加入此清單即可
+           // ----------------------------------------------------------------
+           const skipSignatureApis = [
+             "SalesOrder/CheckIsValid"
+           ];
+
+           const currentUrl = req.getUrl();
+           const isSkipSignature = skipSignatureApis.some(path => currentUrl.includes(path));
+
+           if (isSkipSignature) {
+             console.log("跳過簽章流程，直接送出 JSON body。URL:", currentUrl);
+             req.setBody(bodyObject);
+             req.setHeader("Content-Type", "application/json");
+             return;
+           }
+           // ----------------------------------------------------------------
+
+           // 4. 組 content（Server 用 body.ToLower() 驗簽，因此 data 必須小寫化）
+           const content = `ts=${timestamp}&data=${bodyJson.toLowerCase()}&sk=${saltKey}`;
+
+           console.log("timestamp:", timestamp);
+           console.log("token:", token);
+           console.log("body:", bodyJson);
+           console.log("content:", content);
+
+           // 5. 呼叫簽章 API
+           const signatureApiUrl = `https://api.qa.91dev.tw/scm/v1/Sample/GetEncryptData`;
+
+           const encodedBody =
+             `content=${encodeURIComponent(content)}` +
+             `&key=${encodeURIComponent(apiKey)}`;
+
+           const response = await axios.post(signatureApiUrl, encodedBody, {
+             headers: {
+               "Content-Type": "application/x-www-form-urlencoded"
+             }
+           });
+
+           console.log("signature api response:", JSON.stringify(response.data));
+
+           const signature = response.data?.Data ?? "";
+
+           // 6. 存回變數
+           bru.setVar("signature", signature);
+           bru.setVar("timestamp", String(timestamp));
+
+           // 7. 改成最終送出的 body
+           req.setBody({
+             data: bodyJson
+           });
+
+           // 8. 補 header
+           req.setHeader("Content-Type", "application/json");
+
+           function getTimestamp() {
+             const utc = new Date();
+             const localTime = new Date(utc.getTime() + 8 * 60 * 60 * 1000);
+             const gtm = new Date(Date.UTC(1970, 0, 1));
+             return Math.floor((localTime - gtm) / 1000);
+           }
+
+docs:
+  content: |-
+    先讀原本的 JSON body
+
+    用 body 組出 data=... 去算簽章
+
+    算出 timestamp、signature
+
+    把 ts、s 放進 query string
+
+    body 再依你的後端需求改成真正要送出的格式
+
+
+
+    const axios = require("axios");
+
+    // 1. 產生 timestamp
+    const timestamp = getTimestamp();
+    bru.setVar("timestamp", String(timestamp));
+
+    // 2. 讀變數
+    const baseUrl = bru.getEnvVar("base-url");
+    const apiKey = bru.getEnvVar("apiKey");
+    const saltKey = bru.getEnvVar("saltKey");
+    const token = bru.getVar("token") || bru.getEnvVar("token");
+
+    // 3. 讀目前 request body，先做變數展開，再 parse
+    let body = req.getBody() || {};
+    let bodyObject = body;
+
+    console.log("raw body:", body);
+    console.log("raw body type:", typeof body);
+
+    if (typeof body === "string") {
+      const interpolatedBody = bru.interpolate(body);
+      console.log("interpolated body:", interpolatedBody);
+
+      try {
+        bodyObject = JSON.parse(interpolatedBody);
+      } catch (error) {
+        console.log("JSON parse failed:", error.message);
+        throw new Error(
+          "Request body 不是合法 JSON。請檢查 body 格式或變數展開後內容。body = " + interpolatedBody
+        );
+      }
+    }
+
+    const bodyJson = JSON.stringify(bodyObject);
+
+    // 4. 組 content
+    const content = `ts=${timestamp}&data=${bodyJson}&sk=${saltKey}`;
+
+    console.log("timestamp:", timestamp);
+    console.log("token:", token);
+    console.log("body:", bodyJson);
+    console.log("content:", content);
+
+    // 5. 呼叫簽章 API
+    const signatureApiUrl = `${baseUrl}/scm/v1/Sample/GetEncryptData`;
+
+    const encodedBody =
+      `content=${encodeURIComponent(content)}` +
+      `&key=${encodeURIComponent(apiKey)}`;
+
+    const response = await axios.post(signatureApiUrl, encodedBody, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    });
+
+    console.log("signature api response:", JSON.stringify(response.data));
+
+    const signature = response.data?.Data ?? "";
+
+    // 6. 存回變數
+    bru.setVar("signature", signature);
+    bru.setVar("timestamp", String(timestamp));
+
+    // 7. 改成最終送出的 body
+    req.setBody({
+      data: bodyJson
+    });
+
+    // 8. 補 header
+    req.setHeader("Content-Type", "application/json");
+
+    function getTimestamp() {
+      const utc = new Date();
+      const localTime = new Date(utc.getTime() + 8 * 60 * 60 * 1000);
+      const gtm = new Date(Date.UTC(1970, 0, 1));
+      return Math.floor((localTime - gtm) / 1000);
+    }
+
+
+
+
+    ## valid 版
+
+
+    const axios = require("axios");
+
+       // 1. 產生 timestamp
+       const timestamp = getTimestamp();
+       bru.setVar("timestamp", String(timestamp));
+
+       // 2. 讀變數
+       const baseUrl = bru.getEnvVar("base-url");
+       const apiKey = bru.getEnvVar("apiKey");
+       const saltKey = bru.getEnvVar("saltKey");
+       const token = bru.getVar("token") || bru.getEnvVar("token");
+
+       // 3. 讀目前 request body，先做變數展開，再 parse
+       let body = req.getBody() || {};
+       let bodyObject = body;
+
+       console.log("raw body:", body);
+       console.log("raw body type:", typeof body);
+
+       if (typeof body === "string") {
+         const interpolatedBody = bru.interpolate(body);
+         console.log("interpolated body:", interpolatedBody);
+
+         try {
+           bodyObject = JSON.parse(interpolatedBody);
+         } catch (error) {
+           console.log("JSON parse failed:", error.message);
+           throw new Error(
+             "Request body 不是合法 JSON。請檢查 body 格式或變數展開後內容。body = " + interpolatedBody
+           );
+         }
+       }
+
+       const bodyJson = JSON.stringify(bodyObject);
+
+       // ----------------------------------------------------------------
+       // 判斷是否為不需要簽章驗證的特殊 API（直接送 JSON body）
+       // 新增特殊 API 時，將路徑加入此清單即可
+       // ----------------------------------------------------------------
+       const skipSignatureApis = [
+         "SalesOrder/CheckIsValid"
+       ];
+
+       const currentUrl = req.getUrl();
+       const isSkipSignature = skipSignatureApis.some(path => currentUrl.includes(path));
+
+       if (isSkipSignature) {
+         console.log("跳過簽章流程，直接送出 JSON body。URL:", currentUrl);
+
+         req.setBody(bodyObject);
+         req.setHeader("Content-Type", "application/json");
+
+         return;
+       }
+       // ----------------------------------------------------------------
+
+       // 4. 組 content
+       const content = `ts=${timestamp}&data=${bodyJson}&sk=${saltKey}`;
+
+       console.log("timestamp:", timestamp);
+       console.log("token:", token);
+       console.log("body:", bodyJson);
+       console.log("content:", content);
+
+       // 5. 呼叫簽章 API
+       const signatureApiUrl = `${baseUrl}/scm/v1/Sample/GetEncryptData`;
+
+       const encodedBody =
+         `content=${encodeURIComponent(content)}` +
+         `&key=${encodeURIComponent(apiKey)}`;
+
+       const response = await axios.post(signatureApiUrl, encodedBody, {
+         headers: {
+           "Content-Type": "application/x-www-form-urlencoded"
+         }
+       });
+
+       console.log("signature api response:", JSON.stringify(response.data));
+
+       const signature = response.data?.Data ?? "";
+
+       // 6. 存回變數
+       bru.setVar("signature", signature);
+       bru.setVar("timestamp", String(timestamp));
+
+       // 7. 改成最終送出的 body
+       req.setBody({
+         data: bodyJson
+       });
+
+       // 8. 補 header
+       req.setHeader("Content-Type", "application/json");
+
+       function getTimestamp() {
+         const utc = new Date();
+         const localTime = new Date(utc.getTime() + 8 * 60 * 60 * 1000);
+         const gtm = new Date(Date.UTC(1970, 0, 1));
+         return Math.floor((localTime - gtm) / 1000);
+       }
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

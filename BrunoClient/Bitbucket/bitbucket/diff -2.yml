@@ -1,0 +1,24 @@
+info:
+  name: diff -2
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{base-url}}/2.0/repositories/allenlin0000/nineyi.webstore.mobilewebmall/diff/allenlin0000/nineyi.webstore.mobilewebmall:7ed845b44d90%0Daae240de1992?from_pullrequest_id=16&topic=true"
+  params:
+    - name: from_pullrequest_id
+      value: "16"
+      type: query
+    - name: topic
+      value: "true"
+      type: query
+  auth:
+    type: bearer
+    token: "{{mweb_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

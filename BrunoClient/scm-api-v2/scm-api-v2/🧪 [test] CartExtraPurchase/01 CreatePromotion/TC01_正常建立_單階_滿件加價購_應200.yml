@@ -1,0 +1,63 @@
+﻿info:
+  name: TC01_正常建立_單階_滿件加價購_應200
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/CreatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "TypeDef": "CartReachPieceExtraPurchase",
+        "Name": "[TC01] 單階滿件加價購",
+        "StartDateTime": "2029-07-01T00:00:00.000Z",
+        "EndDateTime": "2029-07-31T23:59:59.000Z",
+        "Description": "TC01",
+        "CustomCampaignCode": "TC01",
+        "CanUseECoupon": false,
+        "IsCartExtraPurchaseThresholdEligible": true,
+        "TargetMemberTypeDef": "All",
+        "PromotionTargetRegionTypeDef": "All",
+        "IsCyclable": false,
+        "ExtraPurchaseRuleList": [
+          { "ConditionId": 1, "ReachPiece": 3, "ReachPrice": 0, "LimitQty": 5 }
+        ],
+        "TargetTypeDef": "SalePage",
+        "ExcludeTargetTypeDef": "None",
+        "CalculateTypeDef": "Compatible",
+        "TargetPlatformTypeList": [
+          { "Platform": "Web", "IsEnabled": true },
+          { "Platform": "AppIOS", "IsEnabled": true },
+          { "Platform": "AppAndroid", "IsEnabled": true }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC01 狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("TC01 回傳 Data.Id 應存在且為正整數", function () {
+    const body = res.getBody();
+    expect(body.Data).to.have.property("Id");
+    expect(body.Data.Id).to.be.a("number").and.greaterThan(0);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

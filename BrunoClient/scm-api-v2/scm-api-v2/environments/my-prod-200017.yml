@@ -1,0 +1,21 @@
+name: my-prod-200017
+color: "#2E8A54"
+variables:
+  - name: base-url
+    value: https://api2.91app.com.my/scm/V2
+  - name: token
+    value: "45961234"
+  - name: timestamp
+    value: ""
+  - name: saltKey
+    value: 3f904682
+  - name: apiKey
+    value: fada146b-a28b-46f7-9a90-1174ab32ce59
+  - name: shopId
+    value: "200017"
+  - name: signature
+    value: ""
+  - name: userId
+    value: "200116"
+  - name: userName
+    value: "45961234"

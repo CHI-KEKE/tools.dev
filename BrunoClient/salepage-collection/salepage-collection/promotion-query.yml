@@ -1,0 +1,29 @@
+info:
+  name: promotion-query
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-salepage-collections:query"
+  headers:
+    - name: N1-TRACE-ID
+      value: "{{traceId}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "pagination": {
+          "pageIndex": 0,
+          "pageSize": 10
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

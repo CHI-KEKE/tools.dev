@@ -1,0 +1,30 @@
+info:
+  name: refund
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/Refund/ApplePay_Stripe/{{TG}}"
+  body:
+    type: json
+    data: |-
+      {
+        "request_id": "{{$guid}}",
+        "transaction_id": "{{transaction_id}}",
+        "amount": "{{amount}}",
+        "currency": "{{currency-code}}",
+        "extend_info": {
+          "payment_flow": "{{flow}}",
+          "stripe_account": "{{acct}}",
+          "application_fee_amount": 51.68,
+          "is_refund_application_fee": true
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

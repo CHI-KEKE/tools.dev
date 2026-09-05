@@ -1,0 +1,19 @@
+info:
+  name: sync-live-status
+  type: http
+  seq: 15
+
+http:
+  method: POST
+  url: "{{base-url}}/api/live/sessions/LS260317L00003/sync-live-status?shopId=2"
+  params:
+    - name: shopId
+      value: "2"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

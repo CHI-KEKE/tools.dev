@@ -1,0 +1,123 @@
+<!--
+基礎骨架：左側章節導覽 + 右側單章節顯示（doc-shell / doc-sidebar / doc-content）
+用途：所有用 html-markdown-creator 產出的分析文件都必須套用這個骨架。左側是可點擊的章節清單，
+右側一次只顯示被點選的那個章節，點擊左側項目時用 JavaScript 切換 active class，不使用捲動式全部展開。
+
+使用方式：
+  1. 把下面的 <style class="doc-shell-style"> 整段複製到輸出文件最前面（只需一次）。
+  2. 把 --doc-* 變數的值換成使用者選定主題（見 assets/themes/ 內各主題檔開頭註解的「doc-* 對應變數」）。
+  3. 依章節數量複製 .doc-nav-item 與 .doc-section，nav 的 data-target 要對應 section 的 id。
+  4. 每個 .doc-section 內部直接貼上該主題的內容元件（wp-card、msq-card、earth-card-grid 等），
+     章節內容本身仍要沿用使用者選定的視覺主題 class。
+  5. <script class="doc-shell-script"> 只需要複製一次，放在 </body> 前或檔案最後。
+  6. 這是純 .html 檔案（非 .md），不受 hexo pandoc 的縮排/表格/span 換行陷阱影響，可以正常縮排寫。
+
+第一個 nav item 與第一個 section 預設要帶 class="active"，其餘不要帶，JS 會處理其餘切換。
+-->
+
+<style class="doc-shell-style">
+:root{
+  --doc-accent:#ff6b4a; --doc-accent2:#ffb648; --doc-ink:#1f2430; --doc-sub:#5b6472;
+  --doc-card:#ffffff; --doc-line:#ece7dc; --doc-bg:#fbf9f4; --doc-shadow:0 10px 30px -12px rgba(31,36,48,.15);
+}
+html,body{margin:0;padding:0;}
+.doc-shell{
+  display:flex;
+  min-height:100vh;
+  background:var(--doc-bg);
+  font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'PingFang TC','Microsoft JhengHei',sans-serif;
+  color:var(--doc-ink);
+}
+.doc-sidebar{
+  flex:0 0 268px;
+  max-width:268px;
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+  padding:28px 16px;
+  border-right:1px solid var(--doc-line);
+  background:var(--doc-card);
+}
+.doc-sidebar-title{
+  font-size:.72rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--doc-sub);
+  font-weight:700;
+  padding:0 10px;
+  margin-bottom:14px;
+}
+.doc-nav-item{
+  display:block;
+  padding:10px 12px;
+  margin-bottom:4px;
+  border-radius:10px;
+  font-size:.88rem;
+  font-weight:600;
+  color:var(--doc-sub);
+  text-decoration:none;
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:background .15s ease,color .15s ease;
+}
+.doc-nav-item:hover{background:var(--doc-line);}
+.doc-nav-item.active{
+  background:var(--doc-accent);
+  color:#fff;
+  box-shadow:var(--doc-shadow);
+}
+.doc-content{
+  flex:1;
+  height:100vh;
+  overflow-y:auto;
+  padding:40px 5vw 60px;
+}
+.doc-section{display:none;}
+.doc-section.active{display:block;}
+@media (max-width:860px){
+  .doc-shell{flex-direction:column;}
+  .doc-sidebar{position:relative;height:auto;max-width:none;flex:none;display:flex;overflow-x:auto;gap:6px;border-right:none;border-bottom:1px solid var(--doc-line);}
+  .doc-nav-item{white-space:nowrap;margin-bottom:0;}
+  .doc-content{height:auto;}
+}
+</style>
+
+<div class="doc-shell">
+<nav class="doc-sidebar">
+<div class="doc-sidebar-title">章節目錄</div>
+<a class="doc-nav-item active" data-target="sec-01">01 章節標題一</a>
+<a class="doc-nav-item" data-target="sec-02">02 章節標題二</a>
+<a class="doc-nav-item" data-target="sec-03">03 章節標題三</a>
+</nav>
+<main class="doc-content">
+<section id="sec-01" class="doc-section active">
+內容放這裡，套用使用者選定的視覺主題元件
+</section>
+<section id="sec-02" class="doc-section">
+內容放這裡
+</section>
+<section id="sec-03" class="doc-section">
+內容放這裡
+</section>
+</main>
+</div>
+
+<script class="doc-shell-script">
+(function(){
+  var navItems = document.querySelectorAll('.doc-nav-item');
+  var sections = document.querySelectorAll('.doc-section');
+  navItems.forEach(function(item){
+    item.addEventListener('click', function(e){
+      e.preventDefault();
+      navItems.forEach(function(i){ i.classList.remove('active'); });
+      sections.forEach(function(s){ s.classList.remove('active'); });
+      item.classList.add('active');
+      var target = document.getElementById(item.getAttribute('data-target'));
+      if(target){ target.classList.add('active'); }
+      var content = document.querySelector('.doc-content');
+      if(content){ content.scrollTop = 0; }
+    });
+  });
+})();
+</script>

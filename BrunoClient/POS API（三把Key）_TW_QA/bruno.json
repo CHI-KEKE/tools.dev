@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "POS API（三把Key）_TW_QA",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

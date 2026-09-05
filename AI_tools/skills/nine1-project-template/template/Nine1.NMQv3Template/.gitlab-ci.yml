@@ -1,0 +1,14 @@
+variables: &global-variables
+  N1_DEVOPS_PIPE__PROJECT_PATH: &n1_devops_pipe__project_path "general/cornerstone/nine1.devops.gitlab"
+  N1_DEVOPS_PIPE__VERSION: &n1_devops_pipe__version "v2.2.0-stable"
+  N1_DEVOPS_PIPE__ENTRYPOINT_FILE: &n1_devops_pipe__entrypoint_file "/n1_pipelines/entrypoints/phase1.5/nine1-devops-pipeline.gitlab-ci.yml"
+  GLCI__NYS_FQDN: "Nine1.Sample.Project.Console.NMQv3Worker"
+  RELEASE_NAME: "sample-project-console-nmqv3worker"
+  # 如果 application 會部署到 TW-Pay，請取消下面的註解
+  # N1_DEVOPS_CONF__IS_SUPPORT_PCIDSS: "true"
+
+include:
+  # 引用 Nine1 共用的 CI/CD pipeline 範本。
+  - project: *n1_devops_pipe__project_path
+    ref: *n1_devops_pipe__version
+    file: *n1_devops_pipe__entrypoint_file

@@ -1,0 +1,28 @@
+info:
+  name: send-message
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/services/{{workspace-id}}/{{source-id}}/{{secret}}"
+  body:
+    type: json
+    data: |-
+      {
+        "attachments": [
+          {
+            "color": "#FF0000",
+            "text": "ErrorCode: CheckoutCacheExpired 近 30秒 出現 5次"
+          }
+        ],
+        "icon_emoji": ":warning:",
+        "username": "Grafana"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

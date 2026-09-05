@@ -1,0 +1,18 @@
+info:
+  name: get-single-pr
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{base-url}}/2.0/repositories/nineyi/NineYi.Scm.ApiV2/pullrequests/13766"
+  auth:
+    type: basic
+    username: build@nine-yi.com
+    password: ATATT3xFfGF0TXZVUt19tDS01elZn-sHAqfhSt6yfD6ye5BjYNOgANOILRgZb0xPDZoGP-vdP4jhdKc2SAPuy_iHVW266pEhDV00jOYblgmzL646FIFBLPS1jUoSC4hXxa6DpBXSic8h-ufPSlzV9P6ml_7BUfpr8ZqmeyyZxdWi4p4OWsrB3xA=10CFA168
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

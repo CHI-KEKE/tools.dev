@@ -1,0 +1,32 @@
+info:
+  name: sku-delete
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/api/carts/sku-delete"
+  headers:
+    - name: N1-HOST
+      value: "{{host}}"
+    - name: Cookie
+      value: "{{Cookie}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+          "cartUniqueKey": "9a816a97-62ce-47b0-885c-29a52e1c55bd",
+          "salePageId": 887309,
+          "skuId": 1277307,
+          "optionalTypeDef": "",
+          "optionalTypeId": 0
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

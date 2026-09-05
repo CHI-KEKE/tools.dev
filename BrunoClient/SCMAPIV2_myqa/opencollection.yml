@@ -1,0 +1,284 @@
+opencollection: 1.0.0
+
+info:
+  name: scm-api-v2
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: ""
+      value: ""
+    - name: API_URL
+      value: http://api.qa1.hk.91dev.tw
+    - name: Token
+      value: "123456785"
+    - name: SaltKey
+      value: cef96a4e
+    - name: API_Key
+      value: 5bb1fda2-b54a-4bde-a484-4b9776edea1c
+    - name: Timestamp
+      value: ""
+    - name: Signature
+      value: ""
+    - name: ""
+      value: "123456782"
+    - name: ""
+      value: "73073046"
+    - name: ""
+      value: d80f29af-e686-4a25-8b62-7dc9f4f70417
+    - name: ""
+      value: http://api.dev.91dev.tw
+    - name: 11___
+      value: token
+    - name: ""
+      value: ""
+    - name: data
+      value: ""
+    - name: API_TW_URL
+      value: http://api.qa.91dev.tw
+    - name: TW_TOKEN
+      value: "85932145"
+    - name: TW_SaltKey
+      value: 7d7d4add
+    - name: TW_API_Key
+      value: 071311bf-c8ff-45a4-b907-c3887a31e1d6
+    - name: HK_PROD_URL
+      value: http://api.91app.hk
+    - name: HK_PROD_TOKEN
+      value: "123456782"
+    - name: HK_PROD_APIKEY
+      value: d80f29af-e686-4a25-8b62-7dc9f4f70417
+    - name: HK_PROD_SALTKEY
+      value: "73073046"
+  scripts:
+    - type: before-request
+      code: "// 取得Timestamp\r
+
+        let timestamp = getTimestamp();\r
+
+        \r
+
+        // 取得Signature\r
+
+        const signatureApiUrl = bru.getCollectionVar(\"API_URL\") + \"/scm/v1/Sample/GetEncryptData\";\r
+
+        const apiKey = bru.getCollectionVar(\"API_Key\");\r
+
+        const saltKey = bru.getCollectionVar(\"SaltKey\");\r
+
+        const requestBody = req.getBody();\r
+
+        console.log(\"requestBody\",requestBody);\r
+
+        console.log(\"mode:\" + requestBody.mode);\r
+
+        let body = {};\r
+
+        if(requestBody.mode == \"formdata\"){\r
+
+        \    const formdata = requestBody.formdata.members;\r
+
+        \    body = convertFormDataToJson(formdata)\r
+
+        }else{\r
+
+        \    body = JSON.parse(requestBody.raw);\r
+
+        }\r
+
+        \r
+
+        const bodyJson = JSON.stringify(body);\r
+
+        console.log(\"~~~~~~~~~bodyJson :\" + bodyJson);\r
+
+        \r
+
+        const content = \"ts=\"+ timestamp+\"&data=\" + bodyJson.toLowerCase() + \"&sk=\" + saltKey;\r
+
+        console.log(\"apiKey: \" , apiKey);\r
+
+        console.log(\"timestamp: \", timestamp);\r
+
+        console.log(\"body: \", body);\r
+
+        console.log(\"saltKey: \", saltKey);\r
+
+        console.log(\"content: \", content);\r
+
+        await bru.sendRequest({\r
+
+        \    url: signatureApiUrl,\r
+
+        \    method: 'POST',\r
+
+        \    headers: {\r
+
+        \        \"Content-Type\": \"multipart/form-data\"\r
+
+        \    },\r
+
+        \    data: {\r
+
+        \        \"content\": content,\r
+
+        \        \"key\": apiKey\r
+
+        \    }}, async function(err, response) {\r
+
+        \    const responseBody = response.data;\r
+
+        //     pm.collectionVariables.set(\"Signature\", responseBody.Data);\r
+
+        });\r
+
+        \r
+
+        // 重組request\r
+
+        \ let newBody = {\r
+
+        \      data: JSON.stringify(body)\r
+
+        \  };\r
+
+        \r
+
+        \    req.getBody().update({\r
+
+        \       mode: 'raw',\r
+
+        \       raw: JSON.stringify(newBody),\r
+
+        \      options:{\r
+
+        \         raw:{\r
+
+        \              language:\"json\"\r
+
+        \           }\r
+
+        \       }\r
+
+        \    });\r
+
+        \r
+
+        \r
+
+        function getTimestamp(){\r
+
+        \    const gtm = new Date(Date.UTC(1970, 0, 1));\r
+
+        \r
+
+        \    const utc = new Date();\r
+
+        \    const utcOffsetInHours = 8; // UTC+8\r
+
+        \    const localTime = new Date(utc.getTime() + (utcOffsetInHours * 60 * 60 * 1000));\r
+
+        \r
+
+        \    const timestamp = Math.floor((localTime - gtm) / 1000);\r
+
+        //     pm.collectionVariables.set(\"Timestamp\", timestamp);\r
+
+        \    return timestamp;\r
+
+        }\r
+
+        \r
+
+        function convertFormDataToJson(obj){\r
+
+        \    const formdata = requestBody.formdata.members;\r
+
+        \    var result = {};\r
+
+        \    formdata.forEach(item => {\r
+
+        \        if (item.type === \"file\") {\r
+
+        \            result[item.key] = null;\r
+
+        \        }else if(item.key === \"data\"){\r
+
+        \        }\r
+
+        \        else if (typeof item.value === 'string'){\r
+
+        \            result[item.key] = Number(item.value);\r
+
+        \        }\r
+
+        \        else {\r
+
+        \            result[item.key] = item.value;\r
+
+        \        }\r
+
+        \    });\r
+
+        \    // return convertStringNumbers(result)\r
+
+        \    return result\r
+
+        }\r
+
+        \r
+
+        //  function convertStringNumbers(obj) {\r
+
+        //      for (const key in obj) {\r
+
+        //          if (obj.hasOwnProperty(key)) {\r
+
+        //              if (typeof obj[key] === 'string' ) {\r
+
+        //                  console.log(\"convertStringNumbers_k: \" , key);\r
+
+        //                  console.log(\"convertStringNumbers_v: \" , obj[key]);\r
+
+        //                  obj[key] = Number(obj[key]);\r
+
+        //              } else if (typeof obj[key] === 'object' && obj[key] !== null) {\r
+
+        //                  convertStringNumbers(obj[key]);\r
+
+        //              }\r
+
+        //          }\r
+
+        //      }\r
+
+        //      return obj;\r
+
+        //  }"
+
+docs:
+  content: |-
+    HK_QA : [http://api.qa1.hk.91dev.tw](http://api.qa1.hk.91dev.tw)
+
+    Local :　[http://api.dev.91dev.tw](http://api.dev.91dev.tw)
+
+    twqa : [http://api.qa.91dev.tw](http://api.qa.91dev.tw)
+
+    HK_PROD:[http://api.91app.hk](http://api.91app.hk)
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

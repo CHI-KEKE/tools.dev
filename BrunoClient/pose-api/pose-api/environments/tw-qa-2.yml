@@ -1,0 +1,30 @@
+name: tw-qa-2
+variables:
+  - name: shop_Id
+    value: "2"
+  - name: token
+    value: "55688990"
+  - name: api_key
+    value: 2ea687b9-4fdd-4185-9573-e8ec420287f1
+  - name: salt_key
+    value: 154b7d8b
+  - name: phone
+    value: "+886977156238"
+  - name: request_id
+    value: NY0643
+  - name: machine_code
+    value: NY0643
+  - name: location_code
+    value: "004514"
+  - name: employee_code
+    value: A0001
+  - name: outermembercode
+    value: TWTBT0003043
+  - name: member_code
+    value: "4800083206"
+  - name: timestamp
+    value: "1734367391"
+  - name: signature
+    value: fb789e679168a9215f59ae0203f27b3c85a27581b5f163a9ac3b4f41e3179a17abad68bead4ca863debaa9a3cb4c49b008dffea373bf5ab95fd7bd4959f3d24b
+  - name: request_body
+    value: '{"OuterMemberCode":"TWTBT0003043","MemberCode":"4800083206","CellPhone":"+886977156238","UsingChannelType":"Offline"}'

@@ -1,0 +1,52 @@
+-- 模擬 git diff --name-only --stat main...feature/payment-refactor
+src/Services/PaymentService.cs    | 87 +++++++++++++++++++----
+src/Services/PaymentValidator.cs  | 23 ++++---
+src/Events/PaymentCompleted.cs    |  5 +--
+3 files changed, 89 insertions(+), 26 deletions(-)
+
+-- 模擬 git diff main...feature/payment-refactor
+diff --git a/src/Services/PaymentService.cs b/src/Services/PaymentService.cs
+index 2b3c4d5..6e7f8a9 100644
+--- a/src/Services/PaymentService.cs
++++ b/src/Services/PaymentService.cs
+@@ -45,18 +45,52 @@ public class PaymentService
+-    public async Task<PaymentResult> ProcessAsync(PaymentRequest req)
+-    {
+-        var validated = await _validator.ValidateAsync(req);
+-        if (!validated) throw new InvalidPaymentException();
+-        
+-        var txn = await _gateway.ChargeAsync(req.Amount, req.CardToken);
+-        await _repo.SaveAsync(txn);
+-        _eventBus.Publish(new PaymentCompleted(txn.Id));
+-        return new PaymentResult(txn.Id, txn.Status);
+-    }
++    public async Task<PaymentResult> ProcessAsync(PaymentRequest req)
++    {
++        // Phase 1: Idempotency check
++        var existing = await _repo.FindByIdempotencyKeyAsync(req.IdempotencyKey);
++        if (existing != null) return new PaymentResult(existing.Id, existing.Status);
++
++        // Phase 2: Validation
++        var validationResult = await _validator.ValidateAsync(req);
++        if (!validationResult.IsValid)
++            return new PaymentResult(null, PaymentStatus.ValidationFailed, validationResult.Errors);
++
++        // Phase 3: Retry-aware charging
++        PaymentTransaction txn = null;
++        for (int attempt = 1; attempt <= 3; attempt++)
++        {
++            try {
++                txn = await _gateway.ChargeAsync(req.Amount, req.CardToken);
++                break;
++            }
++            catch (GatewayTimeoutException) when (attempt < 3) {
++                await Task.Delay(attempt * 500);
++            }
++        }
++        if (txn == null) return new PaymentResult(null, PaymentStatus.GatewayTimeout);
++
++        // Phase 4: Persist + publish
++        await _repo.SaveAsync(txn);
++        _eventBus.Publish(new PaymentCompleted(txn.Id, req.IdempotencyKey));
++        return new PaymentResult(txn.Id, txn.Status);
++    }

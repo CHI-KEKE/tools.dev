@@ -1,0 +1,4 @@
+name: custom-uat-test
+variables:
+  - name: x-secret
+    value: 

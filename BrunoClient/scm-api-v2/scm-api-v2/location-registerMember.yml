@@ -1,0 +1,45 @@
+info:
+  name: location-registerMember
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/scm/V2/Location/RegisterMember?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 83,
+        "CellPhone": "+6598505280",
+        "RegisterSourceType": "Web",
+        "RegisterDevice": "Chrome",
+        "AppVersion": "1.2.3",
+        "LocationId": 12,
+        "LocationEmployeeId": 345,
+        "MemberId": 123,
+        "CountryCode": "65",
+        "CountryProfileId": 35,
+        "IsNotSendSmsAfterRegister": false,
+        "IsUseRandomPassword": true,
+        "RegisteredDateTime": "2025-12-11T16:20:00",
+        "VipMemberId": 123,
+        "IsOpen": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

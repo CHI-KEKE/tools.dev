@@ -1,0 +1,4 @@
+name: TWPROD
+variables:
+  - name: base-url
+    value: https://promotion-api-internal.91app.io

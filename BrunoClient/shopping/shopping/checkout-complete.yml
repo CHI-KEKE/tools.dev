@@ -1,0 +1,66 @@
+info:
+  name: checkout-complete
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{base-url}}/shopping/api/checkout/complete?lang=zh-TW&shopId={{shopId}}"
+  headers:
+    - name: N1-HOST
+      value: "{{host}}"
+    - name: Cookie
+      value: "{{Cookie}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  params:
+    - name: lang
+      value: zh-TW
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "applePayInfo": {
+              "decryptedData": null,
+              "encryptedInfo": "",
+              "merchantIdentifier": null
+          },
+          "checkoutUniqueKey": "8e837e69-e0f2-4d52-9348-a82dffdab6e3",
+          "creditCardGatewayType": "Nine1Payment",
+          "email": "",
+          "isEnableEDM": true,
+          "isNeedCreditCheck": false,
+          "paymentInfo": null,
+          "rememberCreditCardNo": true,
+          "tapPayCardInfo": null,
+          "userMemo": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+      "applePayInfo": {
+          "decryptedData": null,
+          "encryptedInfo": "",
+          "merchantIdentifier": null
+      },
+      "checkoutUniqueKey": "ed3be526-337c-4047-a9c6-58e630ee8726",
+      "creditCardGatewayType": "Nine1Payment",
+      "email": "",
+      "isEnableEDM": true,
+      "isNeedCreditCheck": false,
+      "paymentInfo": null,
+      "rememberCreditCardNo": true,
+      "tapPayCardInfo": null,
+      "userMemo": ""
+  }

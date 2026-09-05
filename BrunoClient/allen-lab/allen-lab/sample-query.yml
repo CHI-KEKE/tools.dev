@@ -1,0 +1,22 @@
+info:
+  name: sample-query
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:5275/api/Sample/3?query=4
+  headers:
+    - name: header
+      value: "55"
+  params:
+    - name: query
+      value: "4"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

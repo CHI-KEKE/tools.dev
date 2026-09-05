@@ -1,0 +1,34 @@
+info:
+  name: get-collection-data
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{base-url}}/api/v2/member-collections/{{collectionId}}"
+  headers:
+    - name: n1-market
+      value: TW
+    - name: n1-shop-id
+      value: "10230"
+    - name: n1-service-cert
+      value: PromotionService
+    - name: n1-user-id
+      value: rest-client
+    - name: n1-api-scopes
+      value: member_collection.operation:read
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+runtime:
+  variables:
+    - name: collectionId
+      value: cad8cc1e-ba93-43b6-a142-03626bedcef5
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

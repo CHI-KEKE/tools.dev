@@ -1,0 +1,25 @@
+info:
+  name: update-db
+  type: http
+  seq: 7
+
+http:
+  method: PATCH
+  url: "{{base-url}}/databases/{{db-id}}"
+  body:
+    type: json
+    data: |-
+      {
+        "properties": {
+          "fOsz": {
+            "name": "Date..."
+          }
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

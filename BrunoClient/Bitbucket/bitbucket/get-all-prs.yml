@@ -1,0 +1,17 @@
+info:
+  name: get-all-prs
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{base-url}}/2.0/repositories/allenlin0000/{{repoName}}/pullrequests"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

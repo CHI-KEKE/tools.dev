@@ -1,0 +1,4 @@
+name: TWQA
+variables:
+  - name: template-base-url
+    value: http://notification-template-api-internal.qa.91dev.tw

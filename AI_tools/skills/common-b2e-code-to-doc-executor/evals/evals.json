@@ -1,0 +1,48 @@
+{
+  "skill_name": "common-domain-sync-executor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "PR #88 已合併，branch: feature/member-tier-add → main。\n\n以下是 git diff：\n\n（內容詳見 evals/files/eval1-diff.txt）\n\n以下是現有 domain.doc：\n\n（內容詳見 evals/files/eval1-domain.md）\n\n請執行 domain-sync-executor，幫我確認 domain 文件有沒有需要更新。",
+      "expected_output": "產出同步報告，會員等級章節標記 [草稿已產出]，草稿包含 Platinum 與 Diamond 兩個新等級的 diff 格式說明，信心程度應為 High。報告末尾顯示統計數字（直接草稿：N 項 / 待確認：N 項）。不應直接寫入 domain.doc。",
+      "files": [
+        "evals/files/eval1-diff.txt",
+        "evals/files/eval1-domain.md"
+      ],
+      "expectations": [
+        "輸出包含 [草稿已產出] 標籤",
+        "輸出包含 Platinum 或 Diamond 欄位的 diff 格式段落（+ 行）",
+        "輸出包含信心程度 High 或 Medium 標記",
+        "輸出包含 domain-sync-executor report 同步報告區塊",
+        "輸出不含直接寫入 domain.doc 的動作或宣告"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "PR #102 已合併，branch: feature/payment-refactor → main。\n\n以下是 git diff：\n\n（內容詳見 evals/files/eval2-diff.txt）\n\n以下是現有 domain.doc：\n\n（內容詳見 evals/files/eval2-domain.md）\n\n請執行 domain-sync-executor。",
+      "expected_output": "支付流程業務邏輯有大幅重寫（加入 idempotency、retry 邏輯），應標記 [需人確認]，並輸出 RECOMMENDATION 解釋為何需人工判斷。不應產出直接草稿（因業務語意需確認）。不應寫入 domain.doc。",
+      "files": [
+        "evals/files/eval2-diff.txt",
+        "evals/files/eval2-domain.md"
+      ],
+      "expectations": [
+        "輸出包含 [需人確認] 標籤",
+        "輸出包含 RECOMMENDATION 字樣",
+        "輸出說明為何此改動需要人工確認（業務邏輯 / 意圖不明確）",
+        "輸出包含 domain-sync-executor report 同步報告區塊",
+        "輸出不含直接寫入 domain.doc 的動作或宣告"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "幫我同步 domain 文件，這次 PR 有改到 Member 相關的程式碼。",
+      "expected_output": "因為沒有提供 git diff，Skill 應拒絕繼續執行，並明確提示使用者補充 git diff 與 domain.doc 內容。不應產出任何草稿或同步報告。",
+      "files": [],
+      "expectations": [
+        "輸出拒絕執行並要求使用者補充 diff 輸入",
+        "輸出不包含 [草稿已產出] 或 [需人確認] 等同步報告標籤",
+        "輸出不包含 domain-sync-executor report 同步報告區塊"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+info:
+  name: get-all-boards
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{base-url}}/1/members/me/boards?key={{key}}&token={{token}}"
+  params:
+    - name: key
+      value: "{{key}}"
+      type: query
+    - name: token
+      value: "{{token}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  pm.test("Status code is 200", function () {
+      pm.response.to.have.status(200);
+  });
+
+  let response = pm.response.json();
+
+  const existingBoardIds = response.map(board => board.id);
+  pm.collectionVariables.set('existingBoardIds',existingBoardIds);

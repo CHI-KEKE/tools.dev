@@ -1,0 +1,43 @@
+info:
+  name: pay-set
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/api/checkouts/pay-set?lang=zh-TW&shopId=32"
+  headers:
+    - name: Cookie
+      value: ""
+    - name: N1-SHOP-ID
+      value: ""
+    - name: N1-MEMBER-ID
+      value: ""
+  params:
+    - name: lang
+      value: zh-TW
+      type: query
+    - name: shopId
+      value: "32"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "memberId":2108,
+          "checkoutUniqueKey": "d0e75eea-d1b8-4395-94e6-280361ee0725",
+          "checkoutPayType": {
+              "statisticsTypeDef": "CreditCardInstallment_Razer",
+              "installmentType": {
+                  "id":1
+              },
+              "checkoutStoreCredit": null
+          }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

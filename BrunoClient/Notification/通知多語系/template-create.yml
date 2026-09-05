@@ -1,0 +1,99 @@
+info:
+  name: template-create
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{template-base-url}}/api/Templates/Create"
+  body:
+    type: json
+    data: |-
+      {
+          "type": "ShortMessage",
+          "name": "MWeb_Registration_VerifyCode_Template",
+          "shopId": -1,
+          "language": "zh-CN",
+          "parameters": [
+              {
+                  "name": "sys_shop_name",
+                  "type": "System",
+                  "length": 30
+              },
+              {
+                  "name": "Code",
+                  "type": "Custom",
+                  "length": 5
+              },
+              {
+                  "name": "sys_sms_display_name",
+                  "type": "System",
+                  "length": 65535
+              }
+          ],
+          "template": {
+              "IsPriority": "true",
+              "SMSType": "會員註冊",
+              "Title": "",
+              "Content": "{{sys_sms_display_name}}：您的验证码是{{Code}}，欢迎使用！"
+          },
+          "messageType": "Activity",
+          "editor": "AllenLin"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  ## LoyaltyPointDueDateNotification_Template
+
+  {
+      "type": "PushNotification",
+      "name": "LoyaltyPointDueDateNotification_Template",
+      "shopId": -1,
+      "language": "zh-TW",
+      "parameters": [
+              {
+                  "name": "ExpiredDate",
+                  "type": "Custom",
+                  "length": 36
+              }
+          ],
+      "template": {
+          "Title": "紅利點數到期通知",
+          "Content": "您有紅利點數將於{{ExpiredDate}}到期，提醒您儘快使用唷~",
+          "NotificationType": "LoyaltyPoint",
+          "NotificationTargetType": "LoyaltyPoint",
+          "NotificationSource": "LoyaltyPoint",
+          "NotificationCountType": "ECoupon",
+          "NeedPush": "true",
+          "NeedStatistics": "true"
+      },
+      "messageType": "ECoupon",
+      "editor": "AllenLin"
+  }
+
+
+  {
+      "type": "PushNotification",
+      "name": "LoyaltyPointUseStartNotification_Template",
+      "shopId": -1,
+      "language": "en-US",
+      "parameters": [],
+      "template": {
+          "Title": "Point Notice",
+          "Content": "Remind you to use your points as soon as possible~",
+          "NotificationType": "LoyaltyPoint",
+          "NotificationTargetType": "LoyaltyPoint",
+          "NotificationSource": "LoyaltyPoint",
+          "NotificationCountType": "ECoupon",
+          "NeedPush": "true",
+          "NeedStatistics": "true"
+      },
+      "messageType": "ECoupon",
+      "editor": "AllenLin"
+  }

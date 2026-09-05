@@ -1,0 +1,32 @@
+info:
+  name: Sample
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:5275/api/Sample/
+  body:
+    type: json
+    data: |-
+      {
+          "Id":11,
+          "name":"Allen"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+      "id":2,
+      "Name":"優秀",
+      "Age":10,
+      "Email":"rrr@gmail.com",
+      "Password":"hard",
+      "Gender":"Male"
+  }

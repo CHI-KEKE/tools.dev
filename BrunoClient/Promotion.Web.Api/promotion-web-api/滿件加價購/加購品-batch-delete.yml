@@ -1,0 +1,31 @@
+info:
+  name: 加購品-batch-delete
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{base-url}}/api/cart-extra-purchase/batch-delete"
+  body:
+    type: json
+    data: |-
+      {
+         "PromotionEngineId": 40509,
+         "CartExtraPurchaseConditionList": [
+           {
+             "SalepageId": 1557572,
+             "SaleProductSkuId": 2169000,
+             "ReachPiece": 5,
+             "ReachPrice": 0,
+             "CartExtraPurchasePrice": 2,
+             "Sort": 1
+           }
+         ]
+       }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

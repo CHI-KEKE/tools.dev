@@ -1,0 +1,332 @@
+<!--
+元件：港灣日誌風格（harbor-ledger-style）
+用途：治理型文件、規範文件、稽核報告、決策紀錄等需要沉穩、有份量感、高對比的知識型技術文章，想要跳脫柔和糖果色系走向「紙本文件」質感時使用。
+實戰來源：Allen 提供四色色票截圖（bule-white-red-cards.png），色票依序為深海軍藍 #0E3746、暖米杏 #EAE8DC、近白米白 #F4F2EC、磚紅 #BE2623。
+
+視覺語言拆解：
+  - 底色走「暖米杏」而非純白或深色：background 用 #eae8dc，搭配左上/右下角落極淡的海軍藍與磚紅放射狀漸層做點綴（rgba 透明度 .06~.12），呼應色票但不死板。
+  - 主色是深海軍藍（`--navy` #0e3746 → `--navy2` #0a2530 深墨漸層），用在 hero 背景、章節徽章、時間軸數字圓圈、卡片頂部色條，象徵日誌墨水字跡。
+  - 強調色是磚紅（`--red` #be2623 → `--red2` #8f1c1a），用在 eyebrow 標籤、hero 點綴、案例標籤、重點色條，象徵火漆封印或重點劃記。
+  - 輔助分類色是深米杏／黃銅色（`--tan` #a9946a → `--tan2` #8a7550），作為第三種分類色，呼應紙張泛黃與船具黃銅配件質感。
+  - 卡片一律米白 `#f4f2ec` + 細邊框 (`#d7cfba`) + 柔和陰影，頂部色條預設海軍藍，可切換紅/黃銅做分類。轉角統一走小圓角（4~10px），比薄荷/海豚風更方正，呼應「文件／印章」的方正質感。
+  - 字體維持系統字體，程式碼區塊 `pre.hl-pre` 切換成深墨藍終端機感（近黑海軍藍底 + 米白系語法上色），與米杏底形成對比。
+  - 圓角統一偏小（4~10px），區別於 mint/cozy 等圓潤風格，強化「公文／日誌」的方正嚴謹感。
+
+適用情境：
+  - 規範文件、稽核報告、決策紀錄、需要明確標示「核心重點／需要注意」的治理型說明文章。
+  - 想要高對比、成熟穩重觀感，同時保留卡片/流程/案例佐證等知識型文章慣用結構的文章。
+
+不適合情境：
+  - 事件回顧/故障排查等需要明確「紅=危險急迫、琥珀=待觀察、綠=已解決」風險分級語意的文章，本風格的紅色是「強調注意」裝飾語意而非嚴格風險分級，callout 仍沿用中性 info/warn/danger/ok 四色但色相限定在色票家族內，不要把磚紅等同於病歷表式的危險分級（改用 `medical-chart.html`/`vertical-timeline.html`）。
+  - 自然/療癒/可愛主題（改用 `organic-glass-style`/`cozy-meadow-style`/`blue-ghost-style`），本風格走的是成熟穩重的公文/日誌質感。
+
+包含區塊：
+  1. hl-hero：開場橫幅，海軍藍漸層底 + 磚紅 eyebrow 標籤 + 大標題 + 說明文字 + 徽章列 + 右上角火漆印裝飾
+  2. hl-section-head：章節標題（方角徽章編號 + h2），徽章可用 .accent/.tan/.navy 變化色彩區分章節分類
+  3. hl-card：米白卡片容器，通用於任何段落內容包裝
+  4. hl-callout：提示框（info/warn/danger/ok 四種語意色，色相限定在色票家族內）。內容只有一段 `<p>` 時圖示與內文直接寫成 `<span class="hl-icon">` + `<p>` 兩個子節點即可；若內容有多個子元素（例如一段 `<p>` 加一個 `<ul class="hl-checklist">` 再加一段 `<p>`），一定要把圖示以外的所有內容包進一個 `<div class="hc-body">`，否則 `hl-callout` 的 `display:flex` 會把每個子元素當成獨立欄位排成一列，畫面上出現跑版的多欄並排效果
+  5. hl-summary-grid + hl-box：三欄摘要卡片網格，每張卡頂部一條色條（navy/red/tan 三種分類）
+  6. hl-flow + hl-step：橫向流程步驟（含 .cond 條件分支樣式與箭頭連接）
+  7. hl-steps + hl-stepcard：直向時間軸步驟卡（左側方角編號 + 卡片說明）
+  8. hl-checklist：條列核取清單（方形打勾圖示）
+  9. hl-evidence：案例佐證框（標籤 + 案例內容）
+  10. pre.hl-pre：深墨藍終端機風程式碼區塊（語法上色 class：.kw/.str/.cm/.fn/.type/.num/.op）
+  11. hl-seal-divider：火漆印分隔線，用於長文章分隔大段落
+  12. hl-swimlane：跨系統／跨服務時序泳道圖（多欄式，每欄代表一個服務／角色，表達「誰在什麼時間點呼叫誰」，取代單純水平箭頭無法表達層級的問題）
+  13. hl-tabs：分頁切換（用於同一主題下需要並列比較「多方各自職責」的情境，避免卡片並排硬塞）
+  14. details.ml-detail：漸進式揭露（條列項目過多時，預設只顯示重點幾項，其餘收合在 `<details>` 內，點擊才展開）
+  15. ml-io-badge：I/O／CPU 分類徽章（掛在流程節點標題旁，快速標示「這一步會不會對外呼叫、有沒有延遲風險」）
+  16. hl-decision：決策樹（菱形條件節點 + Yes/No 分支卡片，取代純文字條列的條件式邏輯說明，適合「只有滿足某條件才會觸發」的收尾/後處理邏輯）
+
+同一篇文章內若要用多個章節，`<style>` 只需在第一個出現的 tab 定義一次，之後每個 tab 直接重複使用 class 即可。
+-->
+
+<style>
+.hl{
+  display:block;
+  font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'PingFang TC','Microsoft JhengHei',sans-serif;
+  background:
+    radial-gradient(700px 400px at 92% -8%, rgba(190,38,35,.10), transparent 60%),
+    radial-gradient(900px 500px at -8% 108%, rgba(14,55,70,.10), transparent 55%),
+    #eae8dc;
+  color:#182228!important;
+  line-height:1.75;
+  border-radius:14px;
+  padding:1px 0 28px;
+  margin:0 0 20px;
+  overflow:hidden;
+  --ink:#182228; --sub:#48585d; --card:#f4f2ec; --line:#d7cfba;
+  --navy:#0e3746; --navy2:#0a2530; --red:#be2623; --red2:#8f1c1a; --tan:#a9946a; --tan2:#8a7550; --danger:#be2623;
+  --shadow:0 10px 28px -12px rgba(14,55,70,.28);
+}
+.hl *{box-sizing:border-box;}
+.hl a{color:var(--red)!important;text-decoration:none;}
+.hl a:hover{text-decoration:underline;}
+.hl .hl-hero{padding:48px 6vw 34px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--navy2),var(--navy));}
+.hl .hl-hero::before{content:"";position:absolute;top:-34px;right:-34px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#d9534f,var(--red2));opacity:.35;pointer-events:none;}
+.hl .hl-eyebrow{display:inline-block;font-size:.78rem;letter-spacing:.16em;color:#f4f2ec!important;text-transform:uppercase;font-weight:700;margin-bottom:12px;background:rgba(190,38,35,.4);padding:6px 14px;border-radius:3px;}
+.hl .hl-hero h1{font-size:1.7rem;margin:0 0 12px;color:#f4f2ec!important;font-weight:800;}
+.hl .hl-hero p{color:#cdd8da!important;max-width:700px;margin:0 auto;font-size:1rem;}
+.hl .hl-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.hl .hl-badge{background:rgba(244,242,236,.12);border:1px solid rgba(244,242,236,.28);padding:6px 14px;border-radius:3px;font-size:.8rem;color:#eef1ee!important;}
+.hl .hl-container{padding:0 5vw;}
+.hl section{margin-bottom:44px;}
+.hl .hl-section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.hl .hl-section-head .hl-chip{flex:none;width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;background:linear-gradient(135deg,var(--navy2),var(--navy));color:#f4f2ec!important;font-size:1rem;box-shadow:var(--shadow);}
+.hl .hl-section-head.accent .hl-chip{background:linear-gradient(135deg,var(--red2),var(--red));}
+.hl .hl-section-head.tan .hl-chip{background:linear-gradient(135deg,var(--tan2),var(--tan));}
+.hl .hl-section-head h2{margin:0;font-size:1.3rem;font-weight:800;color:var(--ink)!important;}
+.hl h3{font-size:1.08rem;margin:26px 0 10px;color:var(--ink)!important;border-left:4px solid var(--navy);padding-left:10px;}
+.hl p{color:var(--sub)!important;}
+.hl .hl-card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:18px 22px;margin:14px 0;}
+.hl table{width:auto;max-width:100%;border-collapse:separate;border-spacing:0;background:var(--card)!important;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:14px 0 22px;font-size:.88rem;box-shadow:var(--shadow);}
+.hl thead th{background:#e3ddc9!important;color:var(--ink)!important;text-align:left;padding:13px 16px;font-weight:800;border-bottom:1px solid var(--line);}
+.hl tbody td{padding:13px 16px;border-bottom:1px solid var(--line);color:#2c3a3f!important;vertical-align:top;background:var(--card)!important;}
+.hl tbody tr:last-child td{border-bottom:none;}
+.hl tbody tr:hover td{background:#eee9da!important;}
+.hl tbody td strong{color:var(--ink)!important;}
+.hl tbody td code{color:var(--red2)!important;}
+.hl code{font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace;background:#e3ddc9!important;color:var(--red2)!important;padding:2px 7px;border-radius:5px;font-size:.88em;border:1px solid #d7cfba;}
+.hl pre.hl-pre{background:#0a1e26!important;border:none;border-radius:10px;padding:20px 22px;overflow-x:auto;margin:16px 0;position:relative;color:#e9efee!important;font-size:.85rem!important;line-height:1.7!important;font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace!important;white-space:pre!important;box-shadow:var(--shadow);}
+.hl pre.hl-pre::before{content:attr(data-lang);position:absolute;top:12px;right:16px;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#7d9498!important;font-family:'Segoe UI',sans-serif;}
+.hl .kw{color:#f2a49e!important;} .hl .str{color:#d7c98f!important;} .hl .cm{color:#6f8a92!important;font-style:italic;} .hl .fn{color:#8fc4d6!important;} .hl .type{color:#e0c07a!important;} .hl .num{color:#d7c98f!important;} .hl .op{color:#f2a49e!important;}
+.hl .hl-callout{border-radius:8px;padding:18px 22px;margin:18px 0;border:1px solid transparent;border-left-width:5px;display:flex;gap:14px;}
+.hl .hl-callout .hl-icon{font-size:1.3rem;flex:none;}
+.hl .hl-callout .hc-body{flex:1;min-width:0;}
+.hl .hl-callout.info{background:#e6edef;border-color:#a9bcc2;border-left-color:#37606b;}
+.hl .hl-callout.warn{background:#f3ecd8;border-color:#d9c48f;border-left-color:var(--tan);}
+.hl .hl-callout.danger{background:#f8e2e0;border-color:#e29c98;border-left-color:var(--red);}
+.hl .hl-callout.ok{background:#e3edea;border-color:#9db8b0;border-left-color:var(--navy);}
+.hl .hl-callout p{margin:0;font-size:.92rem;color:#2c3a3f!important;}
+.hl .hl-callout p+p,.hl .hl-callout p+ul,.hl .hl-callout ul+p{margin-top:10px;}
+.hl .hl-callout strong{color:var(--ink)!important;}
+.hl .hl-tag{display:inline-block;font-size:.72rem;font-weight:800;padding:3px 11px;border-radius:3px;letter-spacing:.02em;}
+.hl .hl-tag.danger{background:#f6d3d1!important;color:var(--red2)!important;}
+.hl .hl-tag.ok{background:#d7e4e0!important;color:var(--navy)!important;}
+.hl .hl-tag.warn{background:#ecdfb9!important;color:var(--tan2)!important;}
+.hl .hl-tag.info{background:#d8e2e4!important;color:#274850!important;}
+.hl .hl-tag.navy{background:#d7e0e2!important;color:var(--navy)!important;}
+.hl .hl-tag.red{background:#f6d3d1!important;color:var(--red2)!important;}
+.hl .hl-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0;}
+.hl .hl-summary-grid .hl-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--navy);position:relative;overflow:hidden;}
+.hl .hl-summary-grid .hl-box.navy{border-top-color:var(--navy);}
+.hl .hl-summary-grid .hl-box.red{border-top-color:var(--red);}
+.hl .hl-summary-grid .hl-box.tan{border-top-color:var(--tan);}
+.hl .hl-summary-grid .hl-box h4{margin:0 0 8px;color:var(--ink)!important;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;}
+.hl .hl-summary-grid .hl-box p{margin:0;font-size:.87rem;color:var(--sub)!important;}
+@media (max-width:780px){.hl .hl-summary-grid{grid-template-columns:1fr;}}
+.hl .hl-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0;}
+.hl .hl-flow .hl-step{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 16px;font-size:.85rem;font-weight:700;color:var(--ink)!important;box-shadow:var(--shadow);}
+.hl .hl-flow .hl-step.cond{background:#f3ecd8;border-color:#d9c48f;color:var(--tan2)!important;}
+.hl .hl-flow .hl-arrow{color:var(--red)!important;font-size:1.2rem;font-weight:900;}
+.hl .hl-steps{display:flex;flex-direction:column;gap:14px;margin:16px 0 22px;}
+.hl .hl-stepcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 20px;position:relative;padding-left:60px;box-shadow:var(--shadow);}
+.hl .hl-stepcard .hl-stepnum{position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:6px;background:linear-gradient(135deg,var(--navy2),var(--navy));color:#f4f2ec!important;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
+.hl .hl-stepcard.cond .hl-stepnum{background:linear-gradient(135deg,var(--tan2),var(--tan));}
+.hl .hl-stepcard .hl-step-title{font-weight:700;color:var(--ink)!important;font-size:1rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.hl .hl-stepcard p{margin:6px 0;font-size:.9rem;color:var(--sub)!important;}
+.hl .hl-checklist{list-style:none;padding:0;margin:16px 0;}
+.hl .hl-checklist li{position:relative;padding:10px 0 10px 32px;border-bottom:1px dashed var(--line);color:var(--sub)!important;}
+.hl .hl-checklist li:last-child{border-bottom:none;}
+.hl .hl-checklist li::before{content:"✓";position:absolute;left:0;top:12px;width:20px;height:20px;border-radius:4px;background:var(--navy);color:#f4f2ec!important;font-size:.72rem;display:flex;align-items:center;justify-content:center;font-weight:900;}
+.hl .hl-evidence{border:1px solid var(--line);background:var(--card);border-radius:10px;box-shadow:var(--shadow);padding:18px 20px;margin:16px 0 22px;}
+.hl .hl-evidence .hl-evidence-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.hl .hl-evidence .hl-evidence-head .hl-tag{background:var(--navy2)!important;color:#f4f2ec!important;}
+.hl .hl-seal-divider{display:flex;align-items:center;gap:10px;justify-content:center;margin:36px 0;color:var(--red)!important;}
+.hl .hl-seal-divider::before,.hl .hl-seal-divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line) 40%,var(--line) 60%,transparent);}
+.hl .hl-seal-divider span{font-size:1.1rem;}
+.hl footer{text-align:center;padding:30px 5vw 6px;color:var(--sub)!important;font-size:.82rem;border-top:1px solid var(--line);margin-top:8px;}
+
+.hl .hl-swimlane{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:20px 0 30px;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.hl .hl-swimlane .sl-head{background:var(--navy);color:#f4f2ec!important;text-align:center;font-weight:800;font-size:.82rem;padding:12px 8px;letter-spacing:.03em;}
+.hl .hl-swimlane .sl-head.red{background:var(--red);}
+.hl .hl-swimlane .sl-head.tan{background:var(--tan);}
+.hl .hl-swimlane .sl-lane{border-right:1px dashed var(--line);padding:18px 12px;background:var(--card);display:flex;flex-direction:column;align-items:center;gap:26px;position:relative;}
+.hl .hl-swimlane .sl-lane:last-child{border-right:none;}
+.hl .hl-swimlane .sl-lane::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--line);z-index:0;}
+.hl .hl-swimlane .sl-node{position:relative;z-index:1;background:#fff!important;border:2px solid var(--navy);color:var(--navy)!important;border-radius:6px;padding:8px 10px;font-size:.74rem;font-weight:700;text-align:center;box-shadow:0 4px 10px -6px rgba(14,55,70,.4);width:100%;}
+.hl .hl-swimlane .sl-node.dim{opacity:.32;border-style:dashed;box-shadow:none;}
+.hl .hl-swimlane .sl-step{position:relative;z-index:1;font-size:.68rem;color:var(--tan2)!important;font-weight:700;background:#f3ecd8;border:1px solid #d9c48f;border-radius:20px;padding:3px 10px;}
+
+.hl .hl-tabs{margin:18px 0 26px;}
+.hl .hl-tabs .ht-bar{display:flex;gap:6px;border-bottom:2px solid var(--line);margin-bottom:0;}
+.hl .hl-tabs .ht-btn{appearance:none;border:none;background:transparent;cursor:pointer;font-family:inherit;font-weight:700;font-size:.86rem;color:var(--sub)!important;padding:11px 20px;border-radius:8px 8px 0 0;position:relative;top:2px;}
+.hl .hl-tabs .ht-btn.on{color:var(--navy)!important;background:var(--card);border:1.5px solid var(--line);border-bottom:2px solid var(--card);}
+.hl .hl-tabs .ht-panel{display:none;background:var(--card);border:1.5px solid var(--line);border-top:none;border-radius:0 0 14px 14px;padding:20px 24px;box-shadow:var(--shadow);}
+.hl .hl-tabs .ht-panel.on{display:block;}
+.hl .hl-tabs .ht-panel ul{margin:0;padding-left:1.2em;}
+.hl .hl-tabs .ht-panel li{font-size:.87rem;line-height:1.85;color:var(--sub)!important;}
+
+.hl details.ml-detail{margin-top:8px;}
+.hl details.ml-detail summary{cursor:pointer;font-size:.78rem;font-weight:700;color:#37606b!important;list-style:none;user-select:none;}
+.hl details.ml-detail summary::before{content:"▸ ";}
+.hl details.ml-detail[open] summary::before{content:"▾ ";}
+.hl details.ml-detail summary::-webkit-details-marker{display:none;}
+.hl .ml-io-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+.hl .ml-io-badge.io{background:#f8e2e0!important;color:var(--red2)!important;}
+.hl .ml-io-badge.cpu{background:#e6edef!important;color:#274952!important;}
+
+.hl .hl-decision{display:flex;flex-direction:column;gap:0;margin:20px 0 26px;}
+.hl .hl-decision .dc-gate{display:flex;align-items:stretch;gap:14px;margin-bottom:16px;}
+.hl .hl-decision .dc-diamond{flex:none;width:132px;display:flex;align-items:center;justify-content:center;text-align:center;background:var(--navy);color:#f4f2ec!important;font-weight:800;font-size:.78rem;padding:14px 10px;border-radius:10px;position:relative;box-shadow:0 8px 18px -10px rgba(14,55,70,.4);}
+.hl .hl-decision .dc-branches{flex:1;display:flex;flex-direction:column;gap:8px;}
+.hl .hl-decision .dc-branch{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1.5px solid var(--line);border-left:4px solid var(--tan);border-radius:8px;padding:10px 16px;}
+.hl .hl-decision .dc-branch.yes{border-left-color:var(--red);background:#f8e2e0;}
+.hl .hl-decision .dc-branch.no{border-left-color:#b9c3c6;background:#eceae1;opacity:.85;}
+.hl .hl-decision .dc-tag{flex:none;font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:20px;background:var(--navy);color:#f4f2ec!important;margin-top:1px;}
+.hl .hl-decision .dc-branch.no .dc-tag{background:#8a949a!important;}
+.hl .hl-decision .dc-text{font-size:.85rem;line-height:1.7;color:var(--sub)!important;}
+</style>
+
+<div class="hl">
+<div class="hl-hero">
+<span class="hl-eyebrow">範例 · Harbor Ledger Style</span>
+<h1>⚓ 港灣日誌風格範例</h1>
+<p>這是一份示範文章的開場橫幅說明，用來展示海軍藍漸層底、磚紅強調色與米白卡片陰影的整體觀感。</p>
+<div class="hl-badges">
+<span class="hl-badge">範例徽章一</span>
+<span class="hl-badge">範例徽章二</span>
+</div>
+</div>
+<div class="hl-container">
+
+<section>
+<div class="hl-section-head">
+<div class="hl-chip">01</div>
+<h2>章節標題範例</h2>
+</div>
+<p>章節說明文字，顏色使用中性海軍灰 <code>--sub</code>。</p>
+
+<div class="hl-card">
+<p>這是一張米白卡片，內容可以放任何段落文字或表格。</p>
+</div>
+
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td><code>ExampleField</code></td><td>範例說明文字</td></tr>
+</tbody>
+</table>
+
+<div class="hl-callout info">
+<span class="hl-icon">💡</span>
+<p><strong>提示：</strong>這是資訊性提示框，底色為淡海軍灰。</p>
+</div>
+
+<div class="hl-callout warn">
+<span class="hl-icon">⚠️</span>
+<p><strong>注意：</strong>這是警示提示框，底色為淡黃銅。</p>
+</div>
+
+<div class="hl-summary-grid">
+<div class="hl-box navy">
+<h4>核心重點</h4>
+<p>說明文字。</p>
+</div>
+<div class="hl-box red">
+<h4>強調注意</h4>
+<p>說明文字。</p>
+</div>
+<div class="hl-box tan">
+<h4>次要補充</h4>
+<p>說明文字。</p>
+</div>
+</div>
+
+<div class="hl-flow">
+<div class="hl-step">開始</div>
+<div class="hl-arrow">→</div>
+<div class="hl-step cond">條件判斷</div>
+<div class="hl-arrow">→</div>
+<div class="hl-step">結束</div>
+</div>
+
+<div class="hl-steps">
+<div class="hl-stepcard">
+<div class="hl-stepnum">1</div>
+<div class="hl-step-title">步驟一標題</div>
+<p>步驟說明文字。</p>
+</div>
+<div class="hl-stepcard cond">
+<div class="hl-stepnum">2</div>
+<div class="hl-step-title">步驟二標題（條件分支）</div>
+<p>步驟說明文字。</p>
+</div>
+</div>
+
+<ul class="hl-checklist">
+<li>檢查項目一</li>
+<li>檢查項目二</li>
+</ul>
+
+<div class="hl-evidence">
+<div class="hl-evidence-head">
+<span class="hl-tag">案例</span>
+<strong>範例案例編號</strong>
+</div>
+<p>案例佐證說明文字。</p>
+</div>
+
+<div class="hl-seal-divider"><span>⚓</span></div>
+
+<pre class="hl-pre" data-lang="csharp"><span class="kw">var</span> <span class="fn">result</span> = <span class="type">Entity</span>.Calculate(<span class="num">1</span>); <span class="cm">// 註解說明</span></pre>
+
+<div class="hl-swimlane">
+<div class="sl-head">角色 A</div>
+<div class="sl-head">角色 B</div>
+<div class="sl-head red">角色 C</div>
+<div class="sl-head tan">資料庫</div>
+<div class="sl-lane"><div class="sl-node">發起請求</div><div class="sl-node dim">等待回應</div></div>
+<div class="sl-lane"><div class="sl-node">1 前置檢查</div><div class="sl-step">轉發 →</div></div>
+<div class="sl-lane"><div class="sl-node dim">－</div><div class="sl-node">2 商業邏輯驗證</div></div>
+<div class="sl-lane"><div class="sl-node dim">－</div><div class="sl-node">3 寫入資料</div></div>
+</div>
+
+<div class="hl-tabs">
+<div class="ht-bar">
+<button class="ht-btn on" data-tab="tab-a">角色 A 職責</button>
+<button class="ht-btn" data-tab="tab-b">角色 B 職責</button>
+</div>
+<div class="ht-panel on" id="tab-a"><ul><li>角色 A 負責的重點一</li><li>角色 A 負責的重點二</li></ul></div>
+<div class="ht-panel" id="tab-b"><ul><li>角色 B 負責的重點一</li><li>角色 B 負責的重點二</li></ul></div>
+</div>
+<script>
+(function(){
+  document.querySelectorAll('.hl-tabs .ht-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var group = btn.closest('.hl-tabs');
+      group.querySelectorAll('.ht-btn').forEach(function(b){ b.classList.remove('on'); });
+      group.querySelectorAll('.ht-panel').forEach(function(p){ p.classList.remove('on'); });
+      btn.classList.add('on');
+      var panel = group.querySelector('#' + btn.getAttribute('data-tab'));
+      if(panel){ panel.classList.add('on'); }
+    });
+  });
+})();
+</script>
+
+<div>
+<span>常態顯示的項目<span class="ml-io-badge io">I/O</span></span>
+<details class="ml-detail">
+<summary>展開其餘項目</summary>
+<p>收合在裡面的補充內容，點擊 summary 才會展開。</p>
+</details>
+<span>純記憶體運算項目<span class="ml-io-badge cpu">CPU</span></span>
+</div>
+
+<div class="hl-decision">
+<div class="dc-gate">
+<div class="dc-diamond">條件描述（是否滿足某狀態）？</div>
+<div class="dc-branches">
+<div class="dc-branch yes"><span class="dc-tag">YES</span><span class="dc-text">條件成立時執行的動作說明。</span></div>
+<div class="dc-branch no"><span class="dc-tag">NO</span><span class="dc-text">條件不成立則略過，說明後續狀態。</span></div>
+</div>
+</div>
+</div>
+
+</section>
+
+<footer>整理自範例來源</footer>
+
+</div>
+</div>

@@ -39,6 +39,8 @@
 | 前進 | Ctrl + Shift + - |
 | CodeMaid | Ctrl + Shift + M |
 
+建立新 .cs 檔案 : shift + F2
+
 <br><br>
 
 ---
@@ -46,6 +48,8 @@
 ## Show Files 找不到問題
 
 當資料夾有檔案但 show files 找不到時，需要手動將專案加入 VS。
+
+showallfiles => include project
 
 <br>
 

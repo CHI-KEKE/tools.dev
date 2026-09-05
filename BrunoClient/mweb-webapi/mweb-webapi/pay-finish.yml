@@ -1,0 +1,22 @@
+info:
+  name: pay-finish
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{base-url}}/V2/Pay/Finish/?k=1c6d32f9-894c-48f9-be81-c25340a52383&shopId=2"
+  params:
+    - name: k
+      value: 1c6d32f9-894c-48f9-be81-c25340a52383
+      type: query
+    - name: shopId
+      value: "2"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

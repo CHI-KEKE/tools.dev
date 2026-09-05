@@ -1,0 +1,396 @@
+info:
+  name: rule-create
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/promotion-rules/create"
+  headers:
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |2-
+      
+       {
+         "ShopId": 10230,
+         "TypeDef": "CartReachPieceExtraPurchase",
+         "Name": "滿件加價購測試活動0421001",
+         "Description": "滿2件可加購，滿5件享更多優惠-allen",
+         "StartDateTime": "2026-04-22T00:00:00",
+         "EndDateTime": "2026-12-31T23:59:59",
+         "TargetMemberTypeDef": "All",
+         "PromotionTargetRegionTypeDef": "All",
+         "TargetTypeDef": "SalePage",
+         "ExcludeTargetTypeDef": "None",
+         "TargetLocationTypeDef": "All",
+         "TargetPlatformTypeList": [
+           { "Platform": "Web",        "IsEnabled": true },
+           { "Platform": "AppIOS",     "IsEnabled": true },
+           { "Platform": "AppAndroid", "IsEnabled": true }
+         ],
+         "CanUseECoupon": false,
+         "CalculateTypeDef": "Compatible",
+         "IsDisplayInShoppingCart": true,
+         "IsCartExtraPurchaseThresholdEligible": true,
+         "IsRegular": false,
+         "IsCyclable": true,
+         "Accumulated": false,
+         "ExtraPurchaseRuleList": [
+           { "ReachPiece": 8, "ReachPrice": 0, "LimitQty": 10 }
+         ]
+       }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: shopId
+      value: "2"
+      disabled: true
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  {
+      "shopId": 2,
+      "typeDef": "RewardReachPriceWithPoint2",
+      "Quota":30,
+      "name": "佔額暫時站一站",
+      "startDateTime": "2026-03-22T13:00:00",
+      "endDateTime": "2026-03-30T12:00:00",
+      "targetPlatformTypeList": [
+         {
+              "platform": "Web",
+              "isEnabled": true
+          },
+          {
+              "platform": "AppAndroid",
+              "isEnabled": true
+          },
+          {
+              "platform": "AppIOS",
+              "isEnabled": true
+          }
+      ],
+      "targetTypeDef": "SalePage",
+      "excludeTargetTypeDef": "None",
+      "ExcludeTargetType":"None",
+      "isCyclable": false,
+      "supplierId": 2,
+      "includeTargetIdList": [61284,61361,61296],
+      "IncludeProductSkuOuterIdList":["!!!"],
+      "excludeTargetIdList": null,
+      "RewardPointConditions": [
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "Home",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0 
+          },
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "Oversea",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0 
+          },
+          {
+              "SourceTypeDef": "ECom",
+              "DeliveryMethod": "LocationPickup",
+              "StatusDef": "WaitingToShipping",
+              "RewardDays": 0
+          }
+      ],
+
+
+
+
+      "payTypes": [],
+      "shippingTypes": [],
+      "ExtendRule": "{\"RewardPointRuleList\":[{\"Condition\":100.0,\"Point\":10,\"MaxRewardPoint\":null}],\"PeriodType\":{\"RewardPointPeriodType\":\"AfterDays\",\"AfterDays\":10,\"UntilYearOffset\":0,\"UntilYearMonth\":0,\"SameWithMemberAccountLevel\":false,\"FixedDate\":\"0001-01-01T00:00:00\"},\"PromotionRewardPointCalculateTypeDef\":\"Merged\"}",
+      "RewardPointRuleList": [
+              {
+                  "CrmShopMemberCardId":1,
+                  "Condition": 100.0,
+                  "Point": 10.0,
+                  "MaxRewardPoint": 8888
+              },
+              {
+                  "CrmShopMemberCardId":2,
+                  "Condition": 100.0,
+                  "Point": 10.0,
+                  "MaxRewardPoint": null
+              }
+      ],
+      "PeriodType":{
+        "RewardPointPeriodType":"UntilTheEndOfYear"
+     },
+      "memberCollectionId": null,
+      "DiscountRuleList": [],
+      "hasPicture": false,
+      "description": "avc",
+      "customCampaignCode": "",
+      "targetMemberTypeDef": "MemberTier",
+      "targetMemberType": "MemberTier",
+      "crmShopMemberCardIds": [1,2],
+      "isRegular": false,
+      "promotionTargetRegionTypeDef": "All",
+      "promotionTargetRegionType": "All",
+      "includeTargetRegionIdList": null,
+     "discountScopesType": null,
+      "groupDiscountRuleList": null,
+      "discountRuleList": null,
+     "Accumulated": false,
+      "isMultiLevel": false,
+      "canUseECoupon": true,
+      "calculateTypeDef": "Compatible",
+      "salesDayOfWeek": 0,
+      "payProfileTypeDef": "",
+      "promotionEngineBinCodeId": 0,
+      "registerStartDateTime": "2025-10-14T11:50:16.112Z",
+      "registerEndDateTime": "2025-10-15T11:50:16.112Z",
+      "terms": null,
+      "agreeContent": null,
+      "displaySetting": "",
+      "userName": "yOYO",
+      "giftRuleList": [],
+      "code": ""
+  }
+
+
+
+  {
+
+    "Code": "P_2_20250305234035",
+
+    "SourceTargetTypeCollectionId": null,
+
+    "ShopId": 2,
+
+    "TypeDef": "RewardReachPriceWithPoint2",
+
+    "Name": "站",
+
+    "StartDateTime": "2026-07-08T00:00:00+08:00",
+
+    "EndDateTime": "2026-09-08T00:00:59.997+08:00",
+
+    "HasPicture": false,
+
+    "Description": "站",
+
+    "CustomCampaignCode": "",
+
+    "TargetMemberTypeDef": "All",
+
+    "TargetMemberType": 1,
+
+    "CrmShopMemberCardIds": [],
+
+    "IsRegular": false,
+
+    "PromotionTargetRegionTypeDef": "All",
+
+    "PromotionTargetRegionType": 0,
+
+    "IncludeTargetRegionIdList": [],
+
+    "TargetPlatformTypeList": [
+
+      {
+
+        "Platform": "Web",
+
+        "IsEnabled": true
+
+      },
+
+      {
+
+        "Platform": "AppAndroid",
+
+        "IsEnabled": true
+
+      },
+
+      {
+
+        "Platform": "AppIOS",
+
+        "IsEnabled": true
+
+      }
+
+    ],
+
+    "TargetTypeDef": "Shop",
+
+    "TargetType": 1,
+
+    "IncludeTargetIdList": [],
+
+    "ExcludeTargetTypeDef": "None",
+
+    "ExcludeTargetType": 0,
+
+    "ExcludeTargetIdList": [],
+
+    "DiscountScopesType": null,
+
+    "DiscountRuleList": [],
+
+    "IsCyclable": false,
+
+    "Accumulated": false,
+
+    "CanUseECoupon": true,
+
+    "CalculateTypeDef": "Compatible",
+
+    "RegisterStartDateTime": null,
+
+    "RegisterEndDateTime": null,
+
+    "Terms": "",
+
+    "AgreeContent": "",
+
+    "DisplaySetting": "",
+
+    "SupplierId": 2,
+
+    "GiftRuleList": [],
+
+    "PayTypes": [],
+
+    "ShippingTypes": [],
+
+    "MemberCollectionId": "",
+
+    "Label": "",
+
+    "MustTargetType": 0,
+
+    "MustTargetIdList": null,
+
+    "ExtendRule": null,
+
+    "RewardPointConditions": [
+
+      {
+
+        "SourceTypeDef": "ECom",
+
+        "DeliveryMethod": "Home",
+
+        "StatusDef": "WaitingToShipping",
+
+        "RewardDays": 0
+
+      },
+
+      {
+
+        "SourceTypeDef": "ECom",
+
+        "DeliveryMethod": "Oversea",
+
+        "StatusDef": "WaitingToShipping",
+
+        "RewardDays": 0
+
+      },
+
+      {
+
+        "SourceTypeDef": "ECom",
+
+        "DeliveryMethod": "LocationPickup",
+
+        "StatusDef": "WaitingToShipping",
+
+        "RewardDays": 0
+
+      },
+
+      {
+
+        "SourceTypeDef": "Others",
+
+        "DeliveryMethod": null,
+
+        "StatusDef": null,
+
+        "RewardDays": 0
+
+      }
+
+    ],
+
+    "RewardPointRuleList": [
+
+      {
+
+        "CrmShopMemberCardId": 0,
+
+        "Condition": 1.0,
+
+        "Point": 1.0,
+
+        "Rate": null,
+
+        "MaxRewardPoint": null
+
+      }
+
+    ],
+
+    "PeriodType": {
+
+      "RewardPointPeriodType": "FixedDate",
+
+      "AfterDays": 0,
+
+      "UntilYearOffset": 0,
+
+      "UntilYearMonth": 12,
+
+      "SameWithMemberAccountLevel": false,
+
+      "FixedDate": "2025-03-09T00:00:00+08:00"
+
+    },
+
+    "PromotionRewardPointCalculateTypeDef": "Merged",
+
+    "IsLimitedAddOnsPurchaseQty": false,
+
+    "AddOnsRuleList": [],
+
+    "IsDisplayInShoppingCart": true,
+
+    "IncludeProductSkuOuterIdList": [],
+
+    "TargetTypeProductSkuOuterIdTag": null,
+
+    "ExcludeProductSkuOuterIdList": [],
+
+    "TargetLocationTypeDef": "All",
+
+    "TargetLocationType": 0,
+
+    "IncludeTargetLocationIdList": [],
+
+    "SalesDayOfWeek": null,
+
+    "PayProfileTypeDef": null,
+
+    "PromotionEngineBinCodeId": 0,
+
+    "Sort": 100
+
+  }

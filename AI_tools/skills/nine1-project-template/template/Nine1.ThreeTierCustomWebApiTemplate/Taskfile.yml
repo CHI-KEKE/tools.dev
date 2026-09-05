@@ -1,0 +1,22 @@
+# Taskfile.yml
+
+version: "3"
+
+# 愈前面優先權愈高
+# dotenv:
+#   [
+#     "pipeline/Nine1.Sample.Project.Web.Api/env/local.env",
+#     "pipeline/Nine1.Sample.Project.Web.Api/secret/local.skv",
+#   ]
+
+tasks:
+  dev-normal:
+    desc: Run as development mode using dotnet watch
+    #if( isFlatStruct )
+    dir: "src/Nine1.Sample.Project.Web.Api"
+    #endif
+    #if( isModuleStruct )
+    dir: "src/Web/Nine1.Sample.Project.Web.Api"
+    #endif
+    cmds:
+      - dotnet watch run

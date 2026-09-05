@@ -1,0 +1,44 @@
+info:
+  name: 🌼 [image] upload-giftImage
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/SCM/V2/Image/UploadGiftImage?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: Id
+        type: text
+        value: "60339"
+      - name: Index
+        type: text
+        value: "0"
+      - name: Image
+        type: file
+        value:
+          - C:\Users\Allen Lin\Desktop\pics\300X300\rsz_di.png
+      - name: ShopId
+        type: text
+        value: "2"
+      - name: data
+        type: text
+        value: '{"Id":60339,"Index":0,"Image":null,"ShopId":2}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

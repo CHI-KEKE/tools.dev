@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任務執行歷史 — 邏輯釐清報告</title>
+<style>
+  :root {
+    --navy-dark: #16203c;
+    --navy: #152545;
+    --navy-light: #132a4e;
+    --accent: #2b8ce6;
+    --success: #198754;
+    --warning: #b8860b;
+    --danger: #c0392b;
+    --bg: #f4f6fb;
+    --card-bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e2e6ee;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .hero {
+    background: linear-gradient(135deg, var(--navy-dark), var(--navy-light));
+    color: #fff;
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  .hero h1 {
+    margin: 0 0 10px;
+    font-size: 1.9rem;
+    letter-spacing: 0.5px;
+  }
+  .hero p {
+    margin: 0;
+    color: #cfd8ee;
+    font-size: 1rem;
+  }
+  .container {
+    max-width: 960px;
+    margin: -24px auto 60px;
+    padding: 0 20px;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(21, 37, 69, 0.08);
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 18px;
+  }
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--navy);
+  }
+  .lead {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 20px;
+  }
+  .verdict {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .verdict.ok { background: #e5f5ec; color: var(--success); }
+  .verdict.warn { background: #fdf2df; color: var(--warning); }
+
+  code, .mono {
+    font-family: "Cascadia Code", Consolas, monospace;
+    background: #eef1f8;
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 0.88em;
+    color: #2a3a5c;
+  }
+
+  pre.code-block {
+    background: #0f1b33;
+    color: #d7e2f7;
+    padding: 16px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  pre.code-block .cm { color: #7d94c4; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  thead th {
+    background: var(--navy);
+    color: #fff;
+    font-weight: 600;
+  }
+  tbody tr:nth-child(even) { background: #f8f9fc; }
+
+  .flow-steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  .flow-steps li {
+    position: relative;
+    padding: 10px 0 10px 44px;
+    border-left: 2px solid var(--border);
+    margin-left: 17px;
+  }
+  .flow-steps li:last-child { border-left: 2px solid transparent; }
+  .flow-steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: -18px;
+    top: 8px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .callout {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 0.92rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout .icon { font-size: 1.2rem; line-height: 1; margin-top: 2px; }
+  .callout.info { background: #eaf3ff; color: #1c4f8c; border: 1px solid #cfe1fb; }
+  .callout.key { background: #fff4e5; color: #8a5a00; border: 1px solid #ffe1ad; }
+  .callout.danger { background: #fdeceb; color: #a1332a; border: 1px solid #f6c6c1; }
+
+  .badge-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .badge-pill.etl { background: #d9f0ff; color: #0a5f8c; }
+  .badge-pill.general { background: #e3e7ef; color: #45506b; }
+
+  .timeline-example {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 18px 0;
+  }
+  .timeline-item {
+    flex: 1 1 140px;
+    background: #f8f9fc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .timeline-item .time { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+  .timeline-item .status {
+    margin-top: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+  .timeline-item.found .status { color: var(--success); }
+  .timeline-item.notfound .status { color: var(--danger); }
+
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 20px 0 0;
+  }
+
+  .toc {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 20px auto 0;
+    max-width: 960px;
+    padding: 0 20px;
+  }
+  .toc a {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    transition: background 0.2s;
+  }
+  .toc a:hover { background: rgba(255,255,255,0.25); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>📋 任務執行歷史頁面 — 邏輯釐清報告</h1>
+  <p>Windows Task Manager｜一般 Task / ETL Flow 分類邏輯 &amp; Log 抓取機制說明</p>
+</div>
+<div class="toc">
+  <a href="#part1">① 分類邏輯確認</a>
+  <a href="#part2">② Log 抓取機制</a>
+  <a href="#summary">結論與建議</a>
+</div>
+
+<div class="container">
+
+  <!-- Part 1 -->
+  <div class="card" id="part1">
+    <div class="section-title">
+      <span class="section-badge">1</span>
+      <h2>一般 Task / ETL Flow 分類邏輯確認</h2>
+    </div>
+    <p class="lead">對應截圖：<code>aaa40_0.png</code>（執行歷史頁面，切換至 ETL Flow Tab）</p>
+
+    <span class="verdict ok">✅ 程式碼邏輯設計正確</span>
+
+    <p>頁面依 <code>TaskType</code>（<span class="badge-pill general">general</span> / <span class="badge-pill etl">etl</span>）分流，下拉選單與合併歷史都只會取「同分類」的任務：</p>
+
+    <pre class="code-block"><span class="cm">// HistoryModel.OnGet()</span>
+TaskType = taskType == "etl" ? "etl" : "general";
+
+var allTasks = _taskSchedulerService.GetAllTasks().ToList();
+TasksForDropdown = IsEtlMode
+    ? allTasks.Where(t => _taskSchedulerService.IsEtlTask(t))
+    : allTasks.Where(t => !_taskSchedulerService.IsEtlTask(t));
+
+<span class="cm">// 「全部任務」時，只彙整同分類前 5 個任務的歷史</span>
+foreach (var task in TasksForDropdown.Take(5))
+    allHistory.AddRange(_taskSchedulerService.GetTaskHistory(task.Path));</pre>
+
+    <p><code>IsEtlTask()</code> 判斷方式：比對 <code>TaskInfo.Program</code> / <code>Arguments</code> 是否包含
+      <code>appsettings.json</code> 內 <code>EtlConfig:RunFlowByIdProgram</code> 設定的執行檔名稱
+      （預設 <code>NineYi.OsmPlus.Batch.RunFlowById.exe</code>，比對時會去除副檔名）。</p>
+
+    <div class="callout danger">
+      <div class="icon">⚠️</div>
+      <div>
+        <strong>但截圖實際結果與邏輯不符：</strong>
+        畫面已切到 <strong>ETL Flow</strong> Tab（按鈕呈實心樣式、統計卡為藍色），
+        但清單中卻混入明顯是一般任務的
+        <code>\Chat\DispatchInActiveConversationNotification</code>、
+        <code>\Chat\DispatchUnreadNotification</code>。
+      </div>
+    </div>
+
+    <p>可能原因與驗證方式如下：</p>
+    <table>
+      <thead>
+        <tr><th style="width:38%">可能原因</th><th>如何驗證</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>QA 站台版本 <strong>尚未部署到最新程式碼</strong>（比本機舊）</td>
+          <td>確認 QA 站台的部署時間 / 檔案版本，是否已包含最新的 History 分類邏輯（commit <code>8f02c65</code>）</td>
+        </tr>
+        <tr>
+          <td>該 Chat 任務的 <code>Program</code>／<code>Arguments</code> 欄位 <strong>剛好包含</strong> ETL 執行檔名稱字串，被誤判為 ETL 任務</td>
+          <td>到「任務管理」頁面查看該任務詳細資料，確認 Program 欄位是否意外含有 <code>RunFlowById</code> 字樣</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout info">
+      <div class="icon">💡</div>
+      <div>研判 <strong>第一個原因（版本落差）</strong> 可能性較高，建議先確認 QA 部署版本，再重新驗證畫面行為。</div>
+    </div>
+  </div>
+
+  <!-- Part 2 -->
+  <div class="card" id="part2">
+    <div class="section-title">
+      <span class="section-badge">2</span>
+      <h2>ETL Log 目前的抓取方式</h2>
+    </div>
+    <p class="lead">對應截圖：<code>aaa47.png</code>（點擊「Log」按鈕展開的檔案清單）</p>
+
+    <p>觸發流程：點擊 <strong>Log</strong> 按鈕 → AJAX 呼叫 <code>HistoryModel.OnGetEtlLogs</code> → 呼叫
+      <code>TaskSchedulerService.GetEtlLogFiles()</code>：</p>
+
+    <ol class="flow-steps">
+      <li>
+        <strong>僅在該筆執行「結果 = Failed」時</strong>，才額外搜尋
+        <code>LogRootPath\ProgramException\{yyyyMMdd}\service.log</code>（並標示警告：此 log 為當日共用，
+        <em>不一定</em>是本次失敗的真正原因）。
+      </li>
+      <li>
+        <strong>正常情況</strong>：掃描設定值 <code>EtlConfig:LogRootPath</code>
+        （預設 <code>D:\Files\OsmConsole\</code>）底下 <strong>每一個 Shop 資料夾</strong> 當日的
+        <code>service.log</code>。
+      </li>
+      <li>
+        若能從任務 <code>Arguments</code> 解析出 <code>--flowname</code> 或 <code>--flowid</code>，會用來篩選資料夾；
+        若 Arguments 只是單純數字（無前綴關鍵字），則不篩選，搜尋當日「全部」Shop 的 log。
+      </li>
+      <li>
+        找不到符合檔案時，前端顯示：<span class="mono">此日期（yyyyMMdd）找不到 ETL Log 檔案</span>
+      </li>
+    </ol>
+
+    <div class="callout key">
+      <div class="icon">🔑</div>
+      <div>
+        <strong>關鍵原因：Log 檔名沒有帶執行時間戳記</strong><br>
+        每個 Shop、每天只有<strong>固定一個</strong> <code>service.log</code>，並非依每次執行分開存檔。
+        若同一天同一個 Flow 執行了多次，<strong>後面的執行會直接覆蓋前面的 log 內容</strong>——
+        只有「當天最後一次」執行留下的 log 檔還存在。
+      </div>
+    </div>
+
+    <p>對照截圖時間軸，這個現象完全吻合：</p>
+    <div class="timeline-example">
+      <div class="timeline-item found">
+        <div class="time">18:36:36</div>
+        <div>最新一次執行</div>
+        <div class="status">✅ 找得到 Log</div>
+      </div>
+      <div class="timeline-item notfound">
+        <div class="time">18:26:36</div>
+        <div>較早一次執行</div>
+        <div class="status">❌ 找不到（已被覆蓋）</div>
+      </div>
+      <div class="timeline-item notfound">
+        <div class="time">18:16:36</div>
+        <div>更早一次執行</div>
+        <div class="status">❌ 找不到（已被覆蓋）</div>
+      </div>
+    </div>
+
+    <div class="callout danger">
+      <div class="icon">⚠️</div>
+      <div>
+        並非系統抓取邏輯有誤，而是 <strong>ETL 程式本身寫 log 的方式</strong>造成同一天歷史紀錄無法回溯。
+        若要保留每次執行的完整 log，需要請 ETL 程式那端改成 <strong>依執行時間（加上 timestamp）</strong>
+        命名 log 檔案；Task Manager 端目前只能讀取「當下實際存在」的檔案，無法還原已被覆蓋的內容。
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card" id="summary">
+    <div class="section-title">
+      <span class="section-badge">✓</span>
+      <h2>結論與後續建議</h2>
+    </div>
+    <table>
+      <thead>
+        <tr><th style="width:30%">項目</th><th>結論</th><th>建議動作</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Task 分類邏輯</td>
+          <td>程式碼設計正確，但 QA 畫面實際結果不符預期</td>
+          <td>確認 QA 部署版本是否為最新；檢查可疑任務的 Program 欄位內容</td>
+        </tr>
+        <tr>
+          <td>ETL Log 抓取</td>
+          <td>邏輯正常運作，「找不到」是因為當日 log 被同日後續執行覆蓋</td>
+          <td>若需保留完整歷史 log，需請 ETL 程式端改為依時間戳記分檔</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="footer-note">Windows Task Manager · 任務執行歷史邏輯釐清報告 · 產生時間 2026-07-14</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+info:
+  name: pay
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/pay/ApplePay_Stripe/{{TG}}"
+  body:
+    type: json
+    data: |-
+      {  
+         "amount":"{{amount}}",
+         "country":"{{country-code}}",
+         "currency":"{{currency-code}}",
+         "request_id":"{{$guid}}",
+         "device": "Mobile",
+        "platform":"iOSApp",
+         "tg_code":"{{TG}}",
+         "extend_info":{  
+            "payment_flow": "{{flow}}",
+            "payment_method" : "{{pay-method}}",
+            "stripe_account":"{{acct}}",
+           "application_fee_amount":9.45
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

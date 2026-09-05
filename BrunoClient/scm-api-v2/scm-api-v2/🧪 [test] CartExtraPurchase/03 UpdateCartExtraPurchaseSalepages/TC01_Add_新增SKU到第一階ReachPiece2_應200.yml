@@ -1,0 +1,56 @@
+﻿info:
+  name: TC01_Add_新增SKU到第一階ReachPiece2_應200
+  type: http
+  seq: 1
+
+meta:
+  purpose: |-
+    【正向】ActionType=Add，將 SKU 加入 ReachPiece=2 的第一階。
+    依賴：S01 已執行，{{promotionId}} 已設定。
+    前置條件：SalePageId=1557573, SaleProductSKUId=2169001 需存在且未在此活動中。
+    預期：200。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdateCartExtraPurchaseSalepages?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "PromotionId": {{promotionId}},
+        "IsAddHistory": false,
+        "CartExtraPurchaseConditionList": [
+          {
+            "ActionType": "Add",
+            "ReachPiece": 2,
+            "ReachPrice": 0,
+            "SalepageId": 1557573,
+            "SaleProductSKUId": 2169001,
+            "CartExtraPurchasePrice": 99,
+            "Sort": 1
+          }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC-SP01 狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

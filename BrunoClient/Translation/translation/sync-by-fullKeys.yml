@@ -1,0 +1,21 @@
+info:
+  name: sync-by-fullKeys
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v3/projects/Test20220726/syncByFullKeys"
+  body:
+    type: json
+    data: |-
+      {
+          "FullKeys":["001","gnhtgfd"]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

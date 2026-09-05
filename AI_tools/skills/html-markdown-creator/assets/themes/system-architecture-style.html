@@ -1,0 +1,378 @@
+<!--
+主題：系統架構圖風（system-architecture-style）
+來源：取材自 `C:\Users\Allen Lin\Desktop\pics\style\system` 內 5 張架構示意圖。視覺特徵是：
+  - 大標題用黑體大字，強烈的架構圖/系統圖語氣；
+  - 版面背景偏冷白/非常淡灰，不炫目；
+  - 區塊通常是簡單矩形或橢圓，邊框是簡潔的深藍、深紅或淡綠；
+  - 連線多半是直線或彎線、單色紅/藍/綠箭頭，強化呼叫與流向；
+  - 重要節點用醒目紅底、藍底、綠底，次要節點用咖啡/灰底；
+  - 互動狀態以「顏色分類」代替重點風險語意，較接近架構說明/系統設計圖而非事件報告。
+
+適用：
+  - 服務/系統架構說明
+  - 交易流程、API/資源依賴、部署拓撲
+  - 內部設計文檔、系統整合圖、技術架構文稿
+
+不適合：
+  - 需要嚴格紅/黃/綠風險分級事件紀錄（改用 case-file-style / medical-chart）
+  - 需要柔和生活感或散文感（改用 cozy-meadow-style / organic-glass-style）
+
+doc-* 對應變數：
+  --doc-accent:#1f5dff; --doc-accent2:#d62b2b; --doc-ink:#111111; --doc-sub:#3f3f3f;
+  --doc-card:#f6f6f3; --doc-line:#d7d6d1; --doc-bg:#f4f4f1; --doc-shadow:0 8px 18px -10px rgba(10, 20, 30, .16);
+
+包含區塊：
+  1. sys-hero：大型架構圖標題與引言
+  2. sys-row：並排節點/區塊
+  3. sys-box：矩形服務節點
+  4. sys-oval：橢圓節點（如 pod / cluster / gateway）
+  5. sys-hint：小型說明標籤
+  6. sys-callout：輕量提示框，通常用於強調流向或補充說明
+  7. sys-flow：連線與方向箭頭
+  8. sys-legend：小圖例或 access control 區塊
+-->
+
+<style>
+.sys-arch {
+  --sys-ink: #111111;
+  --sys-sub: #404040;
+  --sys-card: #f7f7f5;
+  --sys-line: #d9d9d1;
+  --sys-bg: #f3f3f1;
+  --sys-red: #d92c2c;
+  --sys-red-deep: #b71d1d;
+  --sys-blue: #3d7ae8;
+  --sys-blue-deep: #1b5ae0;
+  --sys-green: #7abf7d;
+  --sys-green-deep: #3d8d60;
+  --sys-gold: #f0b04a;
+  --sys-gray: #d8d9d1;
+  --sys-shadow: 0 8px 18px -12px rgba(17,17,17,.18);
+  background: var(--sys-bg);
+  border-radius: 18px;
+  padding: 18px 18px 24px;
+  color: var(--sys-ink);
+  font-family: "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+
+.sys-arch * { box-sizing: border-box; }
+.sys-arch .sys-hero {
+  margin: 0 0 18px;
+  padding: 6px 4px 10px;
+}
+.sys-arch .sys-title {
+  font-size: clamp(2rem, 3vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--sys-ink);
+}
+.sys-arch .sys-row {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  flex-wrap: wrap;
+  margin: 20px 0 18px;
+}
+.sys-arch .sys-box,
+.sys-arch .sys-oval,
+.sys-arch .sys-legend,
+.sys-arch .sys-pill,
+.sys-arch .sys-node {
+  position: relative;
+  box-shadow: var(--sys-shadow);
+}
+.sys-arch .sys-box {
+  min-width: 160px;
+  flex: 1 1 220px;
+  border: 2px solid var(--sys-line);
+  border-radius: 10px;
+  background: var(--sys-card);
+  padding: 16px 18px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+}
+.sys-arch .sys-box.red {
+  background: linear-gradient(180deg, #d93f3f, #cd2f2f);
+  border-color: var(--sys-red-deep);
+  color: #fff;
+}
+.sys-arch .sys-box.blue {
+  background: linear-gradient(180deg, #4a88f6, #2d6fe5);
+  border-color: var(--sys-blue-deep);
+  color: #fff;
+}
+.sys-arch .sys-box.green {
+  background: linear-gradient(180deg, #bfe7c3, #9ed0a5);
+  border-color: var(--sys-green-deep);
+}
+.sys-arch .sys-box.gray {
+  background: #dfe0db;
+  border-color: #c1c2bc;
+}
+.sys-arch .sys-box .sys-label,
+.sys-arch .sys-node .sys-label,
+.sys-arch .sys-oval .sys-label,
+.sys-arch .sys-pill .sys-label {
+  font-weight: 700;
+  line-height: 1.2;
+  display: block;
+}
+.sys-arch .sys-box .sys-sub,
+.sys-arch .sys-node .sys-sub,
+.sys-arch .sys-oval .sys-sub,
+.sys-arch .sys-pill .sys-sub {
+  display: block;
+  font-size: 0.72em;
+  opacity: 0.9;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+.sys-arch .sys-oval {
+  flex: 1 1 240px;
+  min-height: 140px;
+  border-radius: 50% / 46%;
+  background: rgba(108, 170, 240, 0.72);
+  border: 2px solid var(--sys-blue-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px 26px;
+}
+.sys-arch .sys-oval.red {
+  background: rgba(214, 97, 97, 0.2);
+  border-color: var(--sys-red-deep);
+}
+.sys-arch .sys-oval.green {
+  background: rgba(138, 224, 142, 0.22);
+  border-color: var(--sys-green-deep);
+}
+.sys-arch .sys-node {
+  min-width: 120px;
+  background: rgba(255,255,255,0.42);
+  border: 2px solid var(--sys-line);
+  border-radius: 999px;
+  padding: 10px 14px;
+  text-align: center;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.sys-arch .sys-node.red {
+  border-color: var(--sys-red-deep);
+  background: rgba(217, 44, 44, 0.10);
+}
+.sys-arch .sys-node.blue {
+  border-color: var(--sys-blue-deep);
+  background: rgba(61, 122, 232, 0.12);
+}
+.sys-arch .sys-node.green {
+  border-color: var(--sys-green-deep);
+  background: rgba(122, 191, 125, 0.12);
+}
+.sys-arch .sys-pill {
+  border-radius: 8px;
+  border: 2px solid var(--sys-line);
+  background: rgba(255,255,255,0.25);
+  padding: 8px 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.sys-arch .sys-pill.red {
+  border-color: var(--sys-red-deep);
+  background: rgba(217, 44, 44, 0.10);
+}
+.sys-arch .sys-pill.green {
+  border-color: var(--sys-green-deep);
+  background: rgba(122, 191, 125, 0.12);
+}
+.sys-arch .sys-pill.blue {
+  border-color: var(--sys-blue-deep);
+  background: rgba(61, 122, 232, 0.12);
+}
+.sys-arch .sys-connector-line {
+  position: relative;
+  height: 2px;
+  background: linear-gradient(90deg, var(--sys-red), rgba(217,44,44,0.3));
+  margin: 8px 0 18px;
+  border-radius: 999px;
+}
+.sys-arch .sys-connector-line.blue {
+  background: linear-gradient(90deg, var(--sys-blue), rgba(61,122,232,0.3));
+}
+.sys-arch .sys-connector-line.green {
+  background: linear-gradient(90deg, var(--sys-green), rgba(61, 157, 86, 0.3));
+}
+.sys-arch .sys-connector-line::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid currentColor;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  color: var(--sys-red);
+}
+.sys-arch .sys-connector-line.blue::after { color: var(--sys-blue); }
+.sys-arch .sys-connector-line.green::after { color: var(--sys-green); }
+.sys-arch .sys-callout {
+  margin: 16px 0 18px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--sys-line);
+  background: rgba(255,255,255,0.3);
+  color: var(--sys-sub);
+}
+.sys-arch .sys-callout.red {
+  border-left: 6px solid var(--sys-red);
+  background: rgba(217, 44, 44, 0.08);
+}
+.sys-arch .sys-callout.blue {
+  border-left: 6px solid var(--sys-blue);
+  background: rgba(61, 122, 232, 0.08);
+}
+.sys-arch .sys-callout.green {
+  border-left: 6px solid var(--sys-green-deep);
+  background: rgba(122, 191, 125, 0.10);
+}
+.sys-arch .sys-legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: rgba(255,255,255,0.38);
+  border: 1px solid var(--sys-line);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.sys-arch .sys-legend .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 700;
+  background: #fff;
+  border: 1px solid var(--sys-line);
+}
+.sys-arch .sys-legend .chip.red { border-color: var(--sys-red); }
+.sys-arch .sys-legend .chip.blue { border-color: var(--sys-blue); }
+.sys-arch .sys-legend .chip.green { border-color: var(--sys-green-deep); }
+.sys-arch .sys-legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.sys-arch .sys-legend .dot.red { background: var(--sys-red); }
+.sys-arch .sys-legend .dot.blue { background: var(--sys-blue); }
+.sys-arch .sys-legend .dot.green { background: var(--sys-green-deep); }
+.sys-arch .sys-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0;
+}
+.sys-arch .sys-panel {
+  background: rgba(255,255,255,0.42);
+  border: 1px solid var(--sys-line);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--sys-shadow);
+}
+.sys-arch .sys-panel h4 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.sys-arch .sys-panel p {
+  margin: 0;
+  color: var(--sys-sub);
+  line-height: 1.7;
+}
+@media (max-width: 760px) {
+  .sys-arch .sys-grid-3 { grid-template-columns: 1fr; }
+  .sys-arch .sys-row { flex-direction: column; }
+}
+</style>
+
+<div class="sys-arch">
+  <div class="sys-hero">
+    <h3 class="sys-title">System Architecture Overview</h3>
+  </div>
+
+  <div class="sys-row">
+    <div class="sys-box"><span class="sys-label">Client</span><span class="sys-sub">Decision trigger</span></div>
+    <div class="sys-box red"><span class="sys-label">Brand Web</span><span class="sys-sub">UI</span></div>
+    <div class="sys-box red"><span class="sys-label">Brand APP</span><span class="sys-sub">UI</span></div>
+    <div class="sys-box gray"><span class="sys-label">Direct Add to Cart</span><span class="sys-sub">API</span></div>
+  </div>
+
+  <div class="sys-connector-line red"></div>
+
+  <div class="sys-row">
+    <div class="sys-box blue"><span class="sys-label">Shopping Service</span><span class="sys-sub">Workflow</span></div>
+    <div class="sys-box gray"><span class="sys-label">Cart / Inventory / Payment</span><span class="sys-sub">Separate flows</span></div>
+  </div>
+
+  <div class="sys-connector-line blue"></div>
+
+  <div class="sys-row">
+    <div class="sys-box red"><span class="sys-label">Cart Service</span><span class="sys-sub">Downsell / checkout</span></div>
+    <div class="sys-box red"><span class="sys-label">Promotion Service</span><span class="sys-sub">Calculation</span></div>
+    <div class="sys-box red"><span class="sys-label">Coupon Service</span><span class="sys-sub">Issuance</span></div>
+    <div class="sys-box red"><span class="sys-label">Loyalty Service</span><span class="sys-sub">Points</span></div>
+  </div>
+
+  <div class="sys-callout blue">
+    <strong>System note:</strong> Each node represents a domain boundary, and the connector lines are used to show call direction and dependency rather than a full data-flow diagram.
+  </div>
+
+  <div class="sys-grid-3">
+    <div class="sys-panel">
+      <h4>Public Network</h4>
+      <p>External access flows into the public edge, then moves into protected subnets and internal services.</p>
+    </div>
+    <div class="sys-panel">
+      <h4>Protected Subnets</h4>
+      <p>Runtime services make requests to the application layer and isolate sensitive functionality behind controlled boundaries.</p>
+    </div>
+    <div class="sys-panel">
+      <h4>Private Subnets</h4>
+      <p>Database, cache, and persistence resources remain behind the internal boundary to reduce attack surface.</p>
+    </div>
+  </div>
+
+  <div class="sys-row">
+    <div class="sys-oval red"><span class="sys-label">End User</span></div>
+    <div class="sys-oval blue"><span class="sys-label">CMS</span></div>
+    <div class="sys-oval green"><span class="sys-label">Catalog</span></div>
+    <div class="sys-node red"><span class="sys-label">MWeb</span></div>
+  </div>
+
+  <div class="sys-connector-line green"></div>
+
+  <div class="sys-row">
+    <div class="sys-pill red"><span class="sys-label">RP LB</span></div>
+    <div class="sys-pill blue"><span class="sys-label">Catalog LB</span></div>
+    <div class="sys-pill green"><span class="sys-label">Cache</span></div>
+    <div class="sys-pill"><span class="sys-label">Storage</span></div>
+  </div>
+
+  <div class="sys-legend">
+    <span class="chip red"><span class="dot red"></span>External</span>
+    <span class="chip blue"><span class="dot blue"></span>Internal</span>
+    <span class="chip green"><span class="dot green"></span>Private</span>
+  </div>
+</div>
+</div>

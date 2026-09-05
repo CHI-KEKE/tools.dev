@@ -1,0 +1,38 @@
+{
+    "apiVersion": "nine1-devops/v1",
+    "kind": "deployment",
+    "metadata": {
+        "name": "Sample-Project",
+        "serviceName": "Sample-Project",
+        "type": "HelmChart"
+    },
+    "spec": {
+        "deployments": [
+            {
+                "metadata": {
+                    "name": "tw-qa",
+                    "market": "TW",
+                    "env": "QA"
+                },
+                "settings": {
+                    "NAMESPACE": "qa-sample-project",
+                    "KUBE_CONFIG_ENV_NAME": "KUBE_CONFIG_TW_QA",
+                    "HELM_VALUES_FILE_NAME": "values-tw-qa",
+                    "IS_DRY_RUN": "false"
+                },
+                "roles": [
+                    {
+                        "name": "Console.NMQv3Worker",
+                        "APP_ROLE": "worker",
+                        "RELEASE_NAME": "sample-project-console-nmqv3worker",
+                        "versions": {
+                            "app": "latest",
+                            "config": "latest",
+                            "secret": "v1.0.0"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

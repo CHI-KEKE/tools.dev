@@ -1,0 +1,40 @@
+info:
+  name: pay-first-time-save-card
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/pay/CreditCardOnce_Stripe/{{TG}}"
+  body:
+    type: json
+    data: |-
+      {  
+         "amount":10.00,
+         "country":"{{country-code}}",
+         "currency":"{{currency-code}}",
+         "request_id":"{{$guid}}",
+         "device": "PC",
+         "platform": "Web",
+         "tg_code":"{{TG}}",
+         "extend_info":{  
+            "payment_flow": "{{flow}}",
+            "card_no":"{{cardNo}}",
+            "card_year":"34",
+            "card_month":"12",
+            "card_cvv":"222",
+            "stripe_account":"{{acct}}",
+            "application_fee_amount": {{application_fee_amount}},
+            "return_url": "https://www.google.com",
+            "is_reuse_payment_method": true,
+            "shop_id": {{shopId}},
+            "member_id":"31902"
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

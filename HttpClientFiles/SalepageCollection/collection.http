@@ -1,0 +1,41 @@
+### QA
+#@host=https://salepage-service-api-internal.qa.91dev.tw/
+@host=https://salepage-service-api-internal.qa1.hk.91dev.tw/
+#@host=https://salepage-service-api-internal.qa1.my.91dev.tw/
+
+### PP
+##@host=https://salepage-service-api-internal.pp.91dev.tw/
+
+### Prod
+#@host=https://salepage-service-api-internal.91app.io/
+#@host=https://salepage-service-api-internal.hk.91app.io/
+#@host=https://salepage-service-api-internal.my.91app.io/
+
+@traceId=TEST-{{$guid}}
+@shopId=2
+@collectionId=f_371602421048813312
+@promotionEngineId = 2595
+
+### 取得 Collection 資訊
+GET {{host}}api/fixed-salepage-collections/{{collectionId}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+### 取得 Collection 商品數量
+GET {{host}}api/fixed-salepage-collections/{{collectionId}}:count?countType=Accurate
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+### Collection 異動紀錄
+GET {{host}}api/salepage-collections/{{collectionId}}/histories?fromUpdateIndex=2&toUpdateIdx=20
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+@updateIndex=4
+
+### Collection 異動明細
+GET {{host}}api/salepage-collections/{{collectionId}}/history-details/{{updateIndex}}
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}

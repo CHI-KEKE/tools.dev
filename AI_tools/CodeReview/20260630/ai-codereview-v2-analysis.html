@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Code Review V2 — 執行流程分析與 Linter Gap 分析</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --text: #e2e8f0;
+    --text-muted: #8892a4;
+    --orange: #F5A623;
+    --purple: #7B68EE;
+    --blue: #4A90D9;
+    --green: #5BA85B;
+    --red: #D9534F;
+    --gray: #555;
+    --tag-done: #1a3a2a;
+    --tag-done-border: #5BA85B;
+    --tag-gap: #3a1a1a;
+    --tag-gap-border: #D9534F;
+    --tag-warn: #3a2a1a;
+    --tag-warn-border: #F5A623;
+    --tag-na: #1e2235;
+    --tag-na-border: #4A90D9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 0 0 80px;
+  }
+  /* Header */
+  .hero {
+    background: linear-gradient(135deg, #1a1d27 0%, #22263a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 40px 36px;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--orange);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .hero p { color: var(--text-muted); font-size: 14px; }
+  .hero p strong { color: var(--text); }
+
+  /* Layout */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+  /* Section */
+  .section { margin-top: 52px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    background: var(--purple);
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .section-sub { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+
+  /* Diagram card */
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    overflow-x: auto;
+  }
+  .diagram-card .mermaid { min-width: 600px; }
+
+  /* Gap cards */
+  .gap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .gap-card {
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 4px solid;
+  }
+  .gap-card.done   { background: var(--tag-done);  border-color: var(--green); }
+  .gap-card.todo   { background: var(--tag-gap);   border-color: var(--red);   }
+  .gap-card.warn   { background: var(--tag-warn);  border-color: var(--orange);}
+  .gap-card.na     { background: var(--tag-na);    border-color: var(--blue);  }
+  .gap-card .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .gap-card.done .label  { background: var(--green); color:#fff; }
+  .gap-card.todo .label  { background: var(--red);   color:#fff; }
+  .gap-card.warn .label  { background: var(--orange);color:#fff; }
+  .gap-card.na .label    { background: var(--blue);  color:#fff; }
+  .gap-card h3 { font-size: 15px; color: #fff; margin-bottom: 6px; }
+  .gap-card p  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* Code diff block */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    line-height: 1.8;
+  }
+  .code-block .c-comment { color: #8892a4; }
+  .code-block .c-add     { color: #5BA85B; }
+  .code-block .c-keyword { color: #7B68EE; }
+  .code-block .c-string  { color: #F5A623; }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead tr { background: var(--surface2); }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-red    { background: #3a1a1a; color: #D9534F; border: 1px solid #D9534F; }
+  .badge-orange { background: #3a2a1a; color: #F5A623; border: 1px solid #F5A623; }
+  .badge-green  { background: #1a3a2a; color: #5BA85B; border: 1px solid #5BA85B; }
+  .badge-gray   { background: #1e2235; color: #8892a4; border: 1px solid #555; }
+
+  /* Method table */
+  .method-table { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* Footer */
+  .footer {
+    margin-top: 64px;
+    padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-tag">2026-06-30 分析筆記</div>
+    <h1>AI Code Review V2 — 執行流程與 Linter Gap 分析</h1>
+    <p>
+      對比對象：<strong>Linter（CLI Pipeline）</strong> vs <strong>AI Code Review V2（Webhook Server）</strong><br>
+      專案路徑：<strong>C:\91APP\AI_Devs\codereview\gitlab-codereview\nineyi.ai.code.review.v2</strong>
+    </p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Section 1: V2 Flow -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-title">V2 Bitbucket Webhook — 完整執行流程</div>
+        <div class="section-sub">從 Webhook 觸發到 Dify AI 分析再到 PR 留言的完整路徑</div>
+      </div>
+    </div>
+    <div class="diagram-card">
+      <div class="mermaid">
+flowchart TD
+    WH["🔔 Bitbucket Webhook\npullrequest:created / updated"]
+    CTRL["🌐 WebhookController\nPOST /api/webhook/bitbucket"]
+    FILTER["🔍 事件過濾\nState == OPEN?"]
+    SKIP1["⏭️ 跳過\n200 OK"]
+    CMD["📋 StartCodeReviewCommand\nRepo / PR# / DiffUrl"]
+    FIRE["⚡ Fire-and-Forget\nTask.Run → 立即回 200"]
+    SVC["⚙️ CodeReviewService\nStartAsync"]
+
+    subgraph PRE["前置過濾"]
+        TITLE["🏷️ PR Title 檢查\n含 SKIP / WIP / SyncCode?"]
+        SKIP2["⏭️ 跳過整個 PR"]
+    end
+
+    subgraph DIFF["Diff 取得"]
+        FETCH["📡 BitbucketClient\nFetchRawDiffAsync\n（DiffUrl → 302 → CDN）"]
+        PARSE["✂️ ParseRawDiff\n切分多檔案"]
+    end
+
+    subgraph FILEGUARD["DiffHelper 三層過濾（每個檔案）"]
+        G1["❓ HasAddedLines?\n只有刪除 → skip"]
+        G2["❓ IsAutoGeneratedContent?\nauto-generated → skip"]
+        G3["✂️ RemoveDeletedLines\n移除 - 行後送 Dify"]
+    end
+
+    subgraph RULES["Rules 套用"]
+        MATCH["🔎 匹配 ApplyToRepos + FilePatterns"]
+        PARA["⚡ Task.WhenAll\n同一檔案多 Rule 平行"]
+        DIFY["🤖 Dify API\nchat-messages"]
+    end
+
+    subgraph POST["結果聚合發文"]
+        DEDUP["🔁 GroupBy 去重\nComment.Trim OrdinalIgnoreCase"]
+        AGG["📝 BuildAggregatedComment\n單一留言 file/rule details"]
+        COMMENT["💬 PostPullRequestCommentAsync\nBasic Auth / Bearer"]
+    end
+
+    WH --> CTRL --> FILTER
+    FILTER -->|"不符合"| SKIP1
+    FILTER -->|"通過"| CMD --> FIRE --> SVC
+    SVC --> TITLE
+    TITLE -->|"命中關鍵字"| SKIP2
+    TITLE -->|"通過"| FETCH --> PARSE
+    PARSE --> G1
+    G1 -->|"無新增行"| SKIP2
+    G1 -->|"有新增行"| G2
+    G2 -->|"AutoGen"| SKIP2
+    G2 -->|"一般檔案"| G3 --> MATCH --> PARA --> DIFY
+    DIFY --> DEDUP --> AGG --> COMMENT
+
+    style WH fill:#F5A623,color:#fff
+    style CTRL fill:#7B68EE,color:#fff
+    style FIRE fill:#F5A623,color:#fff
+    style SVC fill:#4A90D9,color:#fff
+    style G1 fill:#D9534F,color:#fff
+    style G2 fill:#D9534F,color:#fff
+    style G3 fill:#4A90D9,color:#fff
+    style DIFY fill:#5BA85B,color:#fff
+    style COMMENT fill:#5BA85B,color:#fff
+    style SKIP1 fill:#555555,color:#fff
+    style SKIP2 fill:#555555,color:#fff
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Comparison -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <div class="section-title">Linter vs V2 — Bitbucket 流程對比</div>
+        <div class="section-sub">虛線箭頭代表對應關係，顏色代表改善狀態</div>
+      </div>
+    </div>
+    <div class="diagram-card">
+      <div class="mermaid">
+flowchart LR
+    subgraph LINTER["🔧 Linter（CLI）"]
+        L1["CI Pipeline 觸發\n--platform --name --pr"]
+        L2["Attribute Scan + YAML Scan\nrepoMappingRuleSetting.yaml"]
+        L3["GetDiffItems 前處理\n副檔名 / 路徑 / AutoGen\nContainsAddedLines\nRemoveDeletedLines"]
+        L4["Dify API\n逐 Rule 序列執行"]
+        L5["GroupBy 去重\n（Rule 內）"]
+        L6["Priority 分組發文\nHigh/Medium/Low/Unknown\n各一則留言 Bitbucket 倒序"]
+    end
+
+    subgraph V2["🚀 V2（Webhook Server）"]
+        V1["Bitbucket Webhook\nPOST /api/webhook/bitbucket"]
+        V2A["CodeReviewConfig.Rules\nJSON + ApplyToRepos"]
+        V3["DiffHelper 三層過濾\nHasAddedLines ✅\nIsAutoGeneratedContent ✅\nRemoveDeletedLines ✅"]
+        V4["Dify API\n同檔案 Rules Task.WhenAll 平行"]
+        V5["GroupBy 去重\n（跨所有 Rule）"]
+        V6["單一聚合留言\ndetails 折疊 file/rule"]
+    end
+
+    L1 -.->|"觸發方式不同"| V1
+    L2 -.->|"設定方式不同 效果相同"| V2A
+    L3 -.->|"V2 已補齊 ✅"| V3
+    L4 -.->|"V2 平行更快 ✅"| V4
+    L5 -.->|"V2 跨 Rule 更強 ✅"| V5
+    L6 -.->|"❌ V2 尚缺"| V6
+
+    style L1 fill:#F5A623,color:#fff
+    style V1 fill:#F5A623,color:#fff
+    style L3 fill:#4A90D9,color:#fff
+    style V3 fill:#5BA85B,color:#fff
+    style L4 fill:#7B68EE,color:#fff
+    style V4 fill:#5BA85B,color:#fff
+    style L6 fill:#D9534F,color:#fff
+    style V6 fill:#555555,color:#fff
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Gap -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div>
+        <div class="section-title">Gap 分析 — V2 目前狀態</div>
+        <div class="section-sub">今日補齊項目 + 仍待處理項目</div>
+      </div>
+    </div>
+    <div class="gap-grid">
+      <div class="gap-card done">
+        <div class="label">✅ 今日補齊</div>
+        <h3>RemoveDeletedLines</h3>
+        <p>送 Dify 前移除 <code>-</code> 行，避免 AI 針對已刪除的程式碼提出意見，同時節省 token。</p>
+      </div>
+      <div class="gap-card done">
+        <div class="label">✅ 今日補齊</div>
+        <h3>HasAddedLines guard</h3>
+        <p>確認 diff 含新增行才呼叫 Dify；若 PR 只有刪除沒有新增，直接略過不送 AI。</p>
+      </div>
+      <div class="gap-card done">
+        <div class="label">✅ 今日補齊</div>
+        <h3>IsAutoGeneratedContent guard</h3>
+        <p>偵測 diff 前 20 行是否含 <code>&lt;auto-generated&gt;</code> 標記，自動生成的程式碼不做 AI Review。</p>
+      </div>
+      <div class="gap-card todo">
+        <div class="label">🔴 高優先 待處理</div>
+        <h3>Inline Comments 接入</h3>
+        <p><code>PostReviewCommentAsync</code> 已實作（含 filePath / startLine / endLine），但 <code>CodeReviewService</code> 尚未 wire 進去。目前只有 PR 層級留言，無法指向特定程式碼行。</p>
+      </div>
+      <div class="gap-card warn">
+        <div class="label">🟡 中優先 待確認</div>
+        <h3>Priority 分組留言</h3>
+        <p>Linter 依 High / Medium / Low 各發一則留言，視覺上清楚。V2 全部聚合進同一則 <code>&lt;details&gt;</code>，長 PR 時難以快速掌握嚴重度分佈。</p>
+      </div>
+      <div class="gap-card na">
+        <div class="label">⚪ N/A</div>
+        <h3>Bitbucket Signature 驗證</h3>
+        <p>Bitbucket Cloud 本身不提供內建 Webhook Signature。架構上已預留 <code>BitbucketSecretOptions</code> 欄位，無需額外補齊。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Code Changes -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <div class="section-title">今日變更摘要</div>
+        <div class="section-sub">新增 DiffHelper.cs + 修改 CodeReviewService.cs</div>
+      </div>
+    </div>
+
+    <p style="margin-bottom:16px; color: var(--text-muted); font-size:14px;">
+      三個方法集中在 <code>Application/Utilities/DiffHelper.cs</code>，Bitbucket / GitLab / GitHub 三平台共用，
+      解決 Linter 各自散落重複實作（且 GitHub 漏掉 RemoveDeletedLines）的問題。
+    </p>
+
+    <div class="method-table">
+      <table>
+        <thead>
+          <tr>
+            <th>方法</th>
+            <th>說明</th>
+            <th>對應 Linter</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>RemoveDeletedLines(diff)</code></td>
+            <td>移除 <code>-</code> 開頭的內容行，保留 <code>---</code> header</td>
+            <td>Bitbucket ✅ / GitLab ✅ / GitHub ❌（漏掉）</td>
+          </tr>
+          <tr>
+            <td><code>HasAddedLines(diff)</code></td>
+            <td>確認含 <code>+</code> 行（非 <code>+++</code>）才送 Dify</td>
+            <td>Bitbucket ✅ / GitLab ❌ / GitHub 僅判空</td>
+          </tr>
+          <tr>
+            <td><code>IsAutoGeneratedContent(diff)</code></td>
+            <td>前 20 行偵測 <code>&lt;auto-generated&gt;</code></td>
+            <td>三平台皆有但各自寫了一次</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">CodeReviewService.cs — per-file 三層 guard</div>
+      <div class="code-block">
+<span class="c-comment">// ❶ 無新增行 → skip（只有刪除不需要 AI）</span>
+<span class="c-keyword">if</span> (!DiffHelper.HasAddedLines(diffFile.Diff))
+{
+    _logger.LogInformation(<span class="c-string">"[{TraceId}] File {File}: no added lines, skipped"</span>, ...);
+    <span class="c-keyword">continue</span>;
+}
+
+<span class="c-comment">// ❷ Auto-generated → skip</span>
+<span class="c-keyword">if</span> (DiffHelper.IsAutoGeneratedContent(diffFile.Diff))
+{
+    _logger.LogInformation(<span class="c-string">"[{TraceId}] File {File}: auto-generated content detected, skipped"</span>, ...);
+    <span class="c-keyword">continue</span>;
+}
+
+<span class="c-comment">// ❸ 移除刪除行後送 Dify</span>
+<span class="c-add">FileDiff = DiffHelper.RemoveDeletedLines(diffFile.Diff)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Remaining -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div>
+        <div class="section-title">剩餘待辦</div>
+        <div class="section-sub">依優先序排列</div>
+      </div>
+    </div>
+    <div class="method-table">
+      <table>
+        <thead>
+          <tr><th>優先</th><th>項目</th><th>說明</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-red">🔴 高</span></td>
+            <td><strong>Inline Comments 接入</strong></td>
+            <td><code>PostReviewCommentAsync</code> 已實作但未 wire 進 <code>CodeReviewService</code>。目前僅 PR 層級留言，無法指向特定程式碼行。</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-orange">🟡 中</span></td>
+            <td><strong>Priority 分組留言</strong></td>
+            <td>長 PR 所有意見聚合在單一 <code>&lt;details&gt;</code>，可考慮依 High / Medium / Low 分則發送，改善閱讀體驗。</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-gray">⚪ N/A</span></td>
+            <td>Bitbucket Signature 驗證</td>
+            <td>Bitbucket Cloud 本身不支援，架構預留欄位即可，無需補齊。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<div class="footer">
+  AI Code Review V2 分析筆記 · 2026-06-30 · tools.dev
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      background: '#1a1d27',
+      primaryColor: '#4A90D9',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#2e3250',
+      lineColor: '#8892a4',
+      secondaryColor: '#22263a',
+      tertiaryColor: '#22263a',
+      edgeLabelBackground: '#1a1d27',
+      clusterBkg: '#22263a',
+      clusterBorder: '#2e3250',
+      titleColor: '#e2e8f0',
+    },
+    flowchart: { curve: 'basis', htmlLabels: true }
+  });
+</script>
+</body>
+</html>

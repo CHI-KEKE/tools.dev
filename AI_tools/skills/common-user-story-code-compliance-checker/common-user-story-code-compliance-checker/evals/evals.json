@@ -1,0 +1,29 @@
+{
+  "skill_name": "common-user-story-code-compliance-checker",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "請幫我檢核目前 PR 是否符合 User Story：作為客服，我需要在訂單明細頁看到退款狀態與退款時間。AC1: 顯示退款狀態。AC2: 若有退款則顯示退款時間。AC3: API 規格文件同步更新。範圍是 src/NineYi.OMS.Web.Api 與 src/NineYi.OMS.BusinessLogic。",
+      "expected_output": "輸出需求對照表，逐條判定符合性，並指出文件是否同步更新。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "幫我做驗收前盤點：User Story 是『營運可用關鍵字搜尋訂單，並依多個狀態篩選』。AC1 關鍵字支援訂單編號/收件人。AC2 狀態可多選。AC3 結果可分頁。請檢核 src 底下相關程式碼、測試與文件是否完整。",
+      "expected_output": "提出完整檢核報告，含符合/部分符合/不符合統計與缺口風險。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "請用需求對照方式審查這次改動：User Story 要求『新增供應商查詢 API，僅內部角色可呼叫，且需記錄審計日誌』。AC1 API 可依 supplierId 查詢。AC2 未授權回傳 403。AC3 成功查詢會寫入審計紀錄。檢核範圍是 Controllers、Service、Repositories、UnitTest。",
+      "expected_output": "輸出可追溯證據、缺口與驗收建議，特別標示授權與審計紀錄是否落地。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "請使用 common-user-story-code-compliance-checker。VSTS ID=778899。這個 User Story 有前端 wording 驗收：訂單列表頁搜尋框 placeholder 必須是『請輸入訂單編號或收件人』，空狀態文案必須是『目前沒有符合條件的訂單』。請先從 Figma（https://www.figma.com/file/AbCdEf123456/OMS?node-id=1024-2048）擷取文案，再比對前端程式碼與 i18n 資源是否一致。",
+      "expected_output": "報告中需包含 Figma 文案證據欄位，並能判定 wording 是否符合需求。",
+      "files": []
+    }
+  ]
+}

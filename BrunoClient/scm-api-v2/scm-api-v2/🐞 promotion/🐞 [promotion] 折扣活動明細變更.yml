@@ -1,0 +1,75 @@
+info:
+  name: 🐞 [promotion] 折扣活動明細變更
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/scm/V2/Promotion/CreatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 2,
+      "Id":11761,
+        "TypeDef": "DiscountReachPriceWithFreeGift",
+        "Name": "~~AllenTestGPayAPayAPI~~變更!!!!!",
+        "StartDateTime": "2026-03-25T19:20:00.000Z",
+        "EndDateTime": "2026-03-26T19:20:00.000Z",
+        "Description": "CC",
+        "CustomCampaignCode": "91APP",
+        "PayTypes": ["ApplePay"],
+        "TargetMemberTypeDef": "All",
+        "IsRegular": false,
+        "PromotionTargetRegionTypeDef": "All",
+        "TargetTypeDef" : "Shop",
+        "ExcludeTargetTypeDef": "None",
+        "ShippingTypes": [],
+        "TargetPlatformTypeList": [
+              {
+                  "Platform": "Web",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "AppIOS",
+                  "IsEnabled": true
+              },
+              {
+                  "Platform": "AppAndroid",
+                  "IsEnabled": true
+              }
+          ]
+      ,
+        "Title": "超不值",
+        "Color": "#FF5733",
+        "GiftRuleList": [
+              {
+                  "ReachCondition": 1,
+                  "Type": "Gift",
+                  "Qty": 1,
+                  "IsRepeatable" : false,
+                  "GiftTypeIds": [61048],
+                  "CollectionId": "",
+                  "PromotionTag": ""
+              }
+          ],
+      "CalculateTypeDef":"Compatible"
+
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

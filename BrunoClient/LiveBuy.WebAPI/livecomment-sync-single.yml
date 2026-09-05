@@ -1,0 +1,19 @@
+info:
+  name: livecomment-sync-single
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/api/live/comments/sync/LS2?shopId=2"
+  params:
+    - name: shopId
+      value: "2"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

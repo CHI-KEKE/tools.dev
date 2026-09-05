@@ -1,0 +1,19 @@
+info:
+  name: transfer-reversal
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/transfers/{{transactionId}}/reversals"
+  body:
+    type: form-urlencoded
+    data:
+      - name: amount
+        value: "{{amount}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

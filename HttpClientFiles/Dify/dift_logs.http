@@ -1,0 +1,18 @@
+## Variable
+@host = https://dify.91app.biz
+
+@cookie = locale=zh-Hant; __Host-access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNTRiYmRiY2EtYzY2OC00ZjAyLTlhZjctZjIyMTFkN2MwMDU5IiwiZXhwIjoxNzY5MTUxOTgzLCJpc3MiOiJTRUxGX0hPU1RFRCIsInN1YiI6IkNvbnNvbGUgQVBJIFBhc3Nwb3J0In0.FhmjlABgTmNke3KsY5xzPdptP606-3b-KMBDT8PeoxY; __Host-refresh_token=15cae4ec87c8e00f91404fc8cf15bb406936f1fea356872b6b4466bafcd5d1f61d498b59feffd645905aa6390c679039bff871a5413a7bc1b5d3bb41b31eb092; __Host-csrf_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjkxNTE5ODMsInN1YiI6IjU0YmJkYmNhLWM2NjgtNGYwMi05YWY3LWYyMjExZDdjMDA1OSJ9.18fXNYVvrWfZCcS0-ocdEoa1kMCrjbBExQa5H_SaRKU
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjkxNTE5ODMsInN1YiI6IjU0YmJkYmNhLWM2NjgtNGYwMi05YWY3LWYyMjExZDdjMDA1OSJ9.18fXNYVvrWfZCcS0-ocdEoa1kMCrjbBExQa5H_SaRKU
+
+### Get Conversaionsion List (根據日期查詢 Log，確認是哪幾次執行產生大量 token)
+GET {{host}}/console/api/apps/351ff1ba-5fff-4770-994e-3b5ad0c0419e/chat-conversations?page=1&limit=10&start=2025-12-26+00%3A00&end=2026-01-23+23%3A59&sort_by=-created_at&annotation_status=all
+content-type: application/json
+Cookie: {{cookie}}
+x-csrf-token:{{token}}
+
+
+### Get Conversion Detail
+GET {{host}}/console/api/apps/351ff1ba-5fff-4770-994e-3b5ad0c0419e/chat-messages?conversation_id=3ef6e82a-9868-4347-b5f2-852acf7dbf4f&limit=10
+content-type: application/json
+Cookie: {{cookie}}
+x-csrf-token:{{token}}

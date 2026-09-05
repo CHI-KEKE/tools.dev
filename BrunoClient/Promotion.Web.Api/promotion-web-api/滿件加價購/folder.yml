@@ -1,0 +1,7 @@
+info:
+  name: 滿件加價購
+  type: folder
+  seq: 12
+
+request:
+  auth: inherit

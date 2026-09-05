@@ -1,0 +1,33 @@
+info:
+  name: account-me
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{base-url}}/me/accounts?fields=id,name,access_token,picture.width(80).height(80){url,height,width,is_silhouette}&access_token={{authvwV}}"
+  params:
+    - name: fields
+      value: id,name,access_token,picture.width(80).height(80){url,height,width,is_silhouette}
+      type: query
+    - name: access_token
+      value: "{{authvwV}}"
+      type: query
+  auth: inherit
+
+runtime:
+  variables:
+    - name: authV28
+      value: EAFkxo0ukTpUBQxy2ev1ZAV4DXKFZBoOQctA3BWw70mitGeVrx5qwPfyeZCW4do5ce5s9B8S32unvtEd7mtoUFdEpDIWAlBZCi2bL2B4O9FBliEJbL2KD0nI4THbQxv9FFrmTo1IWD5gQZBekDKmeRn8eEqsuIz5KkAp8TbVX5h2Iur94dgFAy79bELxs7evhnfLQJtJREjBb9PMZAPeLJwBMZAuF0ZAfeGP4eH8gMQ5P8Q39MVrRys1An2MxZCFZC0Pldunz6qek81AWiurkOQfMRI4qIIbUdq7V28
+    - name: authDZA
+      value: EAFkxo0ukTpUBQ2CRktYqnhIvyo6ROjMBJJxCKxr5MArHZCqpEHQ19OZBRK2SZAp8liJhEZCzciTzP9ci3D9JhYKKKpszUbGQ8uOWmZBYj0Q3dO6FZAZBlccj5RTheZC09vM2XUeq8ZCbVKwiTi0zeHK86jYyACCA5Gwj7gZCslfrp5OQZAKmZB2CxhB1z2cogX7KsB4IxQuWnjhIyGUuZC8qqz5ltG0HN9iqVFarGGZC3Bh2f6fCRPk2UU2ctNDzmL73ge9Ju6NTwmZBHsKJ4ZAemzxZAdMYI96Amet2t29DZA
+    - name: authWPA_shop2
+      value: EAFkxo0ukTpUBQ7H3U1awbuFVqqmyq7sWT2uoxi4ZB8JMDGQZCqCP3KB78Ovlu4Tw475TSccWs8OmJ5TnXDCevm1coh4NSYJ8Bedk57xILoobCermIcnjyWWbcjAVfyKNzrTZChRRfHAnUWCRHqvZBH94Dbygwky3hL91AwMuMfAVwz9LX9vBxZBcE54dZCQCZC5zY5GOUjfXyczRAy7ff5T6FMcKqrXqZALLIQHcJZCz6aZBSBSK0E1SPUKTXGto4kBZAPY7q7Ti2koA0EwFhEI8lAWXKzAjepwncspPwPA
+    - name: authvwV
+      value: EAFkxo0ukTpUBQx056KUF14JgmyM58ZBgYGpYrcILBTJZCysvYSH5JIRnNUyGllmh5G9ZCpZBG9GHf5pu0BtazsxT51neWijYY5Y94XX9LChCFfuModZBJvw2uhg47a1tj55rdeVfPtvpSZAUpQMVyNMUrZBJDBa2S40Cvh0K6C2zBDqtI5IJooBj3QIQ5lI81xdnlxdTcbAwnmEFDZCRVsbxbnRp0SSZBH7zd5G8TyfB7RmPpiNGBb07GsOWpeTTtgwkCcGGqHiRKfRLZCFth0ZCjYprIrYoaqH9vwV
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

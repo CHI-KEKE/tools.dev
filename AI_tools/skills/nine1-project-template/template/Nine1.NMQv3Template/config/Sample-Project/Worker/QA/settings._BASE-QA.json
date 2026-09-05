@@ -1,0 +1,23 @@
+{
+    "_N1CONFIG": {},
+    "Logging": {
+        "LogLevel": {
+            "Default": "Debug",
+            "Microsoft": "Warning",
+            "Microsoft.Hosting.Lifetime": "Information"
+        }
+    },
+    "FeatureManagement": {
+      "Release_OMO_Member_Demo": {
+        "EnabledFor": [
+          {
+            "Name": "ReleaseToggle",
+            "Parameters": {
+              "IsEnabled": true,
+              "ExpirationDate": "2022-09-01"
+            }
+          }
+        ]
+      }
+    }
+}

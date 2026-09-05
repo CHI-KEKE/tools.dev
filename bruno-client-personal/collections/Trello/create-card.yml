@@ -1,0 +1,40 @@
+info:
+  name: create-card
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/1/cards?name=Gain&key={{key}}&token={{token}}&idList={{todoListId}}"
+  params:
+    - name: name
+      value: Gain
+      type: query
+    - name: key
+      value: "{{key}}"
+      type: query
+    - name: token
+      value: "{{token}}"
+      type: query
+    - name: idList
+      value: "{{todoListId}}"
+      type: query
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        pm.test("Status code is 200", function () {
+            pm.response.to.have.status(200);
+        });
+
+
+        let response = pm.response.json();
+        pm.collectionVariables.set('cardId',response.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

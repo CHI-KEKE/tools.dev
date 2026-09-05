@@ -1,0 +1,23 @@
+info:
+  name: query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/QueryPayment/TwoCTwoP"
+  body:
+    type: json
+    data: |-
+      {  
+         "request_id":"{{$guid}}",
+         "country":"{{country-code}}",
+         "transaction_id":"{{TG}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

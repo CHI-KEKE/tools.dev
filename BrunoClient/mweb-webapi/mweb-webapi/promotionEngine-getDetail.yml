@@ -1,0 +1,25 @@
+info:
+  name: promotionEngine-getDetail
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{base-url}}/webapi/PromotionEngine/GetDetail/{{shopId}}/5562?source=Web&lang=zh-HK&shopId={{shopId}}"
+  params:
+    - name: source
+      value: Web
+      type: query
+    - name: lang
+      value: zh-HK
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

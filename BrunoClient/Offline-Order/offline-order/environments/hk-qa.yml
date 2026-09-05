@@ -1,0 +1,4 @@
+name: hk-qa
+variables:
+  - name: base-url
+    value: https://offlineorder.qa1.hk.91dev.tw

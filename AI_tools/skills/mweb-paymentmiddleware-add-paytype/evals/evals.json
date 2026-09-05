@@ -1,0 +1,100 @@
+{
+  "skill_name": "mweb-paymentmiddleware-add-paytype",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我想新增一個 PaymentMiddleware 金流",
+      "expected_output": "先確認目前工作目錄是否為 nineyi.webstore.mobilewebmall 專案，若不是則停止執行並告知使用者此 Skill 僅適用於 mweb 專案。",
+      "files": [],
+      "expectations": [
+        "確認 NineYi.WebStore.MallAndApi.sln 是否存在",
+        "確認 WebStore/Frontend/BE/PayProfile/PayProfileTypeDefEnum.cs 是否存在",
+        "若任一不存在，立即停止並告知「此 Skill 僅適用於 mweb（nineyi.webstore.mobilewebmall）專案」",
+        "不繼續執行後續任何步驟"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "幫我在 mweb 加 FPS_Razer 這個新的付款方式，走 Razer provider，目標是 HK 海外市場，需要退款和取消訂單，也是跨境付款，收付模式 DirectToBank。",
+      "expected_output": "在 Step 1 完成 9 個 scoping 問題後彙整確認，然後依序執行 Phase 1～8，最後執行 Final Verification。",
+      "files": [],
+      "expectations": [
+        "確認專案環境（.sln 和 PayProfileTypeDefEnum.cs 存在）",
+        "讀取 PayProfileTypeDefEnum.cs 確認 FPS_Razer 不重複",
+        "詢問並確認 9 個 scoping 問題：命名、市場、Provider、幣別模式、收付模式、退款、取消、跨境、複合flag",
+        "計算三個 enum 各自的下一個可用 bit 值（power-of-2）",
+        "Phase 1：修改 PayProfileTypeDefEnum.cs、StatisticsTypeDefEnum.cs、RefundRequestTypeDefEnum.cs",
+        "Phase 2：修改 PayProfileTypeDefComparer.cs（僅海外 list）、GetPayTypeProcessor.cs、SearchShopPayTypeEnum.cs、SearchService.cs",
+        "Phase 3：修改 ShoppingCartClientPayTypeGroupEntity.cs、StatisticsTypeDefComparer.cs、PickupShoppingCartCheckoutTypeV2Processor.cs",
+        "Phase 4：修改 GetPayProcessDataProcessor.cs（兩個 switch）、ThirdPartyPayApiProcessor.cs、CreateTradesOrderProcessor.cs（三個 switch）、PaymentMiddlewareService.cs、RazerPayChannelService.cs",
+        "Phase 5：修改 MemberTradesOrderGroupEntity.cs、MemberTradesOrderGroupPayInfoForDetailEntity.cs、GetMemberTradesOrderRefundProcessor.cs、MemberTradesOrderService.cs、CancelRequestService.cs、OverseaPayHelper.cs",
+        "Phase 6：修改 GlobalPayController.cs、TradesOrderLiteController.cs、TradesOrderV2Controller.cs、CancelRequestV2Controller.cs",
+        "Phase 7：在 7 個翻譯檔各新增對應 property",
+        "Phase 8：更新 HK 市場的 AppSettings.*.HK.config 中 Dev.PayType.DirectToBank",
+        "Final Verification：比對既有同類 paytype 覆蓋範圍、確認 All 包含新值、確認 bit 值唯一、確認 7 個翻譯檔齊全"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我要新增 CreditCardOnce_Stripe，走 Stripe provider，TW 台灣市場，不需要退款也不需要取消訂單，非跨境，SalesCurrency 幣別，ThroughPSP 收付模式。",
+      "expected_output": "scope 僅台灣市場、無退款、無取消、無跨境，相應跳過 RefundRequestTypeDefEnum.cs、GetMemberTradesOrderRefundProcessor.cs、MemberTradesOrderService.cs、CancelRequestService.cs、OverseaPayHelper.cs、CancelRequestV2Controller.cs。",
+      "files": [],
+      "expectations": [
+        "Phase 2 PayProfileTypeDefComparer.cs 只加到 _sortedPayProfileTypeDefTW（不改海外 list）",
+        "Phase 3 StatisticsTypeDefComparer.cs 只加到 TW list",
+        "Phase 1 跳過 RefundRequestTypeDefEnum.cs",
+        "Phase 5 跳過 GetMemberTradesOrderRefundProcessor.cs、MemberTradesOrderService.cs、CancelRequestService.cs、OverseaPayHelper.cs",
+        "Phase 6 跳過 CancelRequestV2Controller.cs",
+        "Phase 8 更新 TW 市場 config 中 Dev.PayType.ThroughPSP"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "新增 DuitNow_Razer，Razer provider，海外 MY 市場，需退款，不需取消訂單，非跨境。但我想新建一個新的 Provider，不用現有的 RazerPayChannelService。",
+      "expected_output": "因為是新 Provider，需要建立新的 {Provider}PayChannelService.cs 並在 ServiceModule.cs 注冊 Named DI。",
+      "files": [],
+      "expectations": [
+        "Phase 4 建立新的 PayChannelService.cs 檔案而非修改現有 RazerPayChannelService.cs",
+        "Phase 4 修改 ServiceModule.cs 新增 Named DI 注冊",
+        "Phase 5 跳過 CancelRequestService.cs（無取消訂單）",
+        "Phase 5 跳過 OverseaPayHelper.cs（非跨境）",
+        "Phase 6 跳過 CancelRequestV2Controller.cs"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我要加 CreditCardOnce_Razer，但這個 paytype 在 PayProfileTypeDefEnum.cs 裡已經存在了。",
+      "expected_output": "在 Step 1 讀取 PayProfileTypeDefEnum.cs 後，偵測到 CreditCardOnce_Razer 已存在，立即停止並告知使用者。",
+      "files": [],
+      "expectations": [
+        "讀取 PayProfileTypeDefEnum.cs 並搜尋 CreditCardOnce_Razer",
+        "偵測到重複後立即停止，不繼續執行任何 Phase",
+        "告知使用者 CreditCardOnce_Razer 已存在於 enum，請確認命名是否正確"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "新增 GrabPay_Razer，但這次兩者都要：TW 台灣和海外市場都要支援。",
+      "expected_output": "Phase 2 的 PayProfileTypeDefComparer.cs 和 Phase 3 的 StatisticsTypeDefComparer.cs 都要同時加入 _sortedPayProfileTypeDef（海外）和 _sortedPayProfileTypeDefTW（台灣）兩個 list。",
+      "files": [],
+      "expectations": [
+        "Phase 2 PayProfileTypeDefComparer.cs 同時修改 _sortedPayProfileTypeDef 和 _sortedPayProfileTypeDefTW",
+        "Phase 3 StatisticsTypeDefComparer.cs 同時加入海外與 TW 兩個 list",
+        "三個 enum bit 值計算正確且互不重複"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "請確認新增 PayNow_Razer 後是否有遺漏的地方，幫我驗證一下。",
+      "expected_output": "執行 Final Verification 的五個步驟，包含搜尋既有同類 paytype 比對覆蓋範圍、確認 All 欄位、三個 enum bit 唯一性、7 個翻譯檔齊全、執行 msbuild。",
+      "files": [],
+      "expectations": [
+        "搜尋類似 paytype（如 OnlineBanking_Razer）比對修改範圍是否一致",
+        "確認 PayProfileTypeDefEnum.All 包含新增的 PayNow_Razer",
+        "確認 PayProfileTypeDefEnum、StatisticsTypeDefEnum、SearchShopPayTypeEnum 的 bit 值各自唯一",
+        "確認 7 個翻譯檔都已新增對應 property",
+        "執行 msbuild NineYi.WebStore.MallAndApi.sln /p:Configuration=Debug 並回報結果"
+      ]
+    }
+  ]
+}

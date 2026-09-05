@@ -1,0 +1,5 @@
+name: MYPROD
+color: "#2E8A54"
+variables:
+  - name: base-url
+    value: http://nmqv3-apimin.my.91app.io/api/v1

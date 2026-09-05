@@ -1,0 +1,18 @@
+
+@host = https://api.qa1.hk.91dev.tw/scm/V2
+
+@Token = 123456782
+@Timestamp = 1753916626
+@Signature = 0bb829021a04bc586cc187330437cef5516c8db36133aabacdb7efa1e989b3906f144fa5b46437974276282af998d3b571b0972b16d0b5870a4adcfe3f5e6d09
+
+
+### OrderCreated Recheck 訂單狀態
+
+POST {{host}}/SalesOrder/CheckIsValid?t={{Token}}&ts={{Timestamp}}&s={{Signature}} HTTP/1.1
+content-type: application/json
+
+{
+    "shopId": 2,
+    "sourceType": "SalesOrderGroup",
+    "sourceCode": "TG250312S00003"
+}

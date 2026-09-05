@@ -1,0 +1,36 @@
+info:
+  name: pay
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/v1.0/pay/CreditCardOnce_Stripe/{{TG}}"
+  body:
+    type: json
+    data: |-
+      {  
+         "amount":10.00,
+         "country":"{{country-code}}",
+         "currency":"{{country-code}}",
+         "request_id":"{{$guid}}",
+         "device": "Mobile",
+         "tg_code":"{{TG}}",
+         "extend_info":{  
+            "payment_flow": "{{flow}}",
+            "card_no":"{{cardNo}}",
+            "card_year":"33",
+            "card_month":"12",
+            "card_cvv":"222",
+            "stripe_account":"{{acct}}",
+            "application_fee_amount": 5.5,
+            "return_url": "https://www.google.com"
+         }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

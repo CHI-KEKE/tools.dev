@@ -1,0 +1,38 @@
+info:
+  name: checkouts-calculate
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{base-url}}/api/checkouts/Calculate?payUniqueKey=097bdb79-cf30-4389-a0dc-015e6c97e281"
+  headers:
+    - name: Cookie
+      value: ""
+    - name: N1-SHOP-ID
+      value: ""
+    - name: N1-MEMBER-ID
+      value: ""
+  params:
+    - name: payUniqueKey
+      value: 097bdb79-cf30-4389-a0dc-015e6c97e281
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "memberId":2108,
+          "checkoutUniqueKey": "72507b70-2052-4363-a279-70b4ce770940",
+          "checkoutPayType": {
+              "statisticsTypeDef": "CreditCardInstallment_Razer",
+              "installmentType": null,
+              "checkoutStoreCredit": null
+          }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

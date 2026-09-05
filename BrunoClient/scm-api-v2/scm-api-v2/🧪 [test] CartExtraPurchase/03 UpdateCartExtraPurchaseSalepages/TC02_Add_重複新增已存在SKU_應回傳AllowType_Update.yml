@@ -1,0 +1,60 @@
+﻿info:
+  name: TC02_Add_重複新增已存在SKU_應回傳AllowType_Update
+  type: http
+  seq: 2
+
+meta:
+  purpose: |-
+    【邊界】對已在活動中的 SKU 再次 Add。
+    Filter 應偵測：此 SKU 已存在 → 回傳 AllowActionType=Update（應改用 Update）。
+    依賴：TC01 已執行完成。
+    預期：200（含 AllowActionType 提示）。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/UpdateCartExtraPurchaseSalepages?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "PromotionId": {{promotionId}},
+        "IsAddHistory": false,
+        "CartExtraPurchaseConditionList": [
+          {
+            "ActionType": "Add",
+            "ReachPiece": 2,
+            "ReachPrice": 0,
+            "SalepageId": 1557573,
+            "SaleProductSKUId": 2169001,
+            "CartExtraPurchasePrice": 99,
+            "Sort": 1
+          }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC-SP02 狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("TC-SP02 重複 Add 應有 AllowActionType=Update 提示（肉眼確認 log）", function () {
+    const body = res.getBody();
+    console.log("TC-SP02 response:", JSON.stringify(body));
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,167 @@
+info:
+  name: get-member-point
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/pos/v1/GetMemberPoint?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: "{{request_body}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const axios = require("axios");
+
+        // 1. 讀 environment 變數
+        const phone = bru.getEnvVar("phone");
+        const outermembercode = bru.getEnvVar("outermembercode");
+        const membercode = bru.getEnvVar("member_code");
+        const scmApi = bru.getEnvVar("scm_api");
+        const saltKey = bru.getEnvVar("salt_key");
+        const apiKey = bru.getEnvVar("api_key");
+
+        // 2. 組 request body
+        const bodyObject = {
+          OuterMemberCode: outermembercode,
+          MemberCode: membercode,
+          CellPhone: phone
+        };
+
+        const bodyJson = JSON.stringify(bodyObject);
+
+        // 3. 設定目前 request body
+        req.setBody(bodyObject);
+
+        // 4. 存 request_body
+        bru.setEnvVar("request_body", bodyJson);
+
+        // 5. 呼叫 GetCurrentTime 取得 timestamp
+        const timeResponse = await axios({
+          url: `${scmApi}/scm/v1/Utils/GetCurrentTime`,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const timestamp = timeResponse.data;
+        bru.setEnvVar("timestamp", String(timestamp));
+
+        // 6. 組 content
+        const content = `ts=${timestamp}&data=${bodyJson.toLowerCase()}&sk=${saltKey}`;
+        console.log("取得Signature content:", content);
+
+        // 7. 自己手組 x-www-form-urlencoded 字串
+        const formBody =
+          `key=${encodeURIComponent(apiKey)}` +
+          `&content=${encodeURIComponent(content)}`;
+
+        // 8. 呼叫 GetEncryptData 取得 signature
+        const signResponse = await axios({
+          url: `${scmApi}/scm/v1/Sample/GetEncryptData`,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          data: formBody
+        });
+
+        const signature = signResponse.data?.Data ?? "";
+
+        // 9. 存 signature
+        bru.setEnvVar("signature", signature);
+        bru.setVar("signature", signature);
+
+        console.log("signature:", signature);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  ## pm prescript
+
+  const phone = pm.environment.get("phone");
+  const outermembercode = pm.environment.get("outermembercode");
+  const membercode = pm.environment.get("member_code");
+  const shopId = parseInt(pm.environment.get("shop_id"));
+  // 修改request-body
+  var body = {
+      "OuterMemberCode": outermembercode,
+      "MemberCode": membercode,
+      "CellPhone": phone
+  }
+
+  var body_data = JSON.stringify(body)
+
+  // 取得Timestamp
+  pm.sendRequest({
+      url: pm.environment.get("scm_api") + '/scm/v1/Utils/GetCurrentTime',
+      method: 'POST',
+      header: {
+          'content-type': 'application/json',
+      }
+  }, function (err, response) {
+      const timestamp = response.json()
+      // console.log("取得Timestamp : " + timestamp)
+      pm.environment.set("timestamp", timestamp);
+
+      var body =  body_data.toLowerCase();
+      // 取得Signature
+      var content = "ts=" + pm.environment.get("timestamp") + "&data=" + body + "&sk=" + pm.environment.get("salt_key")
+
+       console.log("取得Signature : " + content)
+      pm.sendRequest({
+          url: pm.environment.get("scm_api") + '/scm/v1/Sample/GetEncryptData',
+          method: 'POST',
+          header: {
+              'Content-Type': 'multipart/form-data',
+              },
+          body: {
+              mode: 'formdata',
+              formdata: [
+              {
+                  key: "key", 
+                  value: pm.environment.get("api_key"), 
+                  disabled: false, 
+                  description: {content:"", type:"text/plain"}
+                  },
+              {
+                  key: "content", 
+                  value: content, 
+                  disabled: false, 
+                  description: {content:"", type:"text/plain"}
+                  }
+              ]
+          }
+      },  function(err, response) {
+          const signature = response.json().Data
+          pm.environment.set("signature", signature);
+      });
+  });
+
+  request_body = body_data
+  // console.log("4. 取得request_body:" + request_body)
+  pm.environment.set("request_body", request_body);
+
+  function interpolate (value) {
+      const {Property} = require('postman-collection');
+      return Property.replaceSubstitutions(value, pm.variables.toObject());
+  }

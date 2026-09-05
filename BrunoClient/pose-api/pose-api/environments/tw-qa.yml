@@ -1,0 +1,38 @@
+name: tw-qa
+variables:
+  - name: base-url
+    value: https://pos-api.qa.91dev.tw
+  - name: token
+    value: "85932145"
+  - name: timestamp
+    value: ""
+  - name: signature
+    value: ""
+  - name: shop_Id
+    value: "10230"
+  - name: request_id
+    value: NY0643
+  - name: machine_code
+    value: NY0643
+  - name: location_code
+    value: "12314"
+  - name: employee_code
+    value: "00001"
+  - name: request_body
+    value: '{"OuterMemberCode":"WEN0000128","MemberCode":"70001899F1","CellPhone":"+6584898911"}'
+  - name: scm_api
+    value: https://api.91mai.com
+  - name: api_key
+    value: 071311bf-c8ff-45a4-b907-c3887a31e1d6
+  - name: salt_key
+    value: 7d7d4add
+  - name: phone
+    value: "+6584898911"
+  - name: member_code
+    value: 70001899F1
+  - name: outermembercode
+    value: WEN0000128
+  - name: usingChannelType
+    value: Online
+  - name: phone2
+    value: "+886988542534"

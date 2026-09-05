@@ -1,0 +1,63 @@
+info:
+  name: 🟧 [multilingualContent] getDetail
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/SCM/V2/MultilingualContent/GetDetail?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 2,
+        "Id": "61892",
+        "Lang": "zh-TW",
+        "Module": "SaleProductSKU"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## salepage
+
+  {
+    "ShopId": 5,
+    "Id": "61864",
+    "Lang": "en-US",
+    "Module": "SalePage"
+  }
+
+
+  {
+    "Data": "{\"ShopId\":5,\"Id\":\"61864\",\"Lang\":\"en-US\",\"Module\":\"SalePage\"}"
+  }
+
+
+  ## saleproductDesc
+
+  {
+    "ShopId": 5,
+    "Id": "980",
+    "Lang": "en-US",
+    "Module": "SaleProductDesc"
+  }
+
+  {
+     "Data": "{\"ShopId\": 5,\"Id\": \"980\",\"Lang\": \"en-US\",\"Module\": \"SaleProductDesc\"}"
+  }

@@ -1,0 +1,7 @@
+{
+    "ServiceId": "nine1-sample-project-web-api",
+    "DisplayName": "sample-project-web-api",
+    "FQDN": "Nine1.Sample.Project.Web.Api",
+    "InitialDate": "{{INITIAL_DATE}}",
+    "ContactEmail": "upd@91app.com"
+}

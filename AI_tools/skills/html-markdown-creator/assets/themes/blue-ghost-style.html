@@ -1,0 +1,224 @@
+<!--
+主題：斑馬線幽靈風（blue-ghost-style）
+風格來源分析：取材自一張「小幽靈排隊過斑馬線」插畫（仿 Abbey Road 專輯封面構圖，四隻白色幽靈依序踏過斑馬線，最小的一隻幽靈牽著一隻橘色玩具老鼠）。畫面組成拆解：
+  - 背景是大面積、飽和度適中的天空藍（非深邃夜藍，是柔和、明亮的午後藍），整體給人乾淨、輕鬆、略帶童趣的觀感。
+  - 主角幽靈是純白色、邊緣帶手繪紙感質地的水滴狀輪廓（頭圓、身體逐漸放寬、底部呈波浪狀下擺），沒有銳利硬邊，五官只用兩個黑色小圓點表示眼睛，極簡可愛。
+  - 每隻幽靈腳下都有一枚柔和的灰色橢圓陰影，暗示光源與地面，讓平面插畫有輕微的立體錨定感。
+  - 斑馬線本身是白色寬條紋，等距排列在藍色底色上，形成畫面的水平節奏與行進方向感。
+  - 唯一的暖色點綴是最小幽靈牽著的橘色小玩具（老鼠/圍巾配色），在大面積藍白灰的畫面中提供視覺焦點與生氣。
+  - 整體氛圍：極簡、可愛、詼諧、放鬆，帶一點點「可愛系恐怖元素」的反差萌，適合輕鬆、趣味、非嚴肅的內容基調。
+適用：輕鬆詼諧的技術小品、生活隨筆、團隊文化分享、新手導覽/入門說明、想要「可愛放鬆」而非「嚴肅專業」觀感的文章。
+不適合：事件回顧/故障排查等需要紅/琥珀/綠風險分級語意的文章（改用 case-file-style），也不適合正式度極高的商業/財務文件（改用 warm-paper-style 或 mysql-dolphin-style）。
+
+doc-* 對應變數（套用 sidebar-layout.html 時，把 --doc-* 設成以下值即可讓側欄配色與本主題一致）：
+  --doc-accent:#e8875a; --doc-accent2:#f3b28c; --doc-ink:#22394f; --doc-sub:#5a7089;
+  --doc-card:#ffffff; --doc-line:#dbe6f0; --doc-bg:#eef5fb; --doc-shadow:0 10px 30px -12px rgba(20,45,70,.18);
+
+包含區塊：
+  1. gho-hero：開場橫幅，天空藍漸層底 + 幽靈點列裝飾 + 橘色 eyebrow 標籤 + 大標題 + 說明文字 + 徽章列
+  2. gho-section-head：章節標題（圓角徽章編號 + h2），徽章可用 .accent/.teal/.violet 變化色彩區分章節分類
+  3. gho-card：白色卡片容器，通用於任何段落內容包裝
+  4. gho-callout：提示框（info/warn/danger/ok 四種語意色，底色極淡、邊框對應色系）
+  5. gho-summary-grid + gho-box：三欄摘要卡片網格（sky/coral/teal 三種分類，卡片頂部一條色條）
+  6. gho-flow + gho-step：橫向流程步驟（含 .cond 條件分支樣式與箭頭連接）
+  7. gho-steps + gho-stepcard：直向時間軸步驟卡（左側圓形編號 + 卡片說明）
+  8. gho-checklist：條列核取清單（打勾圖示）
+  9. gho-evidence：案例佐證框（標籤 + 案例內容）
+  10. pre.gho-pre：深藍夜色終端機風程式碼區塊（語法上色 class：.kw/.str/.cm/.fn/.type/.num/.op）
+  11. gho-crossing：斑馬線分隔線（本主題專屬裝飾元件，白色條紋橫貫藍底，中央有隻小幽靈，用於分隔長文章大段落）
+-->
+
+<style>
+.gho{
+  display:block;
+  font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'PingFang TC','Microsoft JhengHei',sans-serif;
+  background:
+    radial-gradient(700px 400px at 92% -5%, rgba(232,135,94,.14), transparent 60%),
+    radial-gradient(900px 500px at -8% 108%, rgba(111,163,216,.16), transparent 55%),
+    #eef5fb;
+  color:#22394f!important;
+  line-height:1.75;
+  border-radius:20px;
+  padding:1px 0 28px;
+  margin:0 0 20px;
+  overflow:hidden;
+  --ink:#22394f; --sub:#5a7089; --card:#ffffff; --line:#dbe6f0;
+  --sky:#6fa3d8; --sky2:#a9cbe8; --coral:#e8875a; --coral2:#f3b28c; --teal:#0f9488; --violet:#7c6cf7; --danger:#e5484d;
+  --shadow:0 10px 30px -12px rgba(20,45,70,.18);
+}
+.gho *{box-sizing:border-box;}
+.gho a{color:var(--coral)!important;text-decoration:none;}
+.gho a:hover{text-decoration:underline;}
+.gho .gho-hero{padding:48px 6vw 34px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(165deg,#89b3de,#6fa3d8 55%,#5a90c8);}
+.gho .gho-hero::before{content:"👻 · · · 👻 · · · 👻 · · · 👻";position:absolute;top:14px;left:0;right:0;text-align:center;font-size:.9rem;opacity:.28;letter-spacing:.3em;color:#fff!important;pointer-events:none;}
+.gho .gho-eyebrow{display:inline-block;font-size:.78rem;letter-spacing:.16em;color:#fff!important;text-transform:uppercase;font-weight:700;margin-bottom:12px;background:rgba(232,135,94,.4);padding:6px 14px;border-radius:999px;}
+.gho .gho-hero h1{font-size:1.7rem;margin:0 0 12px;color:#fff!important;font-weight:800;}
+.gho .gho-hero p{color:#e4f0fa!important;max-width:700px;margin:0 auto;font-size:1rem;}
+.gho .gho-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.gho .gho-badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:999px;font-size:.8rem;color:#f3f8fc!important;}
+.gho .gho-container{padding:0 5vw;}
+.gho section{margin-bottom:44px;}
+.gho .gho-section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.gho .gho-section-head .gho-chip{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;background:linear-gradient(135deg,#4c7fb0,var(--sky));color:#fff!important;font-size:1rem;box-shadow:var(--shadow);}
+.gho .gho-section-head.accent .gho-chip{background:linear-gradient(135deg,#c2683f,var(--coral2));}
+.gho .gho-section-head.teal .gho-chip{background:linear-gradient(135deg,#0d7a70,#5fd4c4);}
+.gho .gho-section-head.violet .gho-chip{background:linear-gradient(135deg,#7c6cf7,#a78bfa);}
+.gho .gho-section-head h2{margin:0;font-size:1.3rem;font-weight:800;color:var(--ink)!important;}
+.gho h3{font-size:1.08rem;margin:26px 0 10px;color:var(--ink)!important;border-left:4px solid var(--sky);padding-left:10px;}
+.gho p{color:var(--sub)!important;}
+.gho .gho-card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 22px;margin:14px 0;}
+.gho table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card)!important;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:14px 0 22px;font-size:.88rem;box-shadow:var(--shadow);}
+.gho thead th{background:#e6f0f9!important;color:var(--ink)!important;text-align:left;padding:13px 16px;font-weight:800;border-bottom:1px solid var(--line);}
+.gho tbody td{padding:13px 16px;border-bottom:1px solid var(--line);color:#324a5f!important;vertical-align:top;background:var(--card)!important;}
+.gho tbody tr:last-child td{border-bottom:none;}
+.gho tbody tr:hover td{background:#f5faff!important;}
+.gho tbody td strong{color:var(--ink)!important;}
+.gho tbody td code{color:#b5502b!important;}
+.gho code{font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace;background:#e7f0f8!important;color:#b5502b!important;padding:2px 7px;border-radius:6px;font-size:.88em;border:1px solid #d5e3ee;}
+.gho pre.gho-pre{background:#16283a!important;border:none;border-radius:16px;padding:20px 22px;overflow-x:auto;margin:16px 0;position:relative;color:#e8f1fa!important;font-size:.85rem!important;line-height:1.7!important;font-family:Consolas,'SFMono-Regular','Liberation Mono',Menlo,monospace!important;white-space:pre!important;box-shadow:var(--shadow);}
+.gho pre.gho-pre::before{content:attr(data-lang);position:absolute;top:12px;right:16px;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#7fa0ba!important;font-family:'Segoe UI',sans-serif;}
+.gho .kw{color:#ffb08a!important;} .gho .str{color:#c3e88d!important;} .gho .cm{color:#6b869c!important;font-style:italic;} .gho .fn{color:#7fd0ff!important;} .gho .type{color:#f3b28c!important;} .gho .num{color:#c3e88d!important;} .gho .op{color:#ff6b9d!important;}
+.gho .gho-callout{border-radius:16px;padding:18px 22px;margin:18px 0;border:1px solid transparent;display:flex;gap:14px;}
+.gho .gho-callout .gho-icon{font-size:1.3rem;flex:none;}
+.gho .gho-callout.info{background:#eff6ff;border-color:#bfdbfe;}
+.gho .gho-callout.warn{background:#fffbeb;border-color:#fde68a;}
+.gho .gho-callout.danger{background:#fef2f2;border-color:#fecaca;}
+.gho .gho-callout.ok{background:#ecfdf5;border-color:#a7f3d0;}
+.gho .gho-callout p{margin:0;font-size:.92rem;color:#324a5f!important;}
+.gho .gho-callout strong{color:var(--ink)!important;}
+.gho .gho-tag{display:inline-block;font-size:.72rem;font-weight:800;padding:3px 11px;border-radius:999px;letter-spacing:.02em;}
+.gho .gho-tag.danger{background:#fee2e2!important;color:#b91c1c!important;}
+.gho .gho-tag.ok{background:#dcfce7!important;color:#15803d!important;}
+.gho .gho-tag.warn{background:#fef3c7!important;color:#b45309!important;}
+.gho .gho-tag.info{background:#e0f2fe!important;color:#0369a1!important;}
+.gho .gho-tag.sky{background:#dceaf6!important;color:#2a5b85!important;}
+.gho .gho-tag.coral{background:#fbe4d6!important;color:#a04a22!important;}
+.gho .gho-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0;}
+.gho .gho-summary-grid .gho-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--sky);position:relative;overflow:hidden;}
+.gho .gho-summary-grid .gho-box.sky{border-top-color:var(--sky);}
+.gho .gho-summary-grid .gho-box.coral{border-top-color:var(--coral);}
+.gho .gho-summary-grid .gho-box.teal{border-top-color:var(--teal);}
+.gho .gho-summary-grid .gho-box h4{margin:0 0 8px;color:var(--ink)!important;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;}
+.gho .gho-summary-grid .gho-box p{margin:0;font-size:.87rem;color:var(--sub)!important;}
+@media (max-width:780px){.gho .gho-summary-grid{grid-template-columns:1fr;}}
+.gho .gho-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0;}
+.gho .gho-flow .gho-step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:.85rem;font-weight:700;color:var(--ink)!important;box-shadow:var(--shadow);}
+.gho .gho-flow .gho-step.cond{background:#fffbeb;border-color:#fde68a;color:#b45309!important;}
+.gho .gho-flow .gho-arrow{color:var(--coral)!important;font-size:1.2rem;font-weight:900;}
+.gho .gho-steps{display:flex;flex-direction:column;gap:14px;margin:16px 0 22px;}
+.gho .gho-stepcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;position:relative;padding-left:60px;box-shadow:var(--shadow);}
+.gho .gho-stepcard .gho-stepnum{position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#4c7fb0,var(--sky));color:#fff!important;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
+.gho .gho-stepcard.cond .gho-stepnum{background:linear-gradient(135deg,#c2683f,var(--coral2));}
+.gho .gho-stepcard .gho-step-title{font-weight:700;color:var(--ink)!important;font-size:1rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.gho .gho-stepcard p{margin:6px 0;font-size:.9rem;color:var(--sub)!important;}
+.gho .gho-checklist{list-style:none;padding:0;margin:16px 0;}
+.gho .gho-checklist li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);color:var(--sub)!important;}
+.gho .gho-checklist li:last-child{border-bottom:none;}
+.gho .gho-checklist li::before{content:"✓";flex:none;width:22px;height:22px;border-radius:7px;background:#dceaf6;color:#2a5b85!important;font-size:.75rem;display:flex;align-items:center;justify-content:center;margin-top:2px;font-weight:900;}
+.gho .gho-evidence{border:1px solid var(--line);background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px;margin:16px 0 22px;}
+.gho .gho-evidence .gho-evidence-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.gho .gho-evidence .gho-evidence-head .gho-tag{background:var(--ink)!important;color:#fff!important;}
+.gho .gho-crossing{height:34px;border-radius:8px;margin:36px 0;position:relative;background:repeating-linear-gradient(90deg,var(--sky) 0 26px,#eef5fb 26px 46px);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:var(--shadow);}
+.gho .gho-crossing span{position:relative;z-index:1;font-size:1.15rem;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));}
+.gho footer{text-align:center;padding:30px 5vw 6px;color:var(--sub)!important;font-size:.82rem;border-top:1px solid var(--line);margin-top:8px;}
+</style>
+
+<div class="gho">
+<div class="gho-hero">
+<span class="gho-eyebrow">範例 · Blue Ghost Style</span>
+<h1>👻 斑馬線幽靈風格範例</h1>
+<p>這是一份示範文章的開場橫幅說明，用來展示天空藍底、橘色強調色與白卡片陰影的整體觀感。</p>
+<div class="gho-badges">
+<span class="gho-badge">範例徽章一</span>
+<span class="gho-badge">範例徽章二</span>
+</div>
+</div>
+<div class="gho-container">
+
+<section>
+<div class="gho-section-head">
+<div class="gho-chip">01</div>
+<h2>章節標題範例</h2>
+</div>
+<p>章節說明文字，顏色使用中性藍灰 <code>--sub</code>。</p>
+
+<div class="gho-card">
+<p>這是一張白色卡片，內容可以放任何段落文字或表格。</p>
+</div>
+
+<table>
+<thead><tr><th>欄位</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td><code>ExampleField</code></td><td>範例說明文字</td></tr>
+</tbody>
+</table>
+
+<div class="gho-callout info">
+<span class="gho-icon">💡</span>
+<p><strong>提示：</strong>這是資訊性提示框，底色為淡藍。</p>
+</div>
+
+<div class="gho-callout warn">
+<span class="gho-icon">⚠️</span>
+<p><strong>注意：</strong>這是警示提示框，底色為淡黃。</p>
+</div>
+
+<div class="gho-summary-grid">
+<div class="gho-box sky">
+<h4>分類一</h4>
+<p>說明文字。</p>
+</div>
+<div class="gho-box coral">
+<h4>分類二</h4>
+<p>說明文字。</p>
+</div>
+<div class="gho-box teal">
+<h4>分類三</h4>
+<p>說明文字。</p>
+</div>
+</div>
+
+<div class="gho-flow">
+<div class="gho-step">開始</div>
+<div class="gho-arrow">→</div>
+<div class="gho-step cond">條件判斷</div>
+<div class="gho-arrow">→</div>
+<div class="gho-step">結束</div>
+</div>
+
+<div class="gho-steps">
+<div class="gho-stepcard">
+<div class="gho-stepnum">1</div>
+<div class="gho-step-title">步驟一標題</div>
+<p>步驟說明文字。</p>
+</div>
+<div class="gho-stepcard cond">
+<div class="gho-stepnum">2</div>
+<div class="gho-step-title">步驟二標題（條件分支）</div>
+<p>步驟說明文字。</p>
+</div>
+</div>
+
+<ul class="gho-checklist">
+<li>檢查項目一</li>
+<li>檢查項目二</li>
+</ul>
+
+<div class="gho-evidence">
+<div class="gho-evidence-head">
+<span class="gho-tag">案例</span>
+<strong>範例案例編號</strong>
+</div>
+<p>案例佐證說明文字。</p>
+</div>
+
+<div class="gho-crossing"><span>👻</span></div>
+
+<pre class="gho-pre" data-lang="csharp"><span class="kw">var</span> <span class="fn">result</span> = <span class="type">Entity</span>.Calculate(<span class="num">1</span>); <span class="cm">// 註解說明</span></pre>
+
+</section>
+
+<footer>整理自範例來源</footer>
+
+</div>
+</div>

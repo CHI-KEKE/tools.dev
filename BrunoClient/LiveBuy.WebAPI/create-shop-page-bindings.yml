@@ -1,0 +1,28 @@
+info:
+  name: create-shop-page-bindings
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{base-url}}/api/shop-page-bindings"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+        "shopId": "73",
+        "platform": "Facebook",
+        "platformPageIds": [
+          "169441722919446"
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

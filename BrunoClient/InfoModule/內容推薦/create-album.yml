@@ -1,0 +1,18 @@
+info:
+  name: create-album
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/InfoModule/CreateAlbum"
+  body:
+    type: json
+    data: '{"Id":0,"Subtitle":"相簿","ShopItem":"61182","BackgroundColor":0,"Gallery":[{"Type":2,"Operation":1,"FileName":"640x960","Group":"Album","Key":"64783eff-a204-4c79-a58a-0c7b933695ea"},{"Type":2,"Operation":1,"FileName":"640x960","Group":"Album","Key":"64783eff-a204-4c79-a58a-0c7b933695ea"},{"Type":2,"Operation":1,"FileName":"640x960","Group":"Album","Key":"64783eff-a204-4c79-a58a-0c7b933695ea"},{"Type":2,"Operation":1,"FileName":"640x960","Group":"Album","Key":"64783eff-a204-4c79-a58a-0c7b933695ea"},{"Type":2,"Operation":1,"FileName":"640x960","Group":"Album","Key":"64783eff-a204-4c79-a58a-0c7b933695ea"}],"Title":"相簿","Uuid":{"Type":0,"Operation":1,"Group":"Album","Key":"d3e81e42-e564-4a4d-98dc-ae37c6ba6294","FileName":"640x360"},"ShopId":2,"StatusDef":"published","StartDateTime":"2024-04-01T08:48:00.000Z","EndDateTime":null,"VerificationToken":"","BaseImageUrl":null,"CreatedDateTime":null,"CreatedUser":null}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

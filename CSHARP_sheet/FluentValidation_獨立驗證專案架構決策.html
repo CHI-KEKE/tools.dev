@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>田野筆記：FluentValidation 獨立驗證專案的誕生</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3ede0;
+    --paper-2:#ece3d1;
+    --paper-3:#e6dbc3;
+    --ink:#2b2620;
+    --ink-soft:#5a5040;
+    --ink-faint:#8c8168;
+    --rule:#c7b98f;
+    --rule-soft:#dcd0ac;
+
+    --a:#2f5d50;      /* 過去：手寫驗證 */
+    --a-deep:#1f3f36;
+    --a-tint:#e2ede8;
+
+    --b:#a3502a;      /* 現在：FluentValidation */
+    --b-deep:#7a3a1d;
+    --b-tint:#f3e3d6;
+
+    --serif:'Newsreader', Georgia, serif;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(1000px 500px at 10% -5%, rgba(47,93,80,0.06), transparent 60%),
+      radial-gradient(1000px 500px at 100% 10%, rgba(163,80,42,0.06), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    position:relative;
+  }
+
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:5; pointer-events:none;
+    opacity:0.05; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap{ max-width:980px; margin:0 auto; padding:0 30px 140px; position:relative; z-index:1; }
+
+  .masthead{
+    padding:52px 0 30px;
+    border-bottom:3px double var(--rule);
+    text-align:center;
+  }
+  .masthead .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:14px;
+  }
+  .masthead h1{
+    font-size:clamp(30px,5vw,48px);
+    font-weight:600;
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  .masthead .sub{
+    font-style:italic;
+    font-size:17px;
+    color:var(--ink-soft);
+    margin:0;
+  }
+  .masthead .plate-no{
+    margin-top:18px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-faint);
+    letter-spacing:0.08em;
+  }
+
+  .intro{
+    padding:40px 0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:34px;
+    border-bottom:1px solid var(--rule-soft);
+  }
+  @media (max-width:760px){ .intro{ grid-template-columns:1fr; } }
+  .intro p{ margin:0 0 14px; color:var(--ink-soft); font-size:15.5px; line-height:1.75; }
+  .intro .drop::first-letter{
+    font-family:var(--serif);
+    font-size:52px;
+    float:left;
+    line-height:0.8;
+    padding:6px 8px 0 0;
+    font-weight:600;
+    color:var(--a-deep);
+  }
+
+  .section-title{
+    margin:64px 0 8px;
+    text-align:center;
+  }
+  .section-title .kicker{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:8px;
+  }
+  .section-title h2{
+    font-size:27px;
+    font-weight:600;
+    margin:0;
+  }
+  .section-note{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14.5px;
+    max-width:620px;
+    margin:8px auto 34px;
+  }
+
+  /* ===== timeline ===== */
+  .timeline{ position:relative; padding-left:36px; margin-bottom:20px; }
+  .timeline::before{
+    content:"";
+    position:absolute; left:9px; top:6px; bottom:6px; width:2px;
+    background:linear-gradient(var(--a), var(--b));
+    opacity:0.5;
+  }
+  .stage{ position:relative; margin-bottom:30px; }
+  .stage::before{
+    content:attr(data-no);
+    position:absolute; left:-36px; top:0;
+    width:20px; height:20px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--ink-faint);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:10px; color:var(--ink-faint);
+  }
+  .stage.a::before{ border-color:var(--a); color:var(--a-deep); }
+  .stage.b::before{ border-color:var(--b); color:var(--b-deep); }
+  .stage h3{ margin:0 0 6px; font-size:19px; font-weight:600; }
+  .stage h3 .tag{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:0.05em;
+    padding:2px 8px; border-radius:3px; margin-right:8px; vertical-align:middle;
+  }
+  .stage.a h3 .tag{ background:var(--a-tint); color:var(--a-deep); }
+  .stage.b h3 .tag{ background:var(--b-tint); color:var(--b-deep); }
+  .stage p{ margin:0 0 10px; color:var(--ink-soft); font-size:14.5px; line-height:1.75; }
+  .stage ul{ margin:0 0 10px; padding-left:20px; color:var(--ink-soft); font-size:14px; line-height:1.7; }
+  .stage li{ margin-bottom:4px; }
+  .stage blockquote{
+    margin:12px 0; padding:10px 16px;
+    border-left:3px solid var(--rule);
+    background:var(--paper-2);
+    font-style:italic; color:var(--ink-soft); font-size:14px;
+  }
+
+  code.inline{
+    font-family:var(--mono);
+    background:var(--paper-3);
+    border:1px solid var(--rule);
+    padding:1px 6px;
+    border-radius:3px;
+    font-size:0.86em;
+    color:var(--ink);
+  }
+
+  .spec{
+    margin:16px 0;
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid #2a241c;
+  }
+  .spec .head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:7px 14px;
+    background:#211c15;
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:#a89d80;
+    letter-spacing:0.05em;
+  }
+  .spec pre{
+    margin:0; padding:15px 17px;
+    background:#181410;
+    font-family:var(--mono);
+    font-size:12.4px;
+    line-height:1.65;
+    color:#e5dcc4;
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .spec pre .c1{ color:#7d7460; font-style:italic; }
+  .spec pre .kw{ color:#e0a17e; }
+  .spec pre .ty{ color:#8fbdd4; }
+  .spec pre .str{ color:#a6c98a; }
+  .spec pre .fn{ color:#7fcbb0; }
+
+  /* ===== capability table ===== */
+  table.matrix{
+    width:100%;
+    border-collapse:collapse;
+    margin:16px 0 40px;
+    font-size:13.8px;
+  }
+  table.matrix th{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    text-align:left;
+    padding:10px 14px;
+    border-bottom:2px solid var(--rule);
+  }
+  table.matrix th.a{ color:var(--a-deep); }
+  table.matrix th.b{ color:var(--b-deep); }
+  table.matrix td{
+    padding:12px 14px;
+    border-bottom:1px solid var(--rule-soft);
+    vertical-align:top;
+    color:var(--ink-soft);
+  }
+  table.matrix td.q{ color:var(--ink); font-weight:500; }
+  table.matrix tr:last-child td{ border-bottom:none; }
+
+  .callouts{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0 40px; }
+  @media (max-width:760px){ .callouts{ grid-template-columns:1fr; } }
+  .callout{ border-radius:6px; padding:12px 16px; font-size:13px; line-height:1.6; }
+  .callout.a{ background:var(--a-tint); border-left:3px solid var(--a); color:var(--a-deep); }
+  .callout.b{ background:var(--b-tint); border-left:3px solid var(--b); color:var(--b-deep); }
+  .callout b{ display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:0.05em; margin-bottom:4px; text-transform:uppercase; }
+
+  .why-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin:20px 0 50px; }
+  @media (max-width:760px){ .why-grid{ grid-template-columns:1fr; } }
+  .why-card{ background:var(--paper-2); border:1px solid var(--rule); border-radius:6px; padding:18px 20px; }
+  .why-card .num{ font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-bottom:8px; }
+  .why-card h4{ margin:0 0 8px; font-size:15.5px; font-weight:600; }
+  .why-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); line-height:1.6; }
+
+  .arch-tree{
+    background:var(--paper-2);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:20px 24px;
+    margin:16px 0 40px;
+    font-family:var(--mono);
+    font-size:12.6px;
+    line-height:1.9;
+    color:var(--ink-soft);
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .arch-tree .root{ color:var(--ink); font-weight:600; }
+  .arch-tree .child{ color:var(--b-deep); }
+  .arch-tree .leaf{ color:var(--a-deep); }
+
+  .footer-note{
+    margin-top:70px;
+    padding-top:24px;
+    border-top:1px solid var(--rule-soft);
+    text-align:center;
+    color:var(--ink-faint);
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:0.05em;
+  }
+
+  .result-bar{
+    display:flex; gap:16px; justify-content:center; flex-wrap:wrap;
+    margin:16px 0 50px;
+  }
+  .result-chip{
+    background:var(--a-tint); color:var(--a-deep);
+    border:1px solid var(--a);
+    border-radius:999px;
+    padding:8px 18px;
+    font-family:var(--mono);
+    font-size:12.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Architecture Field Notes · nine1.regularpurchase.v2</div>
+    <h1>FluentValidation 獨立驗證專案的誕生</h1>
+    <p class="sub">從一段 if-else，到跨專案的驗證邊界——一次架構決策的思考軌跡</p>
+    <div class="plate-no">案例：新增定期購方案（含贈品活動）API · 2026</div>
+  </div>
+
+  <div class="intro">
+    <p class="drop">
+      這不是一份「FluentValidation 怎麼用」的教學，而是一份決策紀錄：
+      為什麼從最初的手寫 <code class="inline">if (rule.Type != "GIFT")</code>，
+      一路演化成獨立的 <code class="inline">Common.Validators</code> 專案？
+      每一步的判斷依據是什麼？哪些是刻意留白、之後才做的？
+    </p>
+    <p>
+      整個過程沒有一步是「憑感覺換技術」——每個轉折點都對應一個具體徵兆，
+      或是一次現況盤點（grep 公司既有專案慣例）。這份筆記把思考過程攤開，
+      方便日後遇到類似情境時，重新檢視同一套判斷邏輯是否還成立。
+    </p>
+  </div>
+
+  <div class="section-title">
+    <div class="kicker">Chronology</div>
+    <h2>六個轉折點</h2>
+  </div>
+  <p class="section-note">從魔術字串到 Enum，從手寫方法到 Interface，再到 FluentValidation 與獨立專案</p>
+
+  <div class="timeline">
+
+    <div class="stage a" data-no="1">
+      <h3><span class="tag">起點</span>手寫 if-else 的具體徵兆</h3>
+      <p>最初的贈品活動規則驗證，就是一段線性增長的 if-else：</p>
+      <div class="spec">
+        <div class="head"><span>RegularProductService.cs（重構前）</span></div>
+        <pre><span class="kw">if</span> (rule.Type != <span class="str">"GIFT"</span>)
+    <span class="kw">return</span> <span class="str">"不支援的活動類型"</span>;
+
+<span class="kw">if</span> (rule.TriggerMode != <span class="str">"INTERVAL"</span>)
+    <span class="kw">return</span> <span class="str">"不支援的觸發模式"</span>;
+<span class="c1">// ... 一路寫下去</span></pre>
+      </div>
+      <p>判斷「不好維護」不是憑直覺，而是列出可觀察的具體徵兆：</p>
+      <ul>
+        <li><b>職責混雜</b>：型別檢查、範圍檢查、跨欄位邏輯全擠在同一個方法</li>
+        <li><b>錯誤訊息硬編碼</b>：字串散落各處，難以統一管理與 i18n</li>
+        <li><b>規則不可重用</b>：Add / Edit 兩支 API 未來都要驗證同一組規則</li>
+        <li><b>只回傳第一個錯誤</b>：前端無法一次拿到所有欄位錯誤</li>
+        <li><b>魔術字串</b>：<code class="inline">"GIFT"</code>／<code class="inline">"INTERVAL"</code> 全大寫比對，無編譯期檢查</li>
+      </ul>
+      <p>先做的小手術：把字串抽成 <code class="inline">RegularProductPromotionTypeEnum</code>／
+      <code class="inline">TriggerModeEnum</code>，值改 PascalCase；且<b>只定義目前真的用到的值</b>
+      （如 <code class="inline">Sequence</code> 雖有文件規劃但未實作，就先不寫進 enum），
+      避免出現「定義了卻沒邏輯」的假選項。</p>
+    </div>
+
+    <div class="stage a" data-no="2">
+      <h3><span class="tag">過渡</span>先抽 Interface，不急著上 FluentValidation</h3>
+      <p>在還沒決定要不要導入 FluentValidation 前，先做一個低成本、可逆的過渡：</p>
+      <div class="spec">
+        <div class="head"><span>IRegularProductPromotionRuleValidator.cs</span></div>
+        <pre><span class="kw">public interface</span> <span class="ty">IRegularProductPromotionRuleValidator</span>
+{
+    <span class="ty">string</span>? Validate(<span class="ty">List</span>&lt;RegularProductPromotionRule&gt; rules, <span class="ty">int</span> shipLimitCount, <span class="ty">int</span> shippingSet);
+}</pre>
+      </div>
+      <div class="callouts">
+        <div class="callout a">
+          <b>為什麼先抽 Interface</b>
+          專案完全沒用過 FluentValidation，貿然導入等於同時做「重構」+「導入新技術」，
+          風險會疊加。抽 Interface 本質是最基本的 Extract Class 重構，不改變邏輯，風險趨近於零。
+        </div>
+        <div class="callout a">
+          <b>留白的意義</b>
+          這個 Interface 邊界剛好是「手寫版」與「未來 FluentValidation 版」唯二的替換點——
+          Service 完全不用改。這是一次刻意留給自己反悔空間的「便宜可逆決策」。
+        </div>
+      </div>
+    </div>
+
+    <div class="stage b" data-no="3">
+      <h3><span class="tag">轉折</span>「乾脆用 FluentValidation 就好」</h3>
+      <p>看到親手抽出的 Interface 後，反問自己：這樣做是不是等於在山寨一個現成的函式庫？</p>
+      <table class="matrix">
+        <tr><th class="a">觀察</th><th class="b">判斷</th></tr>
+        <tr>
+          <td class="q">手寫 Interface 長什麼樣</td>
+          <td><code class="inline">IValidator</code>、<code class="inline">ValidationResult</code>、
+          規則組合能力——FluentValidation 全部都有現成、久經考驗的實作</td>
+        </tr>
+        <tr>
+          <td class="q">未來需求方向</td>
+          <td>驗證規則要能被組合、被多個 Request 共用，正是 FluentValidation 的核心設計目的</td>
+        </tr>
+        <tr>
+          <td class="q">手寫要做到「收集所有錯誤」「跨欄位」「條件式驗證」</td>
+          <td>都得自己刻；FluentValidation 用 <code class="inline">RuleFor</code>／<code class="inline">When</code>／
+          <code class="inline">SetValidator</code> 宣告式表達即可</td>
+        </tr>
+        <tr>
+          <td class="q">換的時機</td>
+          <td>現在專案還小、只有一個 Validator、一個消費者，換掉的代價最低</td>
+        </tr>
+      </table>
+      <blockquote>結論：不是「要不要用 FluentValidation」的技術偏好，而是「手寫的東西已經摸到它想解決的問題邊界」，繼續手刻等於重造輪子。</blockquote>
+    </div>
+
+    <div class="stage b" data-no="4">
+      <h3><span class="tag">設計</span>驗證整個 Request，而非只驗證片段</h3>
+      <p>下一個判斷：只把 PromotionRule 換成 FluentValidation 夠嗎？</p>
+      <p>原本 Service 內部除了贈品規則，還有一堆手動 if（配送次數範圍、配送週期必填等），
+      性質相同、只是驗證對象不同。如果只換掉一部分，同一支 API 會有兩套驗證風格並存，
+      維護心智負擔沒有真正下降。於是決定：<b>用一個 Validator 驗證整個 <code class="inline">ProductAddRequest</code></b>，
+      內部巢狀委派子 Validator。</p>
+      <div class="arch-tree"><span class="root">ProductAddRequestValidator</span> : AbstractValidator&lt;ProductAddRequest&gt;
+├─ RuleFor(ShopId) / ProductNo / ShippingPeriod / ShippingSet / Max / Fixed
+└─ RuleForEach(RegularProductPromotionRules)
+      .SetValidator((request, _) =&gt; <span class="child">new RegularProductPromotionRuleValidator</span>(
+          ComputeShipLimitCount(request), request.ProductShippingSet))
+      │
+      └─ <span class="child">RegularProductPromotionRuleValidator</span> : AbstractValidator&lt;RegularProductPromotionRule&gt;
+            └─ RuleForEach(GiftItemList)
+                  .SetValidator(<span class="leaf">new RegularProductPromotionGiftItemValidator</span>())</div>
+      <p><b>跨欄位參數傳遞的技術難題：</b>
+      <code class="inline">RegularProductPromotionRuleValidator</code> 需要知道父層 Request 的
+      <code class="inline">shipLimitCount</code>／<code class="inline">shippingSet</code>，
+      這不屬於 Rule 自身欄位。用 FluentValidation 的
+      <code class="inline">SetValidator(Func&lt;TParent,TChild,IValidator&lt;TChild&gt;&gt;)</code> overload，
+      在驗證當下動態 <code class="inline">new</code> 一個帶參數的子 Validator。</p>
+      <div class="callouts">
+        <div class="callout b">
+          <b>DI 註冊的取捨</b>
+          子 Validator 建構子有必填參數，不適合被 <code class="inline">AddValidatorsFromAssembly</code> 批次註冊，
+          但它從來不會被單獨當服務注入——永遠是被父 Validator 動態建立。真正走 DI 的只有最外層
+          <code class="inline">IValidator&lt;ProductAddRequest&gt;</code>。
+        </div>
+        <div class="callout b">
+          <b>刻意不做的事</b>
+          FluentValidation 天生能收集全部錯誤，但 Controller 的
+          <code class="inline">Message</code> 是單一字串設計。這次先只取
+          <code class="inline">Errors[0].ErrorMessage</code>，把「聚合所有錯誤」列為未來獨立的需求變更，
+          避免這次重構夾帶行為變更。
+        </div>
+      </div>
+    </div>
+
+    <div class="stage b" data-no="5">
+      <h3><span class="tag">拆分</span>要不要拆成獨立專案？</h3>
+      <p>先盤點公司既有慣例：grep <code class="inline">Nine1.Promotion</code>／<code class="inline">Cart</code>／
+      <code class="inline">Coupon</code>／<code class="inline">Shopping</code> 等專案，
+      全部都採用獨立 <code class="inline">Xxx.Common.Validators</code> 專案模式，
+      統一 <code class="inline">FluentValidation 11.5.1</code>，用
+      <code class="inline">AddValidatorsFromAssembly</code> 做組件層級批次註冊。</p>
+      <table class="matrix">
+        <tr><th class="a">面向</th><th class="a">放在 BL.Services</th><th class="b">拆獨立 Common.Validators</th></tr>
+        <tr><td class="q">依賴方向</td><td>與 Service 混在一起，邊界模糊</td><td>只依賴 BE（DTO），方向單純</td></tr>
+        <tr><td class="q">可測試性</td><td>需連帶 Service 其他依賴</td><td>可獨立單元測試，免 mock Repository</td></tr>
+        <tr><td class="q">可重用性</td><td>只有 Service 能用</td><td>未來其他消費者也能引用</td></tr>
+        <tr><td class="q">符合公司慣例</td><td>否</td><td>是（與既有多個專案一致）</td></tr>
+        <tr><td class="q">現況規模</td><td>—</td><td>目前只有一個消費者，overhead 略顯「殺雞用牛刀」</td></tr>
+      </table>
+      <p>最初建議是「規模還小，先不拆」，但這個保守建議被推翻了：</p>
+      <blockquote>「我覺得趁現在還小的時候大家比較敢改專案，應該現在就拆成獨立 validators 專案！」</blockquote>
+      <p>背後的道理：專案結構調整的阻力，會隨程式碼量、依賴數量、既有消費者數量增加而遞增。
+      現在搬移成本只是「新建 csproj + 改幾個 using」；等規則寫多、被多個 Service 依賴後再拆，
+      就會牽動一大片改動，且會有人怕改壞既有功能而不敢動。<b>越早拆，沉沒成本越低</b>——
+      這比「當下 overhead 大小」更重要。</p>
+    </div>
+
+    <div class="stage a" data-no="6">
+      <h3><span class="tag">落地</span>最終整合方式</h3>
+      <ul>
+        <li>新建 <code class="inline">Nine1.Regularpurchase.V2.Common.Validators</code> 專案，只 ProjectReference <code class="inline">BL.BE</code>（Validator 只需認得 DTO，不依賴 Service/Repository）</li>
+        <li>建立 <code class="inline">AddRegularPurchaseValidators()</code> 擴充方法，內部 <code class="inline">AddValidatorsFromAssembly</code> 批次註冊，之後新增 Validator 免手動加 DI</li>
+        <li><code class="inline">RegularProductService</code> 改注入標準介面 <code class="inline">IValidator&lt;ProductAddRequest&gt;</code>，刪除舊的錯誤指向</li>
+        <li><code class="inline">AddProductAsync</code> 開頭統一呼叫 <code class="inline">ValidateAsync</code>，<b>取代</b>純欄位規則的手動 if；但 SCM 查詢、重複商品檢查、生效區間 Overlap 檢查等<b>依賴 DB／外部服務</b>的規則刻意留在 Service，不塞進 Validator——Validator 只管靜態規則，才能維持單獨可測試</li>
+        <li><code class="inline">.sln</code> 手動加入新專案；<code class="inline">BL.Services</code>／<code class="inline">Test</code> 補上 ProjectReference</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="section-title">
+    <div class="kicker">Principles</div>
+    <h2>可抽象出的七條通則</h2>
+  </div>
+  <p class="section-note">跳脫這個案例本身，未來遇到類似情境可以重新檢視的判斷依據</p>
+
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="num">01</div>
+      <h4>先做便宜的可逆重構，再做貴的技術選型</h4>
+      <p>抽 Interface（Extract Class）幾乎零風險，卻能清楚劃出「要不要換函式庫」的決策邊界，降低反悔成本。</p>
+    </div>
+    <div class="why-card">
+      <div class="num">02</div>
+      <h4>手寫程式碼開始山寨某個函式庫時，就是換函式庫的訊號</h4>
+      <p>自己刻的 <code class="inline">IValidator</code>/<code class="inline">Validate()</code> 幾乎是 FluentValidation 的縮水版。</p>
+    </div>
+    <div class="why-card">
+      <div class="num">03</div>
+      <h4>驗證邊界應對齊「物件」而非「欄位片段」</h4>
+      <p>只驗證子物件、不驗證整個 Request，會讓同一支 API 存在多套驗證風格；應以「完整輸入物件」為單位設計。</p>
+    </div>
+    <div class="why-card">
+      <div class="num">04</div>
+      <h4>跨欄位依賴不該逼子 Validator 走 DI 單例</h4>
+      <p>用 <code class="inline">SetValidator(Func&lt;parent,child,IValidator&lt;child&gt;&gt;)</code> 在驗證當下動態建構，是標準手法。</p>
+    </div>
+    <div class="why-card">
+      <div class="num">05</div>
+      <h4>拆專案的時機看「未來改動阻力」，不是看「當下 overhead」</h4>
+      <p>規模小時拆分的邊際成本最低，此時最適合對齊公司既有架構慣例。</p>
+    </div>
+    <div class="why-card">
+      <div class="num">06</div>
+      <h4>不要讓一次重構同時夾帶行為變更</h4>
+      <p>維持「只回傳第一個錯誤」不變，把「聚合全部錯誤」留給未來獨立的需求變更，避免混淆驗收範圍。</p>
+    </div>
+  </div>
+
+  <div class="why-grid" style="grid-template-columns:1fr;">
+    <div class="why-card">
+      <div class="num">07</div>
+      <h4>Validator 只管靜態規則，I/O 依賴留在 Service</h4>
+      <p>讓 Validator 保持純粹、可脫離資料庫與外部服務單獨做單元測試，是長期可維護性的關鍵界線。</p>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <div class="kicker">Verification</div>
+    <h2>最終驗證結果</h2>
+  </div>
+  <div class="result-bar">
+    <div class="result-chip">dotnet build → Build succeeded, 0 Error</div>
+    <div class="result-chip">dotnet test --filter RegularProduct → 20 / 20 Passed</div>
+  </div>
+
+  <div class="section-title">
+    <div class="kicker">Post-mortem</div>
+    <h2>Debug 紀錄</h2>
+  </div>
+  <p class="section-note">App 啟動階段就炸掉的 DI 解析錯誤，以及背後被提前預言過的風險點</p>
+
+  <div class="timeline">
+
+    <div class="stage b" data-no="!">
+      <h3><span class="tag">現象</span>啟動時直接拋出 AggregateException</h3>
+      <p>還沒接到任何 Request，<code class="inline">dotnet run</code> 啟動階段就未處理例外：</p>
+      <div class="spec">
+        <div class="head"><span>Startup Exception</span></div>
+        <pre><span class="ty">System.AggregateException</span>: Some services are not able to be constructed
+
+<span class="c1">// Innermost exception</span>
+<span class="ty">System.InvalidOperationException</span> : Unable to resolve service for type <span class="str">'System.Int32'</span>
+while attempting to activate
+<span class="str">'RegularProductPromotionRuleValidator'</span>.</pre>
+      </div>
+    </div>
+
+    <div class="stage b" data-no="?">
+      <h3><span class="tag">根因</span>批次掃描把「帶參數建構子」的 Validator 也註冊了</h3>
+      <p><code class="inline">AddRegularPurchaseValidators()</code> 用
+      <code class="inline">AddValidatorsFromAssembly</code> 掃描整個組件，把每個
+      <code class="inline">AbstractValidator&lt;T&gt;</code> 都當服務註冊進 DI。
+      但 <code class="inline">RegularProductPromotionRuleValidator</code> 建構子需要
+      <code class="inline">(int shipLimitCount, int shippingSet)</code>——這兩個值是
+      <b>驗證當下</b>從 <code class="inline">ProductAddRequest</code> 動態算出來的上下文，
+      根本不是能預先注入 DI 的服務。ASP.NET Core 啟動時做 DI 容器驗證，解析不到
+      <code class="inline">System.Int32</code> 對應的服務，直接在啟動階段炸掉。</p>
+      <blockquote>這正是第 4 章設計時已預先標注的風險點：
+      「因為建構子有參數，不適合單獨註冊為 DI service——這點尚未驗證，是潛在風險點」。
+      這次啟動專案，風險兌現了。</blockquote>
+      <p>它本來就不該被 DI 管理——設計上它永遠只被
+      <code class="inline">ProductAddRequestValidator</code> 用
+      <code class="inline">SetValidator(Func&lt;parent,child,IValidator&lt;child&gt;&gt;)</code>
+      在驗證當下動態 <code class="inline">new</code> 出來，真正需要走 DI 的只有最外層的
+      <code class="inline">IValidator&lt;ProductAddRequest&gt;</code>。</p>
+    </div>
+
+    <div class="stage a" data-no="✓">
+      <h3><span class="tag">修復</span>用官方 filter 排除該類別</h3>
+      <p>利用 FluentValidation 公開的 <code class="inline">AddValidatorsFromAssembly(assembly, filter:)</code>
+      overload，在批次掃描時明確排除這一個類別，不讓它進 DI 容器：</p>
+      <div class="spec">
+        <div class="head"><span>ServiceCollectionExtension.cs（修復後）</span></div>
+        <pre><span class="kw">public static void</span> AddRegularPurchaseValidators(<span class="kw">this</span> <span class="ty">IServiceCollection</span> services)
+{
+    services.AddValidatorsFromAssembly(
+        Assembly.GetExecutingAssembly(),
+        filter: scanResult =&gt; scanResult.ValidatorType != <span class="kw">typeof</span>(RegularProductPromotionRuleValidator));
+}</pre>
+      </div>
+      <div class="callouts">
+        <div class="callout a">
+          <b>為什麼這樣改安全</b>
+          只排除「這一個」有問題的類別，其餘 Validator 建構子都沒有外部參數，
+          繼續正常走批次自動註冊，行為不變；不動任何業務驗證邏輯。
+        </div>
+        <div class="callout a">
+          <b>不是 hack</b>
+          <code class="inline">filter</code> 是 FluentValidation 公開 API 的正規用法，
+          不是反射繞過或私有 API。
+        </div>
+      </div>
+      <p><b>驗證結果：</b><code class="inline">dotnet build</code> 整個 solution → 0 Error；
+      <code class="inline">dotnet run</code> 實際啟動 Web.Api → 不再拋出 AggregateException，
+      Kestrel 成功綁定埠、服務正常啟動。</p>
+      <p><b>延伸提醒（既有設計限制，非本次引入）：</b>未來若再新增其他「建構子帶參數」的 Validator，
+      也必須一併加進這個 filter 排除清單，否則會重複踩到同樣的啟動期例外。若這類 Validator 增多，
+      可考慮改用白名單註冊或 marker interface 做更明確區分；目前只有一個特例，排除法已足夠且最小侵入。</p>
+    </div>
+
+    <div class="stage b" data-no="!">
+      <h3><span class="tag">現象</span>VS Code 找不到 HK-Dev / TW-Dev / MY-Dev 啟動選項</h3>
+      <p><code class="inline">launchSettings.json</code> 明明已經定義好
+      <code class="inline">TW-Dev</code>／<code class="inline">HK-Dev</code>／<code class="inline">MY-Dev</code>
+      三個 profile（各自對應不同的 <code class="inline">N1_MARKET</code>），
+      但 VS Code「執行與偵錯」面板下拉選單只看得到
+      <code class="inline">C#: Debug Active File</code>、<code class="inline">Node.js…</code>、
+      <code class="inline">Docker: Build…</code> 等原生 debugger 類型，完全找不到這三個自訂 profile，
+      導致每次啟動都落在預設值（TW-QA）。</p>
+    </div>
+
+    <div class="stage b" data-no="?">
+      <h3><span class="tag">根因</span>launchSettings.json 與 .vscode/launch.json 是兩個獨立系統</h3>
+      <table class="matrix">
+        <tr><th class="a">檔案</th><th class="b">誰在讀</th><th class="b">作用</th></tr>
+        <tr>
+          <td class="q"><code class="inline">Properties/launchSettings.json</code></td>
+          <td><code class="inline">dotnet run</code>、Visual Studio、VS Code C# 擴充</td>
+          <td>定義「profile」——一組環境變數 + URL 設定的集合</td>
+        </tr>
+        <tr>
+          <td class="q"><code class="inline">.vscode/launch.json</code></td>
+          <td>只有 VS Code 的 Debug 面板</td>
+          <td>定義「VS Code 看得懂的 debug configuration」，需要<b>自己手動指定</b>要對應哪個 profile</td>
+        </tr>
+      </table>
+      <p><code class="inline">launchSettings.json</code> 裡的 profile <b>不會自動</b>變成 VS Code Debug
+      面板下拉選單的選項；Visual Studio 有這種自動對應行為，但 VS Code 沒有——兩者中間必須靠使用者
+      自己在 <code class="inline">.vscode/launch.json</code> 手動建立一筆對應設定，VS Code 才認得。</p>
+    </div>
+
+    <div class="stage a" data-no="✓">
+      <h3><span class="tag">修復</span>在 .vscode/launch.json 手動對應 profileName</h3>
+      <p>用新版 C# Dev Kit 支援的 <code class="inline">"type": "dotnet"</code> +
+      <code class="inline">profileName</code> 屬性直接對應到 <code class="inline">launchSettings.json</code>
+      的 profile，不需要重複抄一次環境變數：</p>
+      <div class="spec">
+        <div class="head"><span>.vscode/launch.json</span></div>
+        <pre>{
+    <span class="str">"configurations"</span>: [
+        {
+            <span class="str">"name"</span>: <span class="str">"C#: Debug Active File"</span>,
+            <span class="str">"type"</span>: <span class="str">"dotnet"</span>,
+            <span class="str">"request"</span>: <span class="str">"launch"</span>,
+            <span class="str">"projectPath"</span>: <span class="str">"${file}"</span>
+        },
+        {
+            <span class="str">"name"</span>: <span class="str">"HK-Dev"</span>,
+            <span class="str">"type"</span>: <span class="str">"dotnet"</span>,
+            <span class="str">"request"</span>: <span class="str">"launch"</span>,
+            <span class="str">"projectPath"</span>: <span class="str">"${workspaceFolder}/.../Nine1.Regularpurchase.V2.Web.Api.csproj"</span>,
+            <span class="str">"profileName"</span>: <span class="str">"HK-Dev"</span>
+        }
+    ]
+}</pre>
+      </div>
+      <div class="callouts">
+        <div class="callout a">
+          <b>欄位意義</b>
+          <code class="inline">name</code> 顯示名任取；<code class="inline">type</code> 固定 <code class="inline">dotnet</code>
+          （舊版 <code class="inline">coreclr</code> 不支援 <code class="inline">profileName</code>）；
+          <code class="inline">profileName</code> 必須與 <code class="inline">launchSettings.json</code> 逐字一致（含大小寫）。
+        </div>
+        <div class="callout a">
+          <b>生效方式</b>
+          存檔後 <code class="inline">Ctrl+Shift+P</code> → <code class="inline">Reload Window</code>，
+          Debug 面板下拉選單即會出現新選項。
+        </div>
+      </div>
+      <p><b>常見踩雷點：</b>① <code class="inline">profileName</code> 打錯字/大小寫不符，VS Code 不會報錯，只會悄悄套用預設環境變數；
+      ② 改完忘記 Reload Window；③ <code class="inline">type</code> 誤用舊版 <code class="inline">coreclr</code>；
+      ④ <code class="inline">projectPath</code> 要指到具體 <code class="inline">.csproj</code>，不能只給資料夾。</p>
+      <p><b>備援方案（不依賴 VS Code UI）：</b>直接在終端機用 <code class="inline">--launch-profile</code> 參數指定：</p>
+      <div class="spec">
+        <div class="head"><span>Terminal</span></div>
+        <pre><span class="fn">dotnet</span> run --launch-profile HK-Dev</pre>
+      </div>
+    </div>
+
+    <div class="stage b" data-no="!">
+      <h3><span class="tag">現象</span>呼叫 API 收到 "No authorized."</h3>
+      <p>本機啟動專案後，用 REST Client 呼叫 <code class="inline">POST /api/regular/products</code>，
+      沒有進到 Controller 的任何驗證邏輯（連最前面 <code class="inline">ShopId &lt;= 0</code> 的檢查都沒觸發），
+      直接收到統一格式的失敗回應：</p>
+      <div class="spec">
+        <div class="head"><span>Response</span></div>
+        <pre>{
+  <span class="str">"Status"</span>: <span class="str">"Failure"</span>,
+  <span class="str">"TxId"</span>: <span class="str">"d5dc866684b04efabe2e94826feb2dc2"</span>,
+  <span class="str">"Data"</span>: <span class="kw">null</span>,
+  <span class="str">"ErrorMessage"</span>: <span class="str">"No authorized."</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="stage b" data-no="?">
+      <h3><span class="tag">根因</span>全域 ApiKeyAuthMiddleware 攔截在 MVC pipeline 之前</h3>
+      <p>這支 API 有一個全域 <code class="inline">ApiKeyAuthMiddleware</code>，攔截所有
+      <code class="inline">/api/*</code> 路由，在進入 MVC pipeline（Controller/FluentValidation）
+      <b>之前</b>就先做驗證：</p>
+      <div class="spec">
+        <div class="head"><span>ApiKeyAuthMiddleware.cs</span></div>
+        <pre><span class="kw">private const</span> <span class="ty">string</span> ApiKeyHeaderName = <span class="str">"x-api-key"</span>;
+
+<span class="kw">if</span> (context.Request.Path.StartsWithSegments(<span class="str">"/api"</span>, ...))
+{
+    <span class="kw">if</span> (headers.TryGetValue(ApiKeyHeaderName, out var apiKey) == <span class="kw">false</span>
+        || apiKey != this._validApiKey)
+    {
+        <span class="c1">// 直接回傳 "No authorized."，不呼叫 next()，Controller 完全不會執行</span>
+    }
+}</pre>
+      </div>
+      <ul>
+        <li>對應 V1 PHP 的 <code class="inline">check_api_key()</code>，比對 <code class="inline">x-api-key</code>
+        Header 與設定檔 <code class="inline">_N1SECRETS:RegularPurchase:ApiGbXApiKey</code> 是否相符</li>
+        <li>這把 Key <b>依市場（TW/HK/MY）各自不同</b>，實體檔案在
+        <code class="inline">config\secrets.{Market}-QA.json</code> 底下的 <code class="inline">RegularPurchase.ApiGbXApiKey</code></li>
+        <li>驗證發生在 Middleware pipeline 最前面，不符合就直接短路回應，<code class="inline">next(context)</code> 不會被呼叫，
+        完全不會進到 Controller——這就是為什麼「連最前面欄位檢查都沒反應」，不是驗證邏輯或 FluentValidation 的問題</li>
+      </ul>
+    </div>
+
+    <div class="stage a" data-no="✓">
+      <h3><span class="tag">修復</span>Request 補上 x-api-key Header</h3>
+      <p>Request 加上 <code class="inline">x-api-key</code> Header，值取自「目前啟動市場」對應的 secrets 檔案，
+      並建立可重複使用的 <code class="inline">RegularProduct.http</code>（REST Client 格式），
+      把 <code class="inline">baseUrl</code>／<code class="inline">apiKey</code>／<code class="inline">shopId</code>
+      抽成頂端變數：</p>
+      <div class="spec">
+        <div class="head"><span>RegularProduct.http</span></div>
+        <pre>@apiKey = REPLACE_WITH_APIGBXAPIKEY_FROM_SECRETS_JSON
+
+POST {{baseUrl}}/api/regular/products
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{ ... }</pre>
+      </div>
+      <div class="callouts">
+        <div class="callout b">
+          <b>踩雷點：跨市場誤用 Key</b>
+          用 HK-Dev 啟動服務卻拿 TW 的 Key 去打，一樣會 "No authorized."——
+          Middleware 是逐字元比對，不會自動判斷市場。
+        </div>
+        <div class="callout b">
+          <b>與 FluentValidation 是不同層級</b>
+          <code class="inline">x-api-key</code> 檢查在 Middleware pipeline，
+          會在 <code class="inline">IValidator&lt;ProductAddRequest&gt;</code> 跑之前就先擋下，
+          兩者互不影響也不能互相取代；除錯時要先排除「根本沒過 API Key 關卡」，再往下查驗證邏輯本身。
+        </div>
+      </div>
+    </div>
+
+    <div class="stage a" data-no="7">
+      <h3><span class="tag">動機</span>Service 建構子被迫塞越來越多 IValidator，驗證時機也不夠早</h3>
+      <p>原本 <code class="inline">RegularProductService</code> 為了驗證 <code class="inline">ProductAddRequest</code>，
+      建構子必須注入 <code class="inline">IValidator&lt;ProductAddRequest&gt;</code>；可預期未來每多一支需要
+      FluentValidation 的 API，Service 建構子就要多塞一個 <code class="inline">IValidator&lt;TRequest&gt;</code>，
+      讓「業務邏輯」與「驗證」的依賴混在一起，且驗證發生在 Service 方法內部第一行，時機也不夠早——
+      理想上應該是 Request 一進 Controller 就先擋掉不合法資料，Service 完全不用管驗證。</p>
+      <table class="matrix">
+        <thead><tr><th>方案</th><th>做法</th><th>取捨</th></tr></thead>
+        <tbody>
+          <tr><td><b>A. 全域 Action Filter（採用）</b></td>
+              <td>寫 <code class="inline">IAsyncActionFilter</code>，反射找出參數對應的
+              <code class="inline">IValidator&lt;T&gt;</code> 並執行</td>
+              <td>一次性建置，新增 Request 驗證完全不用碰 Filter／Service</td></tr>
+          <tr><td>B. Controller 手動呼叫</td>
+              <td>每支 Action 自己注入 <code class="inline">IValidator&lt;TRequest&gt;</code></td>
+              <td>直覺但每支 API 都要複製貼上樣板碼</td></tr>
+          <tr><td>C. 整合進 MVC ModelState</td>
+              <td>自訂 ValidationVisitor 掛進內建模型驗證流程</td>
+              <td>官方已不建議，較舊較複雜，不採用</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stage b" data-no="8">
+      <h3><span class="tag">機制</span>ValidationActionFilter：型別對上就自動驗證</h3>
+      <div class="spec">
+        <div class="head"><span>Filters/ValidationActionFilter.cs</span></div>
+        <pre><span class="kw">public class</span> ValidationActionFilter : IAsyncActionFilter
+{
+    <span class="kw">public async</span> Task OnActionExecutionAsync(context, next)
+    {
+        <span class="kw">foreach</span> (var argument <span class="kw">in</span> context.ActionArguments.Values)
+        {
+            <span class="c1">// 依「參數的實際型別」動態組出 IValidator&lt;T&gt;，向 DI 容器查詢是否有註冊</span>
+            var validatorType = <span class="kw">typeof</span>(IValidator&lt;&gt;).MakeGenericType(argument.GetType());
+            var validator = context.HttpContext.RequestServices.GetService(validatorType) <span class="kw">as</span> IValidator;
+
+            <span class="kw">if</span> (validator == <span class="kw">null</span>) <span class="kw">continue</span>; <span class="c1">// 沒有對應 Validator 就放行</span>
+
+            var result = <span class="kw">await</span> validator.ValidateAsync(new ValidationContext&lt;object&gt;(argument));
+            <span class="kw">if</span> (result.IsValid) <span class="kw">continue</span>;
+
+            context.Result = <span class="kw">new</span> OkObjectResult(<span class="c1">/* Status=Failure */</span>);
+            <span class="kw">return</span>; <span class="c1">// 短路，Controller Action 完全不會被執行</span>
+        }
+        <span class="kw">await</span> next();
+    }
+}</pre>
+      </div>
+      <pre style="margin-top:10px">builder.Services.AddControllers(options =&gt;
+{
+    options.Filters.Add&lt;ValidationActionFilter&gt;();
+});</pre>
+      <p>同步移除 <code class="inline">RegularProductService</code> 建構子的
+      <code class="inline">IValidator&lt;ProductAddRequest&gt;</code> 依賴，<code class="inline">AddProductAsync</code>
+      內也拿掉手動 <code class="inline">ValidateAsync</code> 呼叫。</p>
+    </div>
+
+    <div class="stage a" data-no="✓">
+      <h3><span class="tag">結論</span>只要建立對應 Validator 就自動生效，兩個前提缺一不可</h3>
+      <p>這個機制能「加了 Validator 就自動生效、不用改其他程式碼」，關鍵在於兩件事同時成立：</p>
+      <ul>
+        <li><b>有寫 Validator 類別</b>——繼承 <code class="inline">AbstractValidator&lt;TRequest&gt;</code>，
+        放在 <code class="inline">Nine1.Regularpurchase.V2.Common.Validators</code> 專案底下</li>
+        <li><b>有被註冊進 DI</b>——靠既有的 <code class="inline">AddValidatorsFromAssembly(assembly, filter: ...)</code>
+        自動掃描整個 Assembly，把所有 <code class="inline">AbstractValidator&lt;T&gt;</code> 註冊成
+        <code class="inline">IValidator&lt;T&gt;</code>；Filter 只在執行期用參數型別去問 DI 容器有沒有註冊，
+        <b>完全不知道也不需要知道有哪些 Request 型別存在</b></li>
+      </ul>
+      <p>因此新增 <code class="inline">XxxRequestValidator : AbstractValidator&lt;XxxRequest&gt;</code>
+      丟進 <code class="inline">Common.Validators</code> 專案，<b>不需要改 Program.cs、Filter、Service</b>，
+      下次呼叫對應 API 就會自動被攔截驗證。</p>
+      <div class="callouts">
+        <div class="callout b">
+          <b>例外 1：建構子帶無法被 DI 解析的參數</b>
+          如 <code class="inline">RegularProductPromotionRuleValidator</code> 吃 <code class="inline">(int, int)</code>，
+          已在 <code class="inline">filter</code> 明確排除，不會被自動掃描，也不會被 Filter 攔截到——
+          它是由 <code class="inline">ProductAddRequestValidator</code> 透過
+          <code class="inline">SetValidator((request, _) =&gt; new ...(...))</code> 動態建立、傳入額外上下文。
+        </div>
+        <div class="callout b">
+          <b>例外 2：Validator 寫在 Common.Validators 專案以外</b>
+          <code class="inline">AddValidatorsFromAssembly</code> 只掃描「這一個」組件；
+          其他專案想加 Validator，要嘛也放進這個組件，要嘛要在
+          <code class="inline">ServiceCollectionExtension</code> 多補一行掃描新 Assembly。
+        </div>
+        <div class="callout b">
+          <b>例外 3：多個參數且型別重複</b>
+          目前每個 Request 型別只對應唯一一個 Validator；若同一 Action 有多個參數都各自有 Validator，
+          Filter 依序驗證、遇到第一個失敗就短路回傳，尚無回傳「所有參數所有錯誤」的需求。
+        </div>
+      </div>
+      <p style="margin-top:10px">同一輪也在 Controller／Service 的 <code class="inline">AddProductAsync</code>
+      全路徑補上 <code class="inline">ILogger</code> 記錄，並確認 <code class="inline">ProductAddRequestValidator</code>
+      可安全注入 <code class="inline">ILogger&lt;ProductAddRequestValidator&gt;</code>（框架內建服務，DI 可解析，
+      跟 9.1~9.6 提到的「建構子吃 int 而炸掉」完全不同性質），在 <code class="inline">PreValidate</code>
+      override 記錄「這次是誰進來驗證」。順手移除 Controller 裡與 Validator 重複的
+      <code class="inline">ShopId &lt;= 0</code> 手動檢查。</p>
+      <p><b>驗證結果</b>：<code class="inline">dotnet build</code> 0 Error；
+      <code class="inline">dotnet test --filter RegularProduct</code> 20/20 通過。</p>
+    </div>
+
+    <div class="stage a" data-no="9.10">
+      <h3><span class="tag">補洞</span>補齊遺漏的欄位規則，並把商品頁驗證抽成共用方法</h3>
+      <p>逐一比對需求文件與程式碼，發現以下規則完全沒做：<code class="inline">ProductPurchaseOption</code>
+      應限 1 或 2；<code class="inline">PlanTitle</code> 全形/半形混合上限 20 字、純半形上限 40 字；
+      <code class="inline">PlanDateBegin</code> 須晚於現在 10 分鐘以上；<code class="inline">PlanDateEnd</code>
+      須晚於 <code class="inline">PlanDateBegin</code>；以及生效期間不得超出商品銷售期間。</p>
+      <table class="matrix">
+        <thead><tr><th>規則</th><th>放置位置</th><th>原因</th></tr></thead>
+        <tbody>
+          <tr><td>PurchaseOption / PlanTitle 字數 / 日期時序</td>
+              <td><code class="inline">ProductAddRequestValidator</code></td>
+              <td>純欄位/跨欄位比對，不需外部資料，用 <code class="inline">TimeProvider</code> +
+              <code class="inline">DateTimeHelper.GetNow(...)</code> 取得現在時間</td></tr>
+          <tr><td>生效期間 vs 商品銷售期間</td>
+              <td><code class="inline">RegularProductService</code>（方案 A）</td>
+              <td>需要 SCM 回傳的 <code class="inline">SellingStartDateTime</code>/
+              <code class="inline">SellingEndDateTime</code>，FluentValidation 目前只做同步無 I/O 規則，
+              拿到 <code class="inline">salePageData</code> 後立刻檢查，與「商品序號已存在」等規則位置一致</td></tr>
+        </tbody>
+      </table>
+      <p>順帶把 <code class="inline">AddProductAsync</code>／<code class="inline">EditProductAsync</code>
+      原本重複的「<code class="inline">salePageData == null</code> → ShippingTypeDef 非定期購 →
+      HasPointsPayPairs」三段檢查抽成共用 <code class="inline">ValidateSalePageData</code>；
+      再另外包一層 <code class="inline">ValidateSalePageDataForAddAsync</code>，
+      只給 <code class="inline">AddProductAsync</code> 用，串接「生效期間 vs 銷售期間」
+      「商品序號已存在」「生效期間重疊」這三項<b>只有新增流程才需要</b>的檢查。
+      因為 <code class="inline">ProductEditRequest</code> 本身沒有
+      <code class="inline">PlanDateBegin</code>/<code class="inline">PlanDateEnd</code> 欄位，
+      這條規則刻意不放進兩邊都共用的 <code class="inline">ValidateSalePageData</code>，
+      避免共用簽章被迫塞進只有一邊會用到的參數。</p>
+      <p><b>驗證結果</b>：<code class="inline">dotnet build</code> 0 Error，且抽出共用方法後
+      用 <code class="inline">validatedSalePageData</code>（null-forgiving）取代重複判斷，
+      沒有新增 CS8602 警告；<code class="inline">dotnet test --filter RegularProduct</code>
+      20/20 通過。<code class="inline">EditProductAsync</code> 本輪未變動。</p>
+    </div>
+
+    <div class="stage b" data-no="9.11">
+      <h3><span class="tag">疑問</span>帶入非法 enum 字串為什麼只回傳籠統的 "Invalid Data"？</h3>
+      <p>實際打 API 測試，把 <code class="inline">Type</code>、<code class="inline">GiftTypeId</code>
+      這類欄位帶入不存在的字串（如 <code class="inline">"fefewf"</code>、<code class="inline">"yyy"</code>），
+      沒有進到 <code class="inline">ProductAddRequestValidator</code> 或
+      <code class="inline">RegularProductService</code>，而是直接回：</p>
+      <pre>{
+  "Status": "Failure",
+  "TxId": "c8c6f690237c44b7adabd0eb69985992",
+  "Data": null,
+  "ErrorMessage": "Invalid Data"
+}</pre>
+      <p><b>根因</b>：<code class="inline">Type</code>／<code class="inline">GiftTypeId</code> 是
+      <b>enum 型別</b>，搭配 <code class="inline">JsonStringEnumConverter</code>。整個順序是：</p>
+      <ol>
+        <li>ASP.NET Core 收到 body → 先做 Model Binding（JSON 反序列化成 <code class="inline">ProductAddRequest</code>）</li>
+        <li>非法字串無法轉成合法 enum 成員，反序列化在這一步就失敗</li>
+        <li><code class="inline">[ApiController]</code> 判定 ModelState 無效 → 在 Action 執行前
+        （比 <code class="inline">ValidationActionFilter</code>、Controller、Service 都早）
+        呼叫 <code class="inline">Program.cs</code> 裡的 <code class="inline">InvalidModelStateResponseFactory</code></li>
+        <li>這個 factory 是刻意對齊 V1：型別轉換失敗一律回 HTTP 200
+        <code class="inline">Status=Failure, ErrorMessage="Invalid Data"</code>，而非 HTTP 400</li>
+      </ol>
+      <div class="callouts">
+        <div class="callout a">
+          <b>結論</b>：刻意設計、對齊 V1 行為，不是 bug，也不是 Filter/Validator 沒生效——
+          Model Binding 失敗發生在最早的階段，兩者根本沒機會被執行到。
+        </div>
+        <div class="callout b">
+          <b>除錯優先順序提醒</b>：日後遇到「傳入看似合理的值，但直接回籠統 Invalid Data，
+          且 Validator/Service 的 Log 完全沒印出來」時，先檢查<b>該欄位是否為 enum/int/DateTime
+          等非 nullable 型別、傳入值能否被反序列化</b>，而不是先查 Validator 或 Service 業務規則。
+          若要讓錯誤訊息更明確，需調整 <code class="inline">InvalidModelStateResponseFactory</code>，
+          但會偏離目前對齊 V1 簡化訊息格式的設計，需先確認是否要改。
+        </div>
+      </div>
+    </div>
+
+    <div class="stage b" data-no="9.12">
+      <h3><span class="tag">延伸</span>SMS 站台 BFF 端 enum 序列化：預設會要求呼叫端傳數字</h3>
+      <p>範圍轉移：以下發生在 <b>NineYi.Sms（SMS/OSM 站台）</b>，不是本文件主體的
+      <code class="inline">nine1.regularpurchase.v2</code>——新增 BFF 端點
+      <code class="inline">Api/RegularProduct/Create</code> 用來串接 v2 站台的
+      <code class="inline">POST /api/regular/products</code> 時發現的獨立問題，記在此處是因為
+      跟 9.11 屬於同一系列（enum 序列化格式）的延伸案例。</p>
+      <p>SMS 端 <code class="inline">RegularProductCreateRequestEntity</code> 內的
+      <code class="inline">ShippingCountModeEnum</code>／<code class="inline">RegularProductPromotionTypeEnum</code>／
+      <code class="inline">RegularProductPromotionTriggerModeEnum</code>／
+      <code class="inline">RegularProductPromotionOutOfStockActionEnum</code> 一開始都只是單純
+      C# enum，沒有加任何 <code class="inline">JsonConverter</code>。</p>
+      <p><b>根因</b>：SMS 站台是 ASP.NET (Framework) Web API + Newtonsoft.Json，
+      全域設定（<code class="inline">WebApiConfig.cs</code>／<code class="inline">JsonConvertSetting.cs</code>）
+      並未註冊 <code class="inline">StringEnumConverter</code>（只有既有的
+      <code class="inline">ProductScopeJsonConverter</code> 等自訂 converter，跟此次無關）。
+      Newtonsoft.Json 對純 enum 屬性的預設行為是<b>數字</b>，但需求規格書
+      （<code class="inline">regular-product-create-api-spec.html</code> 2.2 節）明確要求
+      <code class="inline">ShippingCountMode</code> 等欄位是 <code class="inline">enum（string）</code>，
+      範例 JSON 也都是 <code class="inline">"Gift"</code>／<code class="inline">"Interval"</code> 這類字串——
+      若不處理，OSM 前端呼叫這支新 API 時會被迫傳數字，跟規格書、跟 v2 站台
+      （已用 <code class="inline">JsonStringEnumConverter</code>）的呼叫慣例不一致。</p>
+      <div class="callouts">
+        <div class="callout a">
+          <b>修復</b>：只在這 4 個 enum <b>型別本身</b>加
+          <code class="inline">[JsonConverter(typeof(StringEnumConverter))]</code>
+          （沿用倉庫既有慣例，如 <code class="inline">MemberCollectionTypeDefEnum</code>），
+          而不是修改 <code class="inline">WebApiConfig.cs</code> 全域註冊。
+        </div>
+        <div class="callout b">
+          <b>為什麼刻意選局部而非全域</b>：全域加
+          <code class="inline">config.Formatters.JsonFormatter.SerializerSettings.Converters</code>
+          會影響全站其他既有 API 的 enum 序列化行為（風險高、範圍不可控）；
+          局部加在型別宣告上，只影響用到這 4 個型別的地方，不會波及其他人正在維護的功能。
+        </div>
+      </div>
+      <p><b>驗證結果</b>：<code class="inline">MSBuild</code> 整個 <code class="inline">NineYi.Sms.sln</code>
+      → 0 Error。因為 <code class="inline">RegularProductService</code> 內組下游 Request 時是用
+      <code class="inline">rule.Type.ToString()</code>（或改用 AutoMapper 的
+      <code class="inline">MapFrom(s =&gt; s.Type.ToString())</code>）取字串，
+      <code class="inline">StringEnumConverter</code> 只影響 JSON 序列化/反序列化，
+      不影響 <code class="inline">.ToString()</code> 的行為，兩者互不衝突。</p>
+      <div class="callout b">
+        <b>除錯優先順序提醒（延伸 9.11）</b>：新增一支 BFF API 時，若 Request/Response 內含 enum 欄位，
+        務必先確認該站台是否有全域 <code class="inline">StringEnumConverter</code>；
+        若沒有，且規格書要求字串格式，需自行在 enum 型別上補
+        <code class="inline">[JsonConverter(typeof(StringEnumConverter))]</code>，
+        不能假設「有 enum 屬性就自動是字串」——不同站台（ASP.NET Core System.Text.Json
+        vs ASP.NET Framework Newtonsoft.Json）、甚至同站台不同 Controller 的全域設定都可能不同。
+      </div>
+    </div>
+
+    <div class="stage b" data-no="9.13">
+      <h3><span class="tag">Bug</span>SMS 端 IsGiftEnabled=false 時仍組出贈品活動規則存入下游</h3>
+      <p>範圍：<b>NineYi.Sms</b>，<code class="inline">RegularProductService.Create</code>。
+      實測請求帶 <code class="inline">"isGiftEnabled": false</code> 但同時夾帶
+      <code class="inline">regularProductPromotionRules</code> 陣列時，SMS 仍把該陣列轉換後整包傳給
+      v2 站台的 <code class="inline">/api/regular/products</code>，導致明明關閉贈品活動的方案，
+      v2 端仍把 <code class="inline">rpd_promotion_json</code> 存成非空陣列。</p>
+      <p><b>根因</b>：組裝 <code class="inline">RegularProductCreateApiRequestEntity</code> 時，
+      <code class="inline">RegularProductPromotionRules</code> 欄位單純用
+      <code class="inline">(entity.RegularProductPromotionRules ?? new List&lt;...&gt;()).Select(this.ToApiPromotionRule).ToList()</code>
+      無條件轉換，完全沒有參考 <code class="inline">entity.IsGiftEnabled</code>——
+      本輪稍早新增的 <code class="inline">RegularProductCreateRequestEntityValidator</code> 只驗證
+      「<code class="inline">IsGiftEnabled=true</code> 時規則不可為空」這個方向，
+      沒有反向規則「<code class="inline">IsGiftEnabled=false</code> 時應忽略/清空規則」，
+      呼叫端夾帶垃圾資料時就會被原樣transformed 存下去。</p>
+      <div class="callouts">
+        <div class="callout a">
+          <b>修復</b>：<code class="inline">RegularProductService.Create</code> 改成依
+          <code class="inline">entity.IsGiftEnabled</code> 分流：<code class="inline">true</code>
+          才轉換 <code class="inline">RegularProductPromotionRules</code>；<code class="inline">false</code>
+          一律組空 <code class="inline">List&lt;RegularProductPromotionRuleApiEntity&gt;()</code>
+          傳給下游，不管呼叫端是否誤帶規則資料。Build 0 error 驗證通過。
+        </div>
+        <div class="callout b">
+          <b>提醒</b>：Validator 只負責「擋掉不合法的組合」，不等於「自動清洗/忽略不該存在的資料」——
+          兩者是不同職責。像這種「某開關關閉時，相關聯欄位應該被忽略而非驗證失敗」的情境，
+          必須在 Service／組裝 Request 的地方明確處理，不能只靠 Validator 補完整。
+        </div>
+      </div>
+    </div>
+
+    <div class="stage b" data-no="9.14">
+      <h3><span class="tag">設計缺口</span>v2 新增定期購方案 API 沒有回傳 rpd_pk，SMS 端只能回傳商品頁序號</h3>
+      <p>範圍：<b>跨兩站台</b>——現象發生在 <b>NineYi.Sms</b>，根因在
+      <b>nine1.regularpurchase.v2</b>。前端呼叫 SMS 的
+      <code class="inline">Api/RegularProduct/Create</code> 新增成功後，預期拿到的應該是
+      <b>新建立的定期購方案序號（<code class="inline">rpd_pk</code>）</b>，供後續
+      <code class="inline">Edit</code>／<code class="inline">Get</code> API 使用；
+      但目前 SMS 回給前端的 <code class="inline">RegularProductCreateResponseEntity.ProductNo</code>
+      其實只是<b>呼叫端當初傳入的商品頁序號</b>（原樣回填），完全不是 v2 新增後產生的方案序號。</p>
+      <p><b>根因追查</b>（由 SMS 往下游追到 v2 三層）：</p>
+      <ul style="margin:0 0 12px 20px; padding:0;">
+        <li>v2 <code class="inline">RegularProductRepository.InsertAsync(RegularProductEntity entity)</code>
+        的 INSERT SQL 沒有 <code class="inline">RETURNING rpd_pk</code>，方法簽章直接回傳
+        <code class="inline">bool</code>（只知道有沒有插入成功，插入後產生的 <code class="inline">rpd_pk</code>
+        直接被丟棄，沒有任何管道往上傳）。</li>
+        <li>v2 <code class="inline">RegularProductService.AddProductAsync</code> 回傳型別是
+        <code class="inline">RegularProductResult&lt;object?&gt;</code>，成功時只回
+        <code class="inline">RegularProductResult&lt;object?&gt;.Success("儲存成功")</code>，
+        <code class="inline">Data</code> 恆為 <code class="inline">null</code>。</li>
+        <li>v2 <code class="inline">RegularProductController.AddProductAsync</code> 回傳
+        <code class="inline">MessageApiResponseEntity&lt;string&gt;</code>，
+        <code class="inline">Data = result.Message</code>（就是一句「儲存成功」的字串，不是 pk）。</li>
+        <li>SMS <code class="inline">RegularProductHttpClient.Create</code> 把下游回應反序列化成
+        <code class="inline">RegularShopSettingApiResponseEntity&lt;object&gt;</code>，
+        <code class="inline">Data</code> 型別是 <code class="inline">object</code>，本來就沒地方可以解析出 pk。</li>
+        <li>SMS <code class="inline">RegularProductService.Create</code> 最後回傳
+        <code class="inline">new RegularProductCreateResponseEntity { ProductNo = entity.ProductNo }</code>——
+        直接回填 request 帶進來的商品頁序號，跟資料庫實際產生的 <code class="inline">rpd_pk</code> 完全無關。</li>
+      </ul>
+      <div class="callouts">
+        <div class="callout b">
+          <b>正確修法（尚未動工，先記錄，使用者決定暫不改 v2）</b>：
+          <br/>1) v2 <code class="inline">InsertAsync</code> 改用
+          <code class="inline">INSERT ... RETURNING rpd_pk</code>（Dapper
+          <code class="inline">ExecuteScalarAsync&lt;long&gt;</code>），回傳新產生的 <code class="inline">rpd_pk</code>
+          而非 <code class="inline">bool</code>。
+          <br/>2) <code class="inline">AddProductAsync</code> 回傳型別由
+          <code class="inline">RegularProductResult&lt;object?&gt;</code> 改成攜帶
+          <code class="inline">rpd_pk</code> 的型別（例如 <code class="inline">RegularProductResult&lt;long&gt;</code>
+          或新增 <code class="inline">ProductAddResponse { long PlanId }</code>）。
+          <br/>3) Controller 把該 pk 放進 <code class="inline">Data</code> 回傳給 SMS。
+          <br/>4) SMS <code class="inline">RegularProductHttpClient</code>／
+          <code class="inline">RegularProductCreateApiRequestEntity</code> 對應的 Response 型別要能解析出該 pk，
+          <code class="inline">RegularProductService.Create</code> 改成
+          <code class="inline">RegularProductCreateResponseEntity.PlanId = 下游回傳的 rpd_pk</code>
+          （而不是 <code class="inline">ProductNo</code>），前端拿這個 <code class="inline">PlanId</code>
+          去打後續 Edit/Get API。
+        </div>
+        <div class="callout a">
+          <b>已知類似前例</b>：v2 站台其他既有查詢（<code class="inline">GetPagedListAsync</code>、
+          <code class="inline">RegularOrderService</code>）都是用
+          <code class="inline">PlanId</code> 對應 <code class="inline">rpd_pk</code>／
+          <code class="inline">rgo_rpd_pk</code> 的命名慣例，未來補這個欄位時應沿用
+          <code class="inline">PlanId</code> 這個既有命名，不要另創新名詞。
+        </div>
+      </div>
+      <div class="callout b">
+        <b>除錯優先順序提醒</b>：新增（Create）類型的 API 若前端後續需要用「新建立資源的 Id」
+        做編輯/查詢，務必在設計 Response 階段就確認整條鏈路（Repository Insert → Service →
+        Controller → 上游 BFF）每一層都有把這個 Id 往外傳，不能只驗證「新增有沒有成功」，
+        而忽略「新增後產生的識別碼有沒有回得去」。此問題本次只發現、未修復（使用者決定暫緩 v2 端改動）。
+      </div>
+    </div>
+
+    <div class="stage a" data-no="9.15">
+      <h3><span class="tag">盤點</span>贈品清單必填檢查漏了 Type 前提條件</h3>
+      <p>SMS <code class="inline">RegularProductPromotionRuleEntityValidator</code>
+      新增時，<code class="inline">RegularProductPromotionGiftItemList</code> 必填（至少 1 筆）
+      的規則原本沒有加任何 <code class="inline">When</code> 條件，等於不管
+      <code class="inline">Type</code> 是什麼都會要求要有贈品清單。</p>
+      <p><b>修正</b>：加上 <code class="inline">.When(i =&gt; i.Type ==
+      RegularProductPromotionTypeEnum.Gift)</code>，只有活動類型是「贈品」時才要求贈品清單必填。
+      本次僅開放 <code class="inline">Type=Gift</code> 一種活動類型，這條件目前恆真，
+      但寫上去是為了未來若擴充其他活動類型（非贈品類）時，不會被這條規則誤擋。</p>
+      <div class="callout b">
+        <b>提醒</b>：巢狀規則的必填檢查要回頭確認「這個必填是不是有前提條件」，
+        不能因為目前資料只有一種可能值，就省略 <code class="inline">When</code>——
+        enum 值域未來擴充時，沒有 <code class="inline">When</code> 的規則會變成隱性 bug。
+      </div>
+    </div>
+
+    <div class="stage b" data-no="9.16">
+      <h3><span class="tag">盤點</span>Service/HttpClient 是否需要重複驗證 ShopId？——不需要，理由是分層各自負責不同事</h3>
+      <p>盤點 <code class="inline">RegularProductService.cs</code>／
+      <code class="inline">RegularProductHttpClient.cs</code> 是否每個 Method 都要檢查
+      <code class="inline">ShopId</code>／<code class="inline">SupplierId</code>。
+      本次 API 沒有 <code class="inline">SupplierId</code> 概念，故只討論 <code class="inline">ShopId</code>。</p>
+      <table class="matrix">
+        <thead><tr><th>分層</th><th>目前作法</th><th>驗證的是什麼</th><th>需要嗎</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">RegularProductController.Create</code></td>
+              <td><code class="inline">_userService.GetCurrentUser()</code> +
+              <code class="inline">IsAuthenticated(shopId)</code></td>
+              <td><b>權限/認證</b>：這個登入者能不能操作這個 ShopId</td>
+              <td>需要，且已存在</td></tr>
+          <tr><td><code class="inline">RegularProductService.Create</code></td>
+              <td><code class="inline">if (shopId &lt;= 0) throw</code></td>
+              <td><b>參數合法性</b>：呼叫者傳進來的數值本身合不合法，跟呼叫者是誰無關</td>
+              <td>需要，且已存在</td></tr>
+          <tr><td><code class="inline">RegularProductHttpClient.Create</code></td>
+              <td>無驗證，直接組 request 送出</td>
+              <td>—</td>
+              <td><b>不需要</b>：純傳輸層，且唯一呼叫端（Service）已經驗證過</td></tr>
+        </tbody>
+      </table>
+      <div class="callouts">
+        <div class="callout a">
+          <b>結論</b>：Controller 的權限驗證、Service 的參數防呆，兩者目的不同、互補而非重複，
+          都該留著。HttpClient 加驗證只是形式重複，不會攔到任何上層沒攔到的情況，違反 DRY，
+          且本專案其他既有 <code class="inline">*HttpClient</code> 類別也沒有這種二次驗證的先例。
+        </div>
+        <div class="callout b">
+          <b>判斷原則</b>：遇到「這個分層要不要加驗證」的疑問時，先問「這一層驗證的目的跟
+          其他層是否相同」；如果是同一件事（例如都在檢查同一個數值合不合法），就該只留一層，
+          放在最靠近資料來源、最早能擋下的地方，其餘層不必重複。
+        </div>
+      </div>
+    </div>
+
+    <div class="stage b" data-no="9.17">
+      <h3><span class="tag">盤點</span>兩個「要不要調整」的疑問：TypeLite/Enums.ts 同步、HtmlCleanService XSS 防護</h3>
+      <p><b>疑問一：新增/改名的 Enum、Entity 是否要同步更新
+      <code class="inline">TypeLite.Net4.d.ts</code>／<code class="inline">Enums.ts</code>？</b></p>
+      <p>結論：<b>不需要</b>。<code class="inline">TypeLite.Net4.tt</code> 是用明確的白名單
+      （<code class="inline">.For&lt;Namespace.ClassName&gt;()</code>）決定要產生哪些 C# 類別的 TS 定義，
+      不是自動掃描全部類別；本次改動的
+      <code class="inline">RegularProductPromotionOutOfStockActionEnum</code>／
+      <code class="inline">RegularProductPromotionTriggerModeEnum</code>／
+      <code class="inline">RegularProductPromotionTypeEnum</code>／<code class="inline">ShippingCountModeEnum</code>／
+      <code class="inline">RegularProductCreateRequestEntity</code>／<code class="inline">RegularProductCreateResponseEntity</code>／
+      <code class="inline">RegularProductPromotionGiftItemEntity</code>／<code class="inline">RegularProductPromotionRuleEntity</code>／
+      <code class="inline">RegularProductCreateApiRequestEntity</code>／<code class="inline">RegularProductPromotionGiftItemApiEntity</code>／
+      <code class="inline">RegularProductPromotionRuleApiEntity</code> 從一開始就<b>沒有任何一個</b>被
+      <code class="inline">.For&lt;&gt;()</code> 註冊過。原因是這批 Entity 是
+      <code class="inline">Api/RegularProduct/Create</code> 這支 BFF API 的 Request/Response DTO，
+      消費端是<b>外部獨立的 OSM 前端專案</b>，不是本 repo 自己的 Razor 頁面／內嵌 TS，
+      跟 <code class="inline">TypeLite</code> 產生鏈路完全無關。只有「本 repo 自己的 <code class="inline">.cshtml</code>
+      頁面內的 TS 會直接引用該類別」時，才需要加進 <code class="inline">.tt</code> 的 <code class="inline">.For&lt;&gt;()</code> 清單。</p>
+      <p><b>疑問二：<code class="inline">RegularProductCreateRequestEntity</code> 是否需要用
+      <code class="inline">HtmlCleanService</code> 防範 XSS？</b></p>
+      <p>結論：<b>不需要</b>。盤點既有用法（<code class="inline">LocationService.Create/Update</code>
+      對 <code class="inline">CustomOpeningHoursContent</code> 做 <code class="inline">Clean()</code>），
+      <code class="inline">HtmlCleanService</code> 是用在「會被存起來、之後可能被當 HTML 渲染到前台頁面」的
+      自由文字欄位。而本次新增的欄位裡，唯一的字串欄位只有 <code class="inline">Title</code>（方案名稱），
+      spec 明確定義它「不顯示於前台」，只是後台操作人員自己看的標籤，不會被任何頁面用
+      <code class="inline">innerHTML</code> 之類方式渲染；其餘欄位（<code class="inline">SalepageId</code>／
+      日期／enum／<code class="inline">int</code>／<code class="inline">bool</code>）皆非字串，天生無 XSS 疑慮。
+      即使 <code class="inline">Title</code> 含 <code class="inline">&lt;script&gt;</code> 字樣，因為只會被當純文字顯示/儲存，
+      不會被瀏覽器解析成 HTML，沒有注入風險。</p>
+      <div class="callout b">
+        <b>共通判斷原則</b>：這兩個疑問看似不同，但判斷邏輯一致——先確認「這個機制的產生/觸發條件是什麼」
+        （TypeLite 是白名單制、HtmlCleanService 是給會被當 HTML 渲染的欄位用），
+        再回頭比對「這次改動的東西符不符合那個觸發條件」，而不是看到規則名稱或警告訊息就照樣套用。
+        若未來 <code class="inline">Title</code> 被顯示在前台頁面且用 HTML 渲染方式呈現，
+        或這批 Entity 開始被本 repo 自己的 Razor 頁面引用，才需要重新評估這兩個結論。
+      </div>
+      <p><b>補充：<code class="inline">TypeLite.Net4.tt</code> 這支 T4 樣板的執行意義與用途</b></p>
+      <ul style="margin:0 0 12px 20px; padding:0;">
+        <li><b>本質</b>：這是一支 <code class="inline">.tt</code>（T4 Text Template）檔案，
+        搭配 Visual Studio 內建的 T4 文字樣板引擎，在<b>設計階段（每次存檔/手動執行 Transform）
+        或建置後</b>被執行一次，執行的是 C# 程式碼（樣板內用 <code class="inline">&lt;# #&gt;</code>
+        包起來），不是執行期程式碼、不會在網站執行時跑。</li>
+        <li><b>做的事</b>：透過 <code class="inline">&lt;#@ assembly name="$(TargetDir)NineYi.Sms.BL.BE.dll" #&gt;</code>
+        這類指令，載入本專案<b>編譯後的 DLL</b>（例如 <code class="inline">NineYi.Sms.BL.BE.dll</code>），
+        再用 <code class="inline">TypeLite</code> 這套 library 透過 .NET Reflection 讀取白名單裡
+        <code class="inline">.For&lt;Namespace.ClassName&gt;()</code> 註冊過的 C# 類別／Enum 的欄位、型別、
+        列舉成員，自動產生對應的 TypeScript 介面／列舉定義，輸出成
+        <code class="inline">TypeLite.Net4.d.ts</code>（型別宣告檔）與 <code class="inline">Enums.ts</code>
+        （由 <code class="inline">manager.StartNewFile("Enums.ts")</code> 另外拆出的列舉定義檔）。</li>
+        <li><b>用途</b>：讓本 repo 自己的 <code class="inline">.cshtml</code> 頁面內嵌的 TypeScript／JavaScript
+        程式碼，可以直接 <code class="inline">import</code> 這些自動產生的介面／列舉型別，
+        跟後端 C# Entity 的欄位名稱、型別、列舉值保持強型別同步，
+        避免前端 TS 手動謄打一份重複定義、日後後端改欄位卻忘記同步前端而出現執行期才發現的欄位對不上問題。</li>
+        <li><b>因為是白名單機制</b>：只有明確寫進 <code class="inline">.For&lt;&gt;()</code> 的類別才會被
+        Reflection 掃到、產生 TS 定義；沒被登記的類別（包含本次新增/改名的
+        <code class="inline">RegularProduct*</code> 系列）<b>完全不會出現</b>在產生結果裡，
+        也就不會有「異動 C# 卻沒同步 TS」的落差問題——因為打從一開始就沒有產生過對應的 TS 定義可言。</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer-note">nine1.regularpurchase.v2 · RegularProduct Promotion Validation Refactor · Field Notes</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+//#if(isFlatStruct)
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Nine1.Sample.Project.Web.Api": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5566",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "N1_MARKET": "Local",
+        "N1_ENVIRONMENT": "Dev",
+        "N1_LOCAL_MODE": "True"
+      }
+    }
+  }
+}
+//#endif
+//#if(isModuleStruct)
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Nine1.Sample.Project.Web.Api": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5566",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "N1_MARKET": "Local",
+        "N1_ENVIRONMENT": "Dev",
+        "N1_LOCAL_MODE": "True"
+      }
+    }
+  }
+}
+//#endif

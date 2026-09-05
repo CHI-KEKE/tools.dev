@@ -1,0 +1,22 @@
+info:
+  name: template-delete
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: "{{template-base-url}}/api/Templates/Delete"
+  body:
+    type: json
+    data: |-
+      {
+        "TemplateKey": "SCMEmail/SCMEmail_TradesOrderV2_RazorTemplatea/-1/en-US",
+        "Editor":"JackyHu"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

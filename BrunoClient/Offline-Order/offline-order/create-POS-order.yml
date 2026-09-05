@@ -1,0 +1,165 @@
+info:
+  name: create-POS-order
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/api/OfflineOrder/CreatePOSOrder"
+  body:
+    type: json
+    data: |-
+      {
+          "ShopId": 2,
+          "SourceTypeDef": "POSAPI",
+          "Order": {
+              "OuterMemberCode": "Allenyo01",
+              "OrderCode1": "0730allentest001",
+              "OrderCode2": "",
+              "OrderCode3": "",
+              "OrderCode4": "",
+              "OrderCode5": "",
+              "OuterLocationCode": "191",
+              "OuterEmployeeCode": "23",
+              "TotalPayment": 21,
+              "OrderSlaveCount": 3
+          },
+          "OrderSlaves": [
+              {
+                  "OrderSlaveCode1": "test0001",
+                  "OrderSlaveCode2": "",
+                  "TypeMemo": "Normal",
+                  "ProductName": "1號",
+                  "SaleProductSKUOuterCode": "abc",
+                  "TradesOrderFinishDateTime": "2025-07-30T17:00:00+08:00",
+                  "TotalPayment": 7,
+                  "TotalPrice": 7,
+                  "Price": 7,
+                  "Qty": 1,
+                  "TotalDiscount": 0,
+                  "SumOfPromotionDiscount": 0,
+                  "ECouponDiscount": 0,
+                  "MemberTierDiscount": 0,
+                  "LoyaltyPointDiscount": 0,
+                  "LoyaltyPoint": 0,
+                  "OriginalOrderCode1": "",
+                  "OriginalOrderCode2": "",
+                  "OriginalOrderCode3": "",
+                  "OriginalOrderCode4": "",
+                  "OriginalOrderCode5": "",
+                  "IsCalculatePoint": true,
+                  "IsCalculateCoupon": true
+              },
+              {
+                  "OrderSlaveCode1": "test0002",
+                  "OrderSlaveCode2": "",
+                  "TypeMemo": "Normal",
+                  "ProductName": "2號",
+                  "SaleProductSKUOuterCode": "abc",
+                  "TradesOrderFinishDateTime": "2025-07-30T17:00:00+08:00",
+                  "TotalPayment": 8,
+                  "TotalPrice": 8,
+                  "Price": 8,
+                  "Qty": 1,
+                  "TotalDiscount": 0,
+                  "SumOfPromotionDiscount": 0,
+                  "ECouponDiscount": 0,
+                  "MemberTierDiscount": 0,
+                  "LoyaltyPointDiscount": 0,
+                  "LoyaltyPoint": 0,
+                  "OriginalOrderCode1": "",
+                  "OriginalOrderCode2": "",
+                  "OriginalOrderCode3": "",
+                  "OriginalOrderCode4": "",
+                  "OriginalOrderCode5": "",
+                  "IsCalculatePoint": true,
+                  "IsCalculateCoupon": true
+              },
+              {
+                  "OrderSlaveCode1": "test0003",
+                  "OrderSlaveCode2": "",
+                  "TypeMemo": "Normal",
+                  "ProductName": "3號",
+                  "SaleProductSKUOuterCode": "abc",
+                  "TradesOrderFinishDateTime": "2025-07-30T17:00:00+08:00",
+                  "TotalPayment": 6,
+                  "TotalPrice": 6,
+                  "Price": 6,
+                  "Qty": 1,
+                  "TotalDiscount": 0,
+                  "SumOfPromotionDiscount": 0,
+                  "ECouponDiscount": 0,
+                  "MemberTierDiscount": 0,
+                  "LoyaltyPointDiscount": 0,
+                  "LoyaltyPoint": 0,
+                  "OriginalOrderCode1": "",
+                  "OriginalOrderCode2": "",
+                  "OriginalOrderCode3": "",
+                  "OriginalOrderCode4": "",
+                  "OriginalOrderCode5": "",
+                  "IsCalculatePoint": true,
+                  "IsCalculateCoupon": true
+              }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  ## location
+
+  2location = 191
+  11locaition = 12442
+
+
+
+  ## 純負向
+
+  {
+      "ShopId": 2,
+      "SourceTypeDef": "POSAPI",
+      "Order": {
+          "OuterMemberCode": "Allenyo01",
+          "OrderCode1": "0701allentest001anti02",
+          "OrderCode2": "",
+          "OrderCode3": "",
+          "OrderCode4": "",
+          "OrderCode5": "",
+          "OuterLocationCode": "191",
+          "OuterEmployeeCode": "23",
+          "TotalPayment": -6,
+          "OrderSlaveCount": 1
+      },
+      "OrderSlaves": [
+          {
+              "OrderSlaveCode1": "test0005",
+              "OrderSlaveCode2": "",
+              "TypeMemo": "Normal",
+              "ProductName": "3號負",
+              "SaleProductSKUOuterCode": "abc",
+              "TradesOrderFinishDateTime": "2025-07-01T15:00:00+08:00",
+              "TotalPayment":-6,
+              "TotalPrice": -6,
+              "Price": 6,
+              "Qty": -1,
+              "TotalDiscount": 0,
+              "SumOfPromotionDiscount": 0,
+              "ECouponDiscount": 0,
+              "MemberTierDiscount": 0,
+              "LoyaltyPointDiscount": 0,
+              "LoyaltyPoint": 0,
+              "OriginalOrderCode1": "0701allentest002",
+              "OriginalOrderCode2": "",
+              "OriginalOrderCode3": "",
+              "OriginalOrderCode4": "",
+              "OriginalOrderCode5": "",
+              "IsCalculatePoint": true,
+              "IsCalculateCoupon": true
+          }
+      ]
+  }

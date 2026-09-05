@@ -1,0 +1,45 @@
+﻿info:
+  name: S02_GetPromotionDetail_確認活動建立成功
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/GetPromotionDetail?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "Id": {{promotionId}}
+      }
+  auth: inherit
+
+tests: |-
+  test("S02 狀態碼應為 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("S02 TypeDef 應為 CartReachPieceExtraPurchase", function () {
+    const body = res.getBody();
+    expect(body.Data.TypeDef).to.equal("CartReachPieceExtraPurchase");
+  });
+  test("S02 ExtraPurchaseRuleList 應有 2 階", function () {
+    const body = res.getBody();
+    expect(body.Data.ExtraPurchaseRuleList).to.have.lengthOf(2);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

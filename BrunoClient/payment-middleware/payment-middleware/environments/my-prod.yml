@@ -1,0 +1,5 @@
+name: my-prod
+color: "#2E8A54"
+variables:
+  - name: base-url
+    value: https://payment-middleware-api-internal.my.91app.io

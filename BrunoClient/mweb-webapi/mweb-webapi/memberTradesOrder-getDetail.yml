@@ -1,0 +1,25 @@
+info:
+  name: memberTradesOrder-getDetail
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base-url}}/webapi/MemberTradesOrder/GetDetail/13470?v=0&shopId=4&lang=en-US"
+  params:
+    - name: v
+      value: "0"
+      type: query
+    - name: shopId
+      value: "4"
+      type: query
+    - name: lang
+      value: en-US
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

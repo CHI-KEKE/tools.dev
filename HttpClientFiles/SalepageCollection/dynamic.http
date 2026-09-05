@@ -1,0 +1,34 @@
+### QA
+#@host=https://salepage-service-api-internal.qa.91dev.tw/
+@host=https://salepage-service-api-internal.qa1.hk.91dev.tw/
+#@host=https://salepage-service-api-internal.qa1.my.91dev.tw/
+
+### PP
+##@host=https://salepage-service-api-internal.pp.91dev.tw/
+
+### Prod
+#@host=https://salepage-service-api-internal.91app.io/
+#@host=https://salepage-service-api-internal.hk.91app.io/
+#@host=https://salepage-service-api-internal.my.91app.io/
+
+@shopId=2
+@collectionId=d_57851349725876480
+@traceId=TEST-{{$guid}}
+
+### 取得 Collection 資訊
+GET {{host}}api/dynamic-salepage-collections/{{collectionId}}
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+### 查詢動態圈選的規則
+POST {{host}}api/dynamic-salepage-collections/{{collectionId}}:get-rules
+Content-Type: application/json
+N1-TRACE-ID: {{traceId}}
+N1-SHOP-ID: {{shopId}}
+
+{
+  "pagination": {
+    "pageIndex": 0,
+    "pageSize": 50
+  }
+}

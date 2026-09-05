@@ -1,0 +1,35 @@
+info:
+  name: check-promotio-rewardPoint
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/PromotionEngine/CheckPromotionRewardPoint"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+         "ShopId":2,
+         "PromotionEngineTypeDef":"RewardReachPriceWithPoint2",
+         "StartDateTime":"2025-02-19T18:00:00.000Z",
+         "EndDateTime":"2099-12-31T15:59:00.000Z",
+         "TargetTypeDef":"Shop",
+         "ExcludeTargetTypeDef":"None",
+         "IncludeTargetIdList":[],
+         "ExcludeTargetIdList":[],
+         "IsPermanentPromotion":true,
+         "RewardPointRuleList":[],
+         "CrmShopMemberCardIdList":[],
+         "PeriodType":{}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

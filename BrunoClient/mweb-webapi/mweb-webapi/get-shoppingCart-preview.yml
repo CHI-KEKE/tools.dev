@@ -1,0 +1,34 @@
+info:
+  name: get-shoppingCart-preview
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{base-url}}/webapi/ShoppingCartV3/GetShoppingCartPreview?v=0&shopId={{shopId}}&lang=zh-TW"
+  headers:
+    - name: Cookie
+      value: ""
+  params:
+    - name: v
+      value: "0"
+      type: query
+    - name: shopId
+      value: "{{shopId}}"
+      type: query
+    - name: lang
+      value: zh-TW
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "shopId": 10230
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

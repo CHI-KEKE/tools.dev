@@ -1,0 +1,6 @@
+name: qa
+variables:
+  - name: base-url
+    value: https://memberservice-api-internal.qa.91dev.tw
+  - name: collectionId
+    value: 72358179-1014-4eca-a59c-14a49f1ceed7

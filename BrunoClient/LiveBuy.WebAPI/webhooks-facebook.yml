@@ -1,0 +1,56 @@
+info:
+  name: webhooks-facebook
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{base-url}}/api/webhooks/facebook"
+  headers:
+    - name: X-Hub-Signature-256
+      value: sha256=a41588be3868f74803ecf89d75694d5b621309fb310d57fbc46a884b18f9c76e
+  body:
+    type: json
+    data: |-
+      {
+        "entry": [
+          {
+            "id": "825108224029159",
+            "time": 1773038536,
+            "changes": [
+              {
+                "value": {
+                  "from": {
+                    "id": "34334088339569819",
+                    "name": "Wei Cienna"
+                  },
+                  "post": {
+                    "status_type": "added_video",
+                    "is_published": true,
+                    "updated_time": "2026-03-09T08:00:34Z",
+                    "permalink_url": "https://www.facebook.com/122118270159159791/videos/1165084468907831",
+                    "promotion_status": "ineligible",
+                    "id": "825108224029159_1165084468907831"
+                  },
+                  "message": "KK666",
+                  "post_id": "825108224029159_1165084468907831",
+                  "comment_id": "202603091604",
+                  "created_time": 1773038524,
+                  "item": "comment",
+                  "parent_id": "825108224029159_1165084468907831",
+                  "verb": "add"
+                },
+                "field": "feed"
+              }
+            ]
+          }
+        ],
+        "object": "page"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

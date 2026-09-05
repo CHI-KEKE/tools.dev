@@ -1,0 +1,12 @@
+info:
+  name: QFPay
+  type: folder
+  seq: 1
+
+request:
+  headers:
+    - name: X-Api-Key
+      value: FAC806373B124A7CB32C03B3EB3D9ED6
+    - name: X-Api-Code
+      value: F94051E00F0845CC8A2136BC1BE54932
+  auth: inherit

@@ -1,0 +1,34 @@
+name: hk-prod
+variables:
+  - name: base-url
+    value: http://pos-api.hk.91app.io
+  - name: token
+    value: "20210610"
+  - name: timestamp
+    value: ""
+  - name: signature
+    value: ""
+  - name: shop_Id
+    value: "25"
+  - name: request_id
+    value: NY0643
+  - name: machine_code
+    value: "324422"
+  - name: location_code
+    value: "3202"
+  - name: employee_code
+    value: Wesley25
+  - name: request_body
+    value: ""
+  - name: scm_api
+    value: https://api.91mai.com
+  - name: api_key
+    value: 514a19f8-e213-4f60-a35d-2ca9f612fbc4
+  - name: salt_key
+    value: "8461e019"
+  - name: phone
+    value: "+85297000000"
+  - name: outermembercode
+    value: HCLUB0000132
+  - name: member_code
+    value: ""

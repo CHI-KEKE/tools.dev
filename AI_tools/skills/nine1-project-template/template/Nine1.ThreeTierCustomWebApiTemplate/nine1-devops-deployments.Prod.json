@@ -1,0 +1,63 @@
+{
+    "apiVersion": "nine1-devops/v1",
+    "kind": "deployment",
+    "metadata": {
+        "name": "Sample-Project",
+        "serviceName": "Sample-Project",
+        "type": "HelmChart"
+    },
+    "spec": {
+        "deployments": [
+            {
+                "metadata": {
+                    "name": "tw-pp",
+                    "market": "TW",
+                    "env": "PP"
+                },
+                "settings": {
+                    "NAMESPACE": "pp-sample-project",
+                    "KUBE_CONFIG_ENV_NAME": "KUBE_CONFIG_TW_PP",
+                    "HELM_VALUES_FILE_NAME": "values-tw-pp",
+                    "IS_DRY_RUN": "false"
+                },
+                "roles": [
+                    {
+                        "name": "Web.Api",
+                        "APP_ROLE": "api",
+                        "RELEASE_NAME": "sample-project-web-api",
+                        "versions": {
+                            "app": "latest",
+                            "config": "latest",
+                            "secret": "v1.0.0"
+                        }
+                    }
+                ]
+            },
+            {
+                "metadata": {
+                    "name": "tw-prod",
+                    "market": "TW",
+                    "env": "Prod"
+                },
+                "settings": {
+                    "NAMESPACE": "prod-sample-project",
+                    "KUBE_CONFIG_ENV_NAME": "KUBE_CONFIG_TW_PROD",
+                    "HELM_VALUES_FILE_NAME": "values-tw-prod",
+                    "IS_DRY_RUN": "false"
+                },
+                "roles": [
+                    {
+                        "name": "Web.Api",
+                        "APP_ROLE": "api",
+                        "RELEASE_NAME": "sample-project-web-api",
+                        "versions": {
+                            "app": "latest",
+                            "config": "latest",
+                            "secret": "v1.0.0"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

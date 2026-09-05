@@ -1,0 +1,4 @@
+name: my-prod
+variables:
+  - name: base-url
+    value: https://promotion-api-frontend-internal.my.91app.io

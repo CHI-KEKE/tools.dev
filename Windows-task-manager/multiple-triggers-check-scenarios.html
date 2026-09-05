@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>類型 D（Multiple Triggers）× 每30分鐘巡檢一次 · 情境圖解</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#c4b5fd; background:rgba(196,181,253,.12); border:1px solid rgba(196,181,253,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 26px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:760px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--purple-soft); color:var(--purple); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:9px 11px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+
+  /* Timeline */
+  .timeline-box {
+    background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:28px 24px 44px; margin:18px 0; position:relative;
+  }
+  .timeline-title { font-size:13px; font-weight:700; color:#334155; margin-bottom:26px; }
+  .track { position:relative; height:70px; margin:0 10px; border-top:3px solid #cbd5e1; }
+  .hour-tick { position:absolute; top:-3px; width:2px; height:9px; background:#94a3b8; }
+  .tick-label { position:absolute; top:12px; transform:translateX(-50%); font-size:10.5px; color:#94a3b8; white-space:nowrap; }
+
+  .check-mark { position:absolute; top:-9px; transform:translateX(-50%); text-align:center; }
+  .check-mark .diamond { width:14px; height:14px; background:#94a3b8; transform:rotate(45deg); margin:0 auto; border:2px solid #fff; }
+  .check-mark.hit .diamond { background: var(--accent); }
+  .check-mark .clabel { font-size:10px; color:#64748b; margin-top:6px; white-space:nowrap; }
+
+  .event-dot { position:absolute; top:-16px; transform:translateX(-50%); text-align:center; }
+  .event-dot .dot {
+    width:26px; height:26px; border-radius:50%; color:#fff; display:flex;
+    align-items:center; justify-content:center; font-size:12px; font-weight:700; margin:0 auto; border:3px solid #fff;
+  }
+  .event-dot .dot.ok { background:var(--ok); }
+  .event-dot .dot.danger { background:var(--danger); }
+  .event-dot .dot.warn { background:var(--warn); }
+  .event-dot .dot.purple { background:var(--purple); }
+  .event-dot .dot.grey { background:#94a3b8; }
+  .event-dot .label { font-size:11px; font-weight:700; color:#334155; margin-top:4px; white-space:nowrap; }
+
+  .accept-band {
+    position:absolute; top:0; height:56px; background:rgba(37,99,235,.08); border-left:1px dashed #93c5fd; border-right:1px dashed #93c5fd;
+  }
+  .accept-band.overlap { background:rgba(220,38,38,.12); border-color:var(--danger); }
+  .band-label { position:absolute; top:-24px; left:50%; transform:translateX(-50%); font-size:10.5px; color:var(--accent); white-space:nowrap; font-weight:700; }
+  .band-label.danger { color:var(--danger); }
+
+  .legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:16px; font-size:12.5px; color:#334155; }
+  .legend .item { display:flex; align-items:center; gap:6px; }
+  .legend .dot { width:14px; height:14px; border-radius:50%; display:inline-block; }
+
+  footer { text-align:center; color:var(--muted); font-size:12.5px; margin-top:36px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">類型 D · Multiple Triggers（一任務多組獨立 Trigger）</span>
+  <h1>「每 30 分鐘巡檢一次」下，單一任務掛載多組獨立 Trigger 的情境</h1>
+  <p>範例：同一個 Task 掛載 3 組獨立的 Daily Trigger —— <code>10:10 AM / 4:10 PM / 10:10 PM</code>。
+    每一組 Trigger 都是各自獨立的「單次事件」，套用與類型 A/B 完全相同的判斷模型
+    <code>IntervalMinutes=30 / ToleranceMinutes=30 / LookbackMinutes=90</code>，
+    但需要逐一走訪所有 Trigger、並用 <code>(taskPath, T)</code> 作為去重 key，避免互相干擾。</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">1</span>基本設定回顧 —— 為什麼要逐一走訪每組 Trigger</h2>
+    <table>
+      <tr><th>項目</th><th>說明</th></tr>
+      <tr><td>Task 結構</td><td>一個 <code>Task.Definition.Triggers</code> 集合裡包含 3 個獨立的 <code>DailyTrigger</code> 物件，各自有自己的 <code>StartBoundary</code></td></tr>
+      <tr><td>常見誤區（已知Bug）</td><td>若程式只取 <code>triggers[^1]</code>（最後一筆）或直接對整個 Task 呼叫一次 <code>GetRunTimes</code> 並誤以為只有一個結果，會導致前面幾組 Trigger 完全沒被監控</td></tr>
+      <tr><td>正確做法</td><td>逐一走訪 <code>task.Definition.Triggers</code>，對每一組 Trigger 各自呼叫 <code>GetRunTimes</code> 取得候選時間 T，並各自獨立套用類型A/B相同的判斷流程</td></tr>
+      <tr><td>去重 key</td><td>必須是 <code>(taskPath, T)</code> 的組合，<strong>不能只用 taskPath</strong>——否則 10:10 AM 那組一旦被標記 resolved，會誤導系統以為整個任務今天已經檢查完畢，連帶跳過 4:10 PM、10:10 PM 那兩組</td></tr>
+    </table>
+    <pre>// 正確：逐一走訪每一組 Trigger，各自獨立判斷
+foreach (var trigger in task.Definition.Triggers)
+{
+    var candidateTimes = GetRunTimesForSingleTrigger(trigger, now.AddMinutes(-90), now);
+    foreach (var T in candidateTimes)
+    {
+        var key = (taskPath, T);            // 去重 key 帶入 T，而非只用 taskPath
+        if (IsResolved(key)) continue;
+
+        var history = GetHistory(taskPath, T.AddMinutes(-30), T.AddMinutes(30));
+        if (history.HasRecord)
+        {
+            Resolve(key, history.Result);   // 查到紀錄，立刻結案
+        }
+        else if (now >= T.AddMinutes(30))   // 時間閘門
+        {
+            RaiseAlert(taskPath, T, "漏排");
+            Resolve(key);
+        }
+        // 否則略過，下一輪再看
+    }
+}
+
+// ❌ 錯誤示範（專案內已知Bug）：只取最後一筆
+var lastTrigger = task.Definition.Triggers[^1];   // 只處理 10:10 PM，前兩組完全沒被監控</pre>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>情境 1：三組 Trigger 皆正常執行 —— 各自獨立結案</h2>
+    <p class="sub">10:10 AM、4:10 PM、10:10 PM 三組 Trigger 當天都準時觸發並成功，彼此間隔 6 小時，完全不互相干擾。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">00:00 ──────────────────── 24:00（當天三組獨立 Trigger）</div>
+      <div class="track">
+        <div class="hour-tick" style="left:2%;"></div><div class="tick-label" style="left:2%;">00:00</div>
+        <div class="hour-tick" style="left:42%;"></div><div class="tick-label" style="left:42%;">10:10 AM</div>
+        <div class="hour-tick" style="left:68%;"></div><div class="tick-label" style="left:68%;">4:10 PM</div>
+        <div class="hour-tick" style="left:93%;"></div><div class="tick-label" style="left:93%;">10:10 PM</div>
+
+        <div class="accept-band" style="left:39%; width:6%;"></div>
+        <div class="accept-band" style="left:65%; width:6%;"></div>
+        <div class="accept-band" style="left:90%; width:6%;"></div>
+
+        <div class="event-dot" style="left:42%;">
+          <div class="dot ok">✓</div>
+          <div class="label">10:10 AM<br>Trigger①成功</div>
+        </div>
+        <div class="event-dot" style="left:68%;">
+          <div class="dot ok">✓</div>
+          <div class="label">4:10 PM<br>Trigger②成功</div>
+        </div>
+        <div class="event-dot" style="left:93%;">
+          <div class="dot ok">✓</div>
+          <div class="label">10:10 PM<br>Trigger③成功</div>
+        </div>
+      </div>
+    </div>
+    <div class="note ok">
+      <strong>判斷邏輯：</strong>三組 Trigger 各自產生獨立的候選 T（10:10 AM / 4:10 PM / 10:10 PM），
+      各自的 <code>GetHistory(taskPath, T−30分, T+30分)</code> 都查到成功紀錄 → 各自獨立結案，互不影響。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>情境 2：其中一組漏排，其餘正常 —— 獨立判斷不互相牽連</h2>
+    <p class="sub">10:10 AM 那組因機器休眠沒有觸發（漏排），但 4:10 PM、10:10 PM 兩組依然正常執行。巡檢時間 11:00 AM。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">9:30 AM ── 10:10 AM(應觸發) ── 10:40(閘門開) ── 11:00 AM(巡檢) ────── 4:10 PM ── 10:10 PM</div>
+      <div class="track">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">9:30</div>
+        <div class="hour-tick" style="left:25%;"></div><div class="tick-label" style="left:25%;">10:10</div>
+        <div class="hour-tick" style="left:40%;"></div><div class="tick-label" style="left:40%;">10:40</div>
+        <div class="hour-tick" style="left:48%;"></div><div class="tick-label" style="left:48%;">11:00(巡檢)</div>
+        <div class="hour-tick" style="left:68%;"></div><div class="tick-label" style="left:68%;">4:10 PM</div>
+        <div class="hour-tick" style="left:93%;"></div><div class="tick-label" style="left:93%;">10:10 PM</div>
+
+        <div class="event-dot" style="left:25%;">
+          <div class="dot danger">✕</div>
+          <div class="label">10:10 AM<br>應觸發但無紀錄</div>
+        </div>
+        <div class="check-mark hit" style="left:48%;">
+          <div class="diamond"></div>
+          <div class="clabel" style="color:var(--danger); font-weight:700;">11:00巡檢<br>閘門已開(≥10:40)<br>⚠ 判定漏排</div>
+        </div>
+        <div class="event-dot" style="left:68%;">
+          <div class="dot ok">✓</div>
+          <div class="label">4:10 PM<br>Trigger②正常</div>
+        </div>
+        <div class="event-dot" style="left:93%;">
+          <div class="dot ok">✓</div>
+          <div class="label">10:10 PM<br>Trigger③正常</div>
+        </div>
+      </div>
+    </div>
+    <div class="note danger">
+      <strong>判斷邏輯：</strong>10:10 AM 這組 <code>T</code> 在 11:00 巡檢時，<code>GetHistory(taskPath,9:40,10:40)</code> 查無紀錄，
+      閘門 <code>now(11:00)≥T+30(10:40)</code> 成立 → 判定漏排並標記 <code>(taskPath, 10:10AM)</code> resolved。
+    </div>
+    <div class="note ok">
+      <strong>關鍵：</strong>因為去重 key 是 <code>(taskPath, T)</code>，10:10 AM 被標記 resolved 完全不影響 4:10 PM、10:10 PM 這兩組獨立的候選 T 繼續被正常檢查、正常結案。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>情境 3：已知 Bug 示範 —— 只取最後一筆 Trigger 導致漏監控</h2>
+    <p class="sub">若程式邏輯寫成只取 <code>triggers[^1]</code>（最後一組，10:10 PM），會發生什麼事？</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">00:00 ──────────────────── 24:00</div>
+      <div class="track">
+        <div class="hour-tick" style="left:2%;"></div><div class="tick-label" style="left:2%;">00:00</div>
+        <div class="hour-tick" style="left:42%;"></div><div class="tick-label" style="left:42%;">10:10 AM</div>
+        <div class="hour-tick" style="left:68%;"></div><div class="tick-label" style="left:68%;">4:10 PM</div>
+        <div class="hour-tick" style="left:93%;"></div><div class="tick-label" style="left:93%;">10:10 PM</div>
+
+        <div class="event-dot" style="left:42%;">
+          <div class="dot grey">?</div>
+          <div class="label" style="color:#94a3b8;">10:10 AM<br>其實漏排<br>但程式從未檢查</div>
+        </div>
+        <div class="event-dot" style="left:68%;">
+          <div class="dot grey">?</div>
+          <div class="label" style="color:#94a3b8;">4:10 PM<br>其實漏排<br>但程式從未檢查</div>
+        </div>
+        <div class="event-dot" style="left:93%;">
+          <div class="dot ok">✓</div>
+          <div class="label">10:10 PM<br>唯一被檢查的Trigger<br>剛好正常</div>
+        </div>
+      </div>
+    </div>
+    <div class="note danger">
+      <strong>後果：</strong>即使 10:10 AM 與 4:10 PM 兩組都真實發生漏排，因為程式邏輯只走訪最後一筆 Trigger，
+      系統永遠不會對這兩組產生候選 T，自然也不會發出任何告警 —— 監控形同虛設但不會有任何錯誤訊息，是最危險的一種 Bug（沉默失效）。
+    </div>
+    <div class="note">
+      <strong>對應到專案程式碼：</strong>此為 <code>SchedulerReader.cs</code> 目前 <code>runTimes[^1]</code> 的已知 Bug，修正方式即為情境1採用的「逐一走訪所有 Triggers」寫法。
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span>情境 4：⚠ 警示案例 —— 多組 Trigger 間距過近，接受窗重疊誤判</h2>
+    <p class="sub">假設另一個任務的 3 組 Trigger 設定為 <code>10:00 AM / 10:20 AM / 4:00 PM</code>——前兩組只間隔 20 分鐘，小於 <code>2×Tolerance(30分)=60分鐘</code>，導致接受窗重疊。</p>
+
+    <div class="timeline-box">
+      <div class="timeline-title">9:30 AM ─────── 10:00(T①) ── 10:20(T②) ─────── 10:50 AM</div>
+      <div class="track" style="height:90px;">
+        <div class="hour-tick" style="left:5%;"></div><div class="tick-label" style="left:5%;">9:30</div>
+        <div class="hour-tick" style="left:45%;"></div><div class="tick-label" style="left:45%;">10:00(T①)</div>
+        <div class="hour-tick" style="left:60%;"></div><div class="tick-label" style="left:60%;">10:20(T②)</div>
+        <div class="hour-tick" style="left:95%;"></div><div class="tick-label" style="left:95%;">10:50</div>
+
+        <div class="accept-band overlap" style="left:30%; width:45%;">
+          <div class="band-label danger">T①接受窗[9:30,10:30] 與 T②接受窗[9:50,10:50] 重疊區間 [9:50,10:30]</div>
+        </div>
+
+        <div class="event-dot" style="left:45%; top:34px;">
+          <div class="dot warn">◔</div>
+          <div class="label">T①=10:00<br>理論觸發</div>
+        </div>
+        <div class="event-dot" style="left:60%; top:34px;">
+          <div class="dot warn">◔</div>
+          <div class="label">T②=10:20<br>理論觸發</div>
+        </div>
+      </div>
+    </div>
+
+    <p><strong>危險情境推演：</strong>假設 T①(10:00) 因故漏排（完全沒觸發），但 T②(10:20) 準時執行成功。</p>
+    <table>
+      <tr><th>查詢對象</th><th>查詢區間</th><th>查到的紀錄</th><th>可能誤判</th></tr>
+      <tr><td>T①=10:00 的 GetHistory</td><td>[9:30, 10:30]</td><td>查到 10:20 那筆成功紀錄（屬於T②）</td><td style="color:var(--danger); font-weight:700;">⚠ 誤判T①「有執行」，實際上T①漏排未被發現</td></tr>
+      <tr><td>T②=10:20 的 GetHistory</td><td>[9:50, 10:50]</td><td>查到 10:20 那筆成功紀錄</td><td style="color:var(--ok);">✅ 正確結案</td></tr>
+    </table>
+    <div class="note danger">
+      <strong>根本問題：</strong><code>GetHistory(taskPath, T−30, T+30)</code> 只用 <code>taskPath</code> 篩選，不會區分「這筆執行紀錄到底對應哪一組 Trigger」。
+      當兩組 Trigger 的接受窗重疊時，屬於 T② 的執行紀錄可能被誤認成 T① 的執行結果，導致 T① 真實漏排卻被誤判為「有執行」而不告警。
+    </div>
+    <div class="note warn">
+      <strong>設計建議：</strong>
+      <br>① 設計階段先檢查任務的所有 Trigger 間距，若任兩組間距 <code>&lt; 2×Tolerance</code>，應發出設定警示或提高該任務的告警靈敏度
+      <br>② 或將 Tolerance 依 Trigger 間距動態縮小（例如取 <code>min(標準Tolerance, 相鄰Trigger間距/2)</code>），避免接受窗互相跨越到隔壁 Trigger 的執行時間
+      <br>③ 最保守作法：若間距過近，直接告知維運人員此任務不適合逐 Trigger 監控，建議改為心跳模式（類型C）或人工特別關注
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span>小結：類型 D 的設計要點總覽</h2>
+    <table>
+      <tr><th>面向</th><th>類型 D（Multiple Triggers）</th><th>類型 A/B（單一Trigger）</th></tr>
+      <tr><td>候選計算方式</td><td>逐一走訪 <code>task.Definition.Triggers</code>，每組各自呼叫 GetRunTimes</td><td>對唯一的 Trigger 呼叫一次即可</td></tr>
+      <tr><td>去重 Key</td><td><strong>必須</strong>包含 T：<code>(taskPath, T)</code></td><td>同樣是 <code>(taskPath, T)</code>，但因只有一組候選較不容易踩坑</td></tr>
+      <tr><td>核心演算法</td><td colspan="2" style="text-align:center;">相同 —— 查History優先，查無才看時間閘門</td></tr>
+      <tr><td>Interval/Tolerance/Lookback</td><td colspan="2" style="text-align:center;">相同：30 / 30 / 90 分鐘</td></tr>
+      <tr><td>特有風險</td><td>① 只取最後一筆Trigger的實作Bug（沉默失效）<br>② 多組Trigger間距過近時接受窗重疊誤判</td><td>無此類問題</td></tr>
+    </table>
+    <div class="note ok">
+      <strong>結論：</strong>類型 D 本質上不是新模型，而是類型A/B的單次事件模型「重複套用在多組獨立Trigger上」。
+      只要做到：① 完整走訪所有 Trigger（不遺漏）、② 去重key帶入T（不互相牽連），核心演算法完全不需改動。
+      唯一需要額外設計防護的是「Trigger間距過近」的邊界情況，建議在任務設定階段就先檢查間距，必要時提高警覺或改用其他監控策略。
+    </div>
+  </section>
+
+</div>
+
+<footer>Windows Task Scheduler 監控設計 · 類型 D（Multiple Triggers）× 每30分鐘巡檢情境圖解</footer>
+
+</body>
+</html>

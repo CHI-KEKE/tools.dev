@@ -1,0 +1,18 @@
+info:
+  name: creat-video
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/InfoModule/CreateVideo"
+  body:
+    type: json
+    data: '{"Subtitle":"0401測測試一下內容多語系在幹麻","ShopItem":"61182","Title":"0401測測試一下內容多語系在幹麻","Uuid":{"Type":2,"Operation":0,"FileName":null,"Group":"Video","Key":"226cb44d-6c79-425f-9d43-812f30fc7459"},"ClipLink":"https://www.youtube.com/watch?v=WmHOENuKkmk","Introduction":"0401測測試一下內容多語系在幹麻","ShopId":2,"StartDateTime":"2024-04-01T08:28:00.000Z","EndDateTime":null,"StatusDef":"published","BaseImageUrl":null,"CreatedDateTime":null,"CreatedUser":null,"Id":0,"VerificationToken":""}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

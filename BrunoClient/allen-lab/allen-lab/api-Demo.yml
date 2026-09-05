@@ -1,0 +1,23 @@
+info:
+  name: api-Demo
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: https://localhost:7190/api/Demo
+  body:
+    type: json
+    data: |-
+      {
+          "name":"",
+          "age":10000,
+          "type":"vvvv"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

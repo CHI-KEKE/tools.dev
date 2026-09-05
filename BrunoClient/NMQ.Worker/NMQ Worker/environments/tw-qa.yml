@@ -1,0 +1,5 @@
+name: tw-qa
+color: "#346AB2"
+variables:
+  - name: base-url
+    value: http://nmqv3-apimin.qa.91dev.tw/api/v1

@@ -1,0 +1,29 @@
+info:
+  name: dynamic-get-rules
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{base-url}}api/dynamic-salepage-collections/{{dynamic-collectionId}}:get-rules"
+  headers:
+    - name: N1-TRACE-ID
+      value: "{{traceId}}"
+    - name: N1-SHOP-ID
+      value: "{{shopId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "pagination": {
+          "pageIndex": 0,
+          "pageSize": 50
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

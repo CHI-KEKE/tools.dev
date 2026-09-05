@@ -1,0 +1,5 @@
+name: MYQA
+color: "#2E8A54"
+variables:
+  - name: base-url
+    value: http://nmqv3-apimin.qa1.my.91dev.tw/api/v1

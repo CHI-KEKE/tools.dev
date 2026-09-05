@@ -1,0 +1,65 @@
+﻿info:
+  name: TC03_ReachPiece重複_應400
+  type: http
+  seq: 3
+
+meta:
+  purpose: |-
+    【負向】兩筆 ExtraPurchaseRuleList 的 ReachPiece 相同（都是 3）。
+    Validator ExtraPurchaseRuleListPieceBeSortedAscending 使用 <= 判斷，相等視為違規。
+    預期：400。
+
+http:
+  method: POST
+  url: "{{base-url}}/Promotion/CreatePromotion?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 10230,
+        "TypeDef": "CartReachPieceExtraPurchase",
+        "Name": "[C03]ReachPiece重複",
+        "StartDateTime": "2029-07-01T00:00:00.000Z",
+        "EndDateTime": "2029-07-31T23:59:59.000Z",
+        "Description": "TC03",
+        "CustomCampaignCode": "TC03",
+        "CanUseECoupon": false,
+        "IsCartExtraPurchaseThresholdEligible": true,
+        "TargetMemberTypeDef": "All",
+        "PromotionTargetRegionTypeDef": "All",
+        "IsCyclable": false,
+        "ExtraPurchaseRuleList": [
+          { "ConditionId": 1, "ReachPiece": 3, "ReachPrice": 0, "LimitQty": 10 },
+          { "ConditionId": 2, "ReachPiece": 3, "ReachPrice": 0, "LimitQty": 5 }
+        ],
+        "TargetTypeDef": "SalePage",
+        "ExcludeTargetTypeDef": "None",
+        "CalculateTypeDef": "Compatible",
+        "TargetPlatformTypeList": [
+          { "Platform": "Web", "IsEnabled": true },
+          { "Platform": "AppIOS", "IsEnabled": true },
+          { "Platform": "AppAndroid", "IsEnabled": true }
+        ]
+      }
+  auth: inherit
+
+tests: |-
+  test("TC03 ReachPiece 重複應被 Validator 擋下（預期 400）", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,25 @@
+info:
+  name: promotionRewardPoint-delete
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{base-url}}/Api/PromotionEngine/DeletePromotionRewardPoint"
+  headers:
+    - name: Cookie
+      value: "{{Cookie}}"
+  body:
+    type: json
+    data: |-
+      {
+          "Id": 5934,
+          "VerificationToken": "7fcd8fb70186406952da5e95ec9f1c2220f2bcd628155baa81f07d1480aea771af0e9e6f7237ab429d82268fefe7f58a0788a179de1253990c4da03c55f27f21"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

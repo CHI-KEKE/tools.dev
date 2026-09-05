@@ -1,0 +1,52 @@
+info:
+  name: MPSubmitOrder
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://demo.connect.easyparcel.sg/?ac=MPSubmitOrder
+  params:
+    - name: ac
+      value: MPSubmitOrder
+      type: query
+  body:
+    type: json
+    data: |
+      {
+        "pick_contact": "68505280",
+        "authentication": "mgZBJbN5ns",
+        "api": "EP-23DwqL7Ie",
+       "weight": 0.01,
+        "content": "TEST",
+        "value": 6,
+        "service_id": "EP-CS0PR",
+        "pick_name": "83",
+        "pick_mobile": "68505280",
+        "pick_addr1": "uhuihuihih",
+        "pick_addr2": "",
+        "pick_addr3": "",
+        "pick_addr4": "",
+        "pick_code": "059892",
+        "pick_city": "",
+        "pick_country": "SG",
+        "send_name": "allenlin",
+        "send_contact": "68505280",
+        "send_addr1": "ADDDDDRESSS",
+        "send_addr2": "",
+        "send_addr3": "",
+        "send_addr4": "",
+        "send_code": "119916",
+        "send_city": "",
+        "send_country": "SG",
+        "send_state": "",
+        "send_email": "AlertEmail@gmail.com",
+        "collect_date": "2025-12-02"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

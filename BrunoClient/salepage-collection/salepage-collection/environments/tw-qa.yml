@@ -1,0 +1,8 @@
+name: tw-qa
+variables:
+  - name: base-url
+    value: https://salepage-service-api-internal.qa.91dev.tw
+  - name: collectionId
+    value: f_419501770169910528
+  - name: shopId
+    value: "12765"

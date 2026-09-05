@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows Task Scheduler 監控設計 · 整體概念總覽</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #ffffff; --ink: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #dcfce7;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --purple: #7c3aed; --purple-soft: #ede9fe;
+    --border: #e2e8f0; --code-bg: #0b1220; --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background: linear-gradient(180deg,#0f172a 0%,#1e293b 220px,#f1f5f9 220px);
+    color: var(--ink); line-height: 1.7;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 80px; }
+  header.hero { padding: 48px 24px 30px; color:#f8fafc; text-align:center; }
+  header.hero .eyebrow {
+    display:inline-block; font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:#93c5fd; background:rgba(147,197,253,.12); border:1px solid rgba(147,197,253,.35);
+    border-radius:999px; padding:4px 14px; margin-bottom:16px;
+  }
+  header.hero h1 { font-size: 27px; margin:0 0 8px; }
+  header.hero p { color:#cbd5e1; max-width:760px; margin:0 auto; font-size:14.5px; }
+
+  section {
+    background: var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding: 30px 32px; margin-top: 22px; box-shadow: 0 12px 30px -22px rgba(15,23,42,.25);
+  }
+  section h2 { font-size:19px; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
+  section h2 .num {
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; background:var(--accent-soft); color:var(--accent); font-size:14px; font-weight:700; flex:0 0 30px;
+  }
+  section .sub { color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+  p { margin:10px 0; }
+  code {
+    font-family:Consolas,monospace; background:#eef2ff; color:#4338ca; padding:1px 6px; border-radius:5px; font-size:13px;
+  }
+
+  .note { border-left:4px solid var(--accent); background:var(--accent-soft); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:16px 0; }
+  .note.ok { border-color:var(--ok); background:#f0fdf4; }
+  .note.warn { border-color:var(--warn); background:#fffbeb; }
+  .note.danger { border-color:var(--danger); background:var(--danger-soft); }
+
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13.5px; }
+  th, td { border:1px solid var(--border); padding:10px 12px; text-align:left; vertical-align:top; }
+  th { background:#f8fafc; font-weight:700; color:#334155; }
+  td.center, th.center { text-align:center; }
+
+  pre { background:var(--code-bg); color:var(--code-ink); padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; }
+
+  .type-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:18px 0; }
+  .type-card {
+    border:1px solid var(--border); border-radius:12px; padding:18px 16px; background:#f8fafc;
+  }
+  .type-card .badge {
+    display:inline-block; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    padding:3px 10px; border-radius:999px; margin-bottom:10px;
+  }
+  .type-card.a .badge { background:var(--accent-soft); color:var(--accent); }
+  .type-card.b .badge { background:var(--ok-soft); color:var(--ok); }
+  .type-card.c .badge { background:var(--purple-soft); color:var(--purple); }
+  .type-card.d .badge { background:#fee2e2; color:var(--danger); }
+  .type-card h3 { font-size:15px; margin:0 0 8px; }
+  .type-card p { font-size:13px; color:#475569; margin:6px 0; }
+  .type-card .example { font-size:12px; color:#64748b; background:#fff; border:1px dashed var(--border); border-radius:6px; padding:6px 8px; margin:8px 0; }
+
+  .flow {
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:16px 0; font-size:13px;
+  }
+  .flow .step {
+    background:#f1f5f9; border:1px solid var(--border); border-radius:8px; padding:8px 14px; font-weight:600; color:#334155;
+  }
+  .flow .arrow { color:#94a3b8; font-size:16px; }
+
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  .compare-col { border:1px solid var(--border); border-radius:10px; padding:16px; }
+  .compare-col.left { background:#eff6ff; border-color:#bfdbfe; }
+  .compare-col.right { background:#f5f3ff; border-color:#ddd6fe; }
+  .compare-col h4 { margin:0 0 10px; font-size:14px; }
+  .compare-col ul { margin:6px 0; padding-left:20px; font-size:13px; }
+  .compare-col li { margin:4px 0; }
+
+  footer { text-align:center; color:var(--muted); font-size:12.5px; margin-top:36px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">整體概念總覽</span>
+  <h1>Windows Task Scheduler 排程監控設計 —— 三種類型與對應解法</h1>
+  <p>本文件彙整 Weekly、Daily 單次、Daily+高頻重複（心跳型）、Multiple Triggers（多組獨立Trigger）四種 Trigger 類型的判斷模型與設計取捨，
+    是理解整體監控架構的入口文件。各類型的完整情境圖解請參閱對應的獨立 HTML 文件。</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">1</span>問題背景</h2>
+    <p>Windows Task Scheduler 的排程任務可能因為機器休眠、服務未啟動、資源不足等原因「該執行卻沒執行」（漏排），
+      或「有執行但失敗」。我們要設計一個定期巡檢的 Monitor Worker Service，主動偵測這兩種異常並發出告警。</p>
+    <p>核心困難點在於：<strong>不同 Trigger 設定方式，代表的「該不該告警」的判斷邏輯完全不同</strong>，
+      不能用同一套邏輯套用在所有類型上。本文件把目前討論過的四種類型與各自對應的設計方案整理如下。</p>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>四種類型一覽</h2>
+    <div class="type-cards">
+      <div class="type-card a">
+        <span class="badge">類型 A</span>
+        <h3>Weekly（每週執行）</h3>
+        <div class="example">例：每週二 2:00 PM 執行一次</div>
+        <p><strong>模型：</strong>單次事件</p>
+        <p>一週只有 1 個理論觸發時間點，需注意跨週邊界的候選歸屬。</p>
+      </div>
+      <div class="type-card b">
+        <span class="badge">類型 B</span>
+        <h3>Daily 單次</h3>
+        <div class="example">例：每天 3:00 AM 執行一次</div>
+        <p><strong>模型：</strong>單次事件（同類型A）</p>
+        <p>每天都有新的理論觸發時間點，是最單純的情況，核心演算法完全不用調整。</p>
+      </div>
+      <div class="type-card c">
+        <span class="badge">類型 C</span>
+        <h3>Daily + 高頻重複（心跳型）</h3>
+        <div class="example">例：2:01 PM 起每5分鐘重複，持續1天</div>
+        <p><strong>模型：</strong>心跳（連續狀態）</p>
+        <p>Duration＝Recur間隔時無縫銜接，等於永久心跳，不是「某時刻該執行」的問題。</p>
+      </div>
+      <div class="type-card d">
+        <span class="badge">類型 D</span>
+        <h3>Multiple Triggers（多組獨立Trigger）</h3>
+        <div class="example">例：10:10 AM / 4:10 PM / 10:10 PM 各自獨立Daily Trigger</div>
+        <p><strong>模型：</strong>單次事件模型重複套用</p>
+        <p>逐一走訪每組Trigger各自判斷，去重key需帶入T，並留意Trigger間距過近的重疊風險。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>類型 A / B：單次事件模型</h2>
+    <p class="sub">適用於「某個特定時刻理論上該執行一次」的排程</p>
+    <div class="flow">
+      <div class="step">GetRunTimes 算出候選時間 T</div>
+      <div class="arrow">→</div>
+      <div class="step">GetHistory(T−Tolerance, T+Tolerance)</div>
+      <div class="arrow">→</div>
+      <div class="step">查到紀錄？</div>
+      <div class="arrow">→</div>
+      <div class="step">是：立刻結案</div>
+    </div>
+    <div class="flow">
+      <div class="step" style="background:#fef3c7;">查無紀錄</div>
+      <div class="arrow">→</div>
+      <div class="step" style="background:#fef3c7;">時間閘門 now≥T+Tolerance？</div>
+      <div class="arrow">→</div>
+      <div class="step" style="background:#fee2e2;">是：判定漏排告警</div>
+      <div class="arrow">→</div>
+      <div class="step">否：略過，下輪再看</div>
+    </div>
+    <table>
+      <tr><th>參數</th><th>採用值</th><th>意義</th></tr>
+      <tr><td>CheckIntervalMinutes</td><td>30</td><td>巡檢頻率</td></tr>
+      <tr><td>ToleranceMinutes</td><td>30</td><td>以 T 為中心的接受窗半徑</td></tr>
+      <tr><td>LookbackMinutes</td><td>90</td><td>每輪巡檢往前抓候選的範圍</td></tr>
+    </table>
+    <div class="note">
+      <strong>安全公式：</strong><code>Lookback ≥ Tolerance + Interval</code>（30+30=60，採用90留安全餘裕），
+      確保「時間閘門打開」後，下一輪巡檢的 Lookback 視窗一定還能撈到這個候選 T，不會因為視窗滑過去而漏判。
+    </div>
+    <div class="note ok">
+      <strong>關鍵設計：</strong>先查歷史紀錄，查到就結案（不用等閘門）；只有查無紀錄時，才需要時間閘門決定「現在能不能下結論說是漏排」——
+      這避免了「延遲執行但最終成功」的任務被誤判。
+    </div>
+    <p>詳細情境圖解：<code>weekly-hourly-check-scenarios.html</code>（類型A）、<code>daily-single-check-scenarios.html</code>（類型B）</p>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>類型 C：心跳模型</h2>
+    <p class="sub">適用於「理論上持續不間斷運作」的高頻重複排程</p>
+
+    <div class="note warn">
+      <strong>為何不能套用類型A/B的模型：</strong>
+      <br>① 只檢查起始時間 → 起始成功後若中途整個停掉，後續 288 次都不跑也偵測不到
+      <br>② 用固定視窗查詢（如「往前拉10分鐘查GetHistory」）→ 視窗大小與巡檢間隔沒對齊，兩次巡檢之間會出現查詢死角
+    </div>
+
+    <div class="flow">
+      <div class="step">gap = now − task.LastRunTime</div>
+      <div class="arrow">→</div>
+      <div class="step">gap ≤ GapThreshold？</div>
+      <div class="arrow">→</div>
+      <div class="step" style="background:#dcfce7;">是：心跳正常</div>
+    </div>
+    <div class="flow">
+      <div class="step">gap ＞ GapThreshold</div>
+      <div class="arrow">→</div>
+      <div class="step" style="background:#fee2e2;">立即告警「心跳已停止」</div>
+      <div class="arrow">→</div>
+      <div class="step">不需等下一輪，也不需時間閘門</div>
+    </div>
+    <table>
+      <tr><th>參數</th><th>採用值</th><th>意義</th></tr>
+      <tr><td>GapThresholdMinutes</td><td>10（依任務心跳頻率個別調整）</td><td>允許連續漏跳幾次心跳的容忍值</td></tr>
+      <tr><td>CheckIntervalMinutes</td><td>30</td><td>巡檢頻率（不影響判斷結果，只影響發現延遲）</td></tr>
+    </table>
+    <div class="note ok">
+      <strong>核心優勢：</strong><code>LastRunTime</code> 是連續遞增的狀態值，不是離散時間點，
+      <code>gap</code> 超標的當下就是既定事實，不需要視窗查詢、不需要時間閘門等待、也不需要 resolved 去重機制
+      （每輪巡檢都是對同一個持續狀態的獨立評估）。
+    </div>
+    <p>詳細情境圖解：<code>daily-repeat-check-scenarios.html</code>（類型C）</p>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span>類型 D：多組獨立 Trigger（單次事件模型的重複套用）</h2>
+    <p class="sub">適用於一個 Task 掛載多組互相獨立的 Trigger，例如 <code>10:10 AM / 4:10 PM / 10:10 PM</code> 三組獨立 Daily Trigger</p>
+    <div class="note">
+      <strong>本質：</strong>類型 D 不是新模型，而是把類型 A/B 的單次事件模型，<strong>逐一套用在每一組獨立的 Trigger 上</strong>，各組候選時間 T 各自獨立判斷、互不影響。
+    </div>
+    <div class="flow">
+      <div class="step">逐一走訪 task.Definition.Triggers</div>
+      <div class="arrow">→</div>
+      <div class="step">每組各自算出候選 T</div>
+      <div class="arrow">→</div>
+      <div class="step">各自套用「查History→查無看閘門」演算法</div>
+    </div>
+    <table>
+      <tr><th>設計要點</th><th>說明</th></tr>
+      <tr><td>去重 Key</td><td>必須是 <code>(taskPath, T)</code> 組合，不能只用 <code>taskPath</code>，否則一組判斷完會誤導其餘組別被跳過</td></tr>
+      <tr><td>常見Bug</td><td>只取 <code>triggers[^1]</code>（最後一筆）會讓前面幾組完全沒被監控，且不會有任何錯誤訊息（沉默失效）</td></tr>
+      <tr><td>特有風險</td><td>若兩組 Trigger 間距 <code>&lt; 2×Tolerance</code>，各自的接受窗會重疊，可能把隔壁 Trigger 的執行紀錄誤判成自己的，導致真實漏排被誤判為正常</td></tr>
+    </table>
+    <div class="note danger">
+      <strong>警示：</strong>間距過近時建議：① 設定階段檢查Trigger間距並示警、② 動態縮小Tolerance避免跨越到隔壁Trigger、③ 間距過近的任務改用其他監控策略（如心跳模式）或人工特別關注。
+    </div>
+    <p>詳細情境圖解：<code>multiple-triggers-check-scenarios.html</code>（類型D）</p>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span>四種模型全面對照</h2>
+    <div class="compare-grid">
+      <div class="compare-col left">
+        <h4>單次事件模型（類型 A / B / D）</h4>
+        <ul>
+          <li>判斷依據：離散候選時間點 T（類型D為多組T，各自獨立）</li>
+          <li>需要 <code>GetHistory</code> 視窗查詢</li>
+          <li>需要時間閘門等待（<code>now≥T+Tolerance</code>）</li>
+          <li>需要 resolved 去重（類型D的去重key須含T，避免互相牽連）</li>
+          <li>參數：Interval / Tolerance / Lookback</li>
+        </ul>
+      </div>
+      <div class="compare-col right">
+        <h4>心跳模型（類型 C）</h4>
+        <ul>
+          <li>判斷依據：連續數值 <code>gap</code></li>
+          <li>直接讀 <code>LastRunTime</code> 屬性，不需視窗查詢</li>
+          <li>不需時間閘門，超標當下即結論</li>
+          <li>不需去重，每輪都是獨立評估同一狀態</li>
+          <li>參數：GapThreshold（依任務心跳頻率各自設定）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">7</span>總結：如何選擇判斷模型</h2>
+    <table>
+      <tr><th>判斷準則</th><th>採用模型</th></tr>
+      <tr><td>Trigger 是否有明確的「理論上該執行的那一刻」（一天/一週固定時段）</td><td>單次事件模型（類型A/B）</td></tr>
+      <tr><td>Trigger 的 Repetition Duration 是否等於 Recur 間隔（無縫銜接、本質是永久心跳）</td><td>心跳模型（類型C）</td></tr>
+      <tr><td>是否只需監控「循環有沒有在跑」，不在乎個別重複實例的成敗</td><td>心跳模型（類型C）</td></tr>
+      <tr><td>一個Task是否掛載多組互相獨立的Trigger</td><td>單次事件模型逐組套用（類型D），並留意間距過近的重疊風險</td></tr>
+    </table>
+    <div class="note">
+      <strong>共通前提：</strong>不論哪種模型，巡檢一開始都要先篩選 <code>Enabled==true</code> 的任務清單，
+      Disabled 的任務不產生候選，自然不會被誤判漏排——這是所有類型共通的第一道篩選步驟。
+    </div>
+    <div class="note ok">
+      <strong>整體結論：</strong>監控系統需要依 Trigger 的「本質」（單次事件 vs 持續心跳）分流採用不同判斷模型，
+      不能用同一套邏輯強行套用在所有排程類型上，否則容易出現誤判或偵測不到的死角。
+    </div>
+  </section>
+
+</div>
+
+<footer>Windows Task Scheduler 監控設計 · 整體概念總覽（類型 A/B/D 單次事件模型 + 類型 C 心跳模型）</footer>
+
+</body>
+</html>

@@ -1,0 +1,172 @@
+info:
+  name: returnOrder-POSAction
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{base-url}}/pos/v1/ReturnOrderPOSAction?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: "{{request_body}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const phone = bru.getEnvVar("phone");
+        const outermembercode = bru.getEnvVar("outermembercode");
+        const shopId = parseInt(bru.getEnvVar("shop_id"));
+        // 修改request-body
+        var body =  {
+            "OuterMemberCode": outermembercode,
+            "ReturnOrderCode": {
+              "OuterCode1": "",
+              "OuterCode2": null,
+              "OuterCode3": null,
+              "OuterCode4": null,
+              "OuterCode5": null
+            },
+            "RelativeActionId": "",
+            "ReturnPoint": 0,
+            "ReturnCouponCodes": []
+        }
+
+        var body_data = JSON.stringify(body)
+
+        // 取得Timestamp
+        await bru.sendRequest({
+            url: bru.getEnvVar("scm_api") + '/scm/v1/Utils/GetCurrentTime',
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+            }
+        }, async function(err, response) {
+            const timestamp = response.data
+            // console.log("取得Timestamp : " + timestamp)
+            bru.setEnvVar("timestamp", timestamp);
+
+            var body =  body_data.toLowerCase();
+            // 取得Signature
+            var content = "ts=" + bru.getEnvVar("timestamp") + "&data=" + body + "&sk=" + bru.getEnvVar("salt_key")
+
+            console.log("取得Signature : " + content)
+            await bru.sendRequest({
+                url: bru.getEnvVar("scm_api") + '/scm/v1/Sample/GetEncryptData',
+                method: 'POST',
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    },
+                data: {
+                    "key": bru.getEnvVar("api_key"),
+                    "content": content
+                }
+            }, async function(err, response) {
+                const signature = response.data.Data
+                bru.setEnvVar("signature", signature);
+            });
+        });
+
+        request_body = body_data
+        // console.log("4. 取得request_body:" + request_body)
+        bru.setEnvVar("request_body", request_body);
+
+        function interpolate (value) {
+            const {Property} = require('pm-collection');
+            return Property.replaceSubstitutions(value, bru.getAllVars());
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |
+  ## pm script
+
+  const phone = pm.environment.get("phone");
+  const outermembercode = pm.environment.get("outermembercode");
+  const shopId = parseInt(pm.environment.get("shop_id"));
+  // 修改request-body
+  var body =  {
+      "OuterMemberCode": outermembercode,
+      "ReturnOrderCode": {
+        "OuterCode1": "",
+        "OuterCode2": null,
+        "OuterCode3": null,
+        "OuterCode4": null,
+        "OuterCode5": null
+      },
+      "RelativeActionId": "",
+      "ReturnPoint": 0,
+      "ReturnCouponCodes": []
+  }
+
+  var body_data = JSON.stringify(body)
+
+  // 取得Timestamp
+  pm.sendRequest({
+      url: pm.environment.get("scm_api") + '/scm/v1/Utils/GetCurrentTime',
+      method: 'POST',
+      header: {
+          'content-type': 'application/json',
+      }
+  }, function (err, response) {
+      const timestamp = response.json()
+      // console.log("取得Timestamp : " + timestamp)
+      pm.environment.set("timestamp", timestamp);
+
+      var body =  body_data.toLowerCase();
+      // 取得Signature
+      var content = "ts=" + pm.environment.get("timestamp") + "&data=" + body + "&sk=" + pm.environment.get("salt_key")
+
+       console.log("取得Signature : " + content)
+      pm.sendRequest({
+          url: pm.environment.get("scm_api") + '/scm/v1/Sample/GetEncryptData',
+          method: 'POST',
+          header: {
+              'Content-Type': 'multipart/form-data',
+              },
+          body: {
+              mode: 'formdata',
+              formdata: [
+              {
+                  key: "key", 
+                  value: pm.environment.get("api_key"), 
+                  disabled: false, 
+                  description: {content:"", type:"text/plain"}
+                  },
+              {
+                  key: "content", 
+                  value: content, 
+                  disabled: false, 
+                  description: {content:"", type:"text/plain"}
+                  }
+              ]
+          }
+      },  function(err, response) {
+          const signature = response.json().Data
+          pm.environment.set("signature", signature);
+      });
+  });
+
+  request_body = body_data
+  // console.log("4. 取得request_body:" + request_body)
+  pm.environment.set("request_body", request_body);
+
+  function interpolate (value) {
+      const {Property} = require('postman-collection');
+      return Property.replaceSubstitutions(value, pm.variables.toObject());
+  }

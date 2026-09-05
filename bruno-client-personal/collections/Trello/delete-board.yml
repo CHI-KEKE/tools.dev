@@ -1,0 +1,33 @@
+info:
+  name: delete-board
+  type: http
+  seq: 8
+
+http:
+  method: DELETE
+  url: "{{base-url}}/1/boards/{{boardNumber}}?key={{key}}&token={{token}}"
+  params:
+    - name: key
+      value: "{{key}}"
+      type: query
+    - name: token
+      value: "{{token}}"
+      type: query
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const existingBoardIds = pm.collectionVariables.get('existingBoardIds');
+        console.log(existingBoardIds);
+
+        let boardId = existingBoardIds.pop();
+        pm.collectionVariables.set('boardId',boardId);
+        pm.collectionVariables.set('existingBoardIds',existingBoardIds);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
