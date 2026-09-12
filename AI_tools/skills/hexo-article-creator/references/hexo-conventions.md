@@ -297,3 +297,41 @@ FATAL Error: Can't find handler for document
 .pf-term .tstep { color: #c7b8ff !important; font-weight: 700; }
 ```
 - 寫完後最好用 Playwright 或瀏覽器實際截圖驗證文字是否清晰可讀（肉眼看 `.md` 原始碼沒辦法看出主題 CSS 疊加後的實際對比度），不要只憑 CSS 寫得「看起來應該對」就結案。
+
+## 程式碼區塊：外框與內容底色必須一致
+
+案例：2026-09-09，compression.md 套用 Cozy Meadow 後，RAR 分卷範例的文字區是奶白底，右側卻出現大片米黃色（截圖 aaa_57_0.png）。
+
+**原因**：Butterfly 的程式碼區使用外層 `.highlight` 與內層 `table / .gutter / .code / pre`。內部表格使用 `width:auto` 時，短內容只占左側；外框與內容區底色不同，會使右側留白露出另一塊顏色。
+
+**強制規則**：
+
+- 修改程式碼區外觀時，必須一起檢查外框、內部表格、內容欄、行號欄、工具列與 pre 的背景及文字顏色。
+- 程式碼外框與內容區使用同一個語意色彩變數，讓短內容右側的留白保持一致；工具列與行號欄可以有明確、刻意的區隔色。
+- 一般資料表的樣式不可未經檢查就套到程式碼內部表格；特別留意 width、背景、斑馬紋、hover、border 與 padding。
+- 不要為了遮掉色差，把所有資料表改成滿版寬度。優先統一程式碼外框與內容背景，維持一般表格既有寬度規則。
+- 淺色與深色模式都必須使用對應色彩變數，不能只修正淺色模式的固定色碼。
+
+本次已驗證的修正方式（限定在文章樣式範圍）：
+
+```css
+#article-container .highlight,
+#article-container .highlight .code {
+  background: var(--cozy-surface);
+}
+#article-container .highlight table,
+#article-container .highlight pre {
+  background: transparent;
+}
+#article-container .highlight .gutter {
+  background: var(--cozy-paper);
+}
+```
+
+**驗收要求**：
+
+1. 檢查文章中所有程式碼區塊，尤其是只有一至三行、檔名清單等短內容，以及需要橫向捲動的長程式碼。
+2. 在桌面、約 390px 手機及深色模式，實際查看包含完整外框、右側留白、工具列與行號欄的截圖。
+3. 不得只因建置成功、沒有 console error、圖表正常或沒有水平溢出，就宣告整體視覺正確。
+4. 可用 computed styles 輔助比對外框與內容區的實際背景；若涉及透明或繼承背景，需檢查最終視覺結果，不能只比較 CSS 字串。
+5. 已部署的工作，須在正式網址重查受影響的所有程式碼區塊；只有本機截圖不算完成線上驗證。
