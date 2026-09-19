@@ -1,0 +1,106 @@
+<!--
+風格：小熊粉筆塗鴉（bear-chalk）
+來源：Allen 提供的 C:\Dev\pics-cloudflare\style\bear-drawing.png。
+圖片觀察：直幅構圖，灰米色牆面與深灰橄欖路面由斜向路緣分隔；焦糖棕熊與奶白小熊聚在畫面中段，周圍有白色輪廓畫及少量藍、紅、黃、綠粉筆痕。下半部保留大片路面留白。
+質感：霧面扁平色塊、輕微不規則邊緣、乾筆斷續線條；五官是少量黑色筆點。沒有玻璃反光、金屬感、螢光或厚重立體陰影。
+色票是依圖片目視歸納的近似值，不是原圖精確取色：
+  路面 #5c5b49；牆面 #c6c5b8；路緣 #aaa999；焦糖棕 #ce9e68；粉筆白 #faf8ef。
+  彩色筆跡：藍 #3a8eaa、紅 #d95443、黃 #e7bd4c、綠 #568e68。
+  小面積筆跡色只用於裝飾與分類，不直接作為路面底上的小字色。正文使用粉筆白或深墨色 #292b25。
+與 cozy-meadow 的差異：本套以暗橄欖路面、灰米牆面、斜向分區及粉筆線為主；不使用草地綠漸層、小花鋪底或毛絨卡片陰影。
+用途：輕鬆技術筆記、演算法入門、學習心得、草稿推導與生活隨筆。需要嚴格危險分級的事故報告不優先採用。
+排版：大面積安靜底色搭配少量彩色筆跡；人物只作小裝飾，不把每段都做成小熊卡片。斜面只出現在開場裝飾，正文與資料表維持水平。
+字體：正文用系統繁中字體，標題可略帶手寫感但不依賴外部字型；程式碼使用等寬字體。不可把正文、公式或必要標籤旋轉成塗鴉。
+元件是可選素材，不是固定文章版型。使用前依 SKILL.md Step 1 討論風格及逐段元件／圖表，確認後才套用：
+  bc-hero：斜向牆面／路面橫幅，含可移除的 CSS 小熊剪影裝飾，不嵌入原始圖片。
+  bc-board：粉筆框說明區，可放單一主題的推導或已確認的圖表。
+  bc-note：焦糖色或奶白色註記，適合少量補充；不是流程節點。
+  bc-table-scroll + bc-table：真正的比較表，寬內容只在表格區捲動。
+  bc-code + bc-code-bar + pre.bc-pre：霧面深色程式碼窗；外框、內容與右側空白同色，工具列刻意區隔。
+  bc-divider：少量彩色粉筆短線，純裝飾，不承擔狀態或連線語意。
+圖表原則：架構邊界可用粉筆白細框；箭頭、分支條件與標籤仍須清楚。保留圖型標準語意，不用隨意塗鴉或小熊卡片取代關係、順序與分支。裝飾線不跨越圖表或假扮箭頭。
+狀態提示若有需要，必須加上「注意／失敗／完成」等文字與明確符號；不能把裝飾紅、黃、綠當成狀態圖例。
+Hexo：CSS 僅定義一次，所有元件放在 .bear-chalk 中。HTML 頂格；連續 span 同行；自訂 pre 不留空白行。若改用主題原生 highlight，另依 hexo-conventions.md 處理其外框、工具列、行號及背景。
+深色模式保留相同色彩家族，正文不降低透明度。裝飾 aria-hidden，無動畫。以下為獨立素材示例，並非已核准的文章排版。
+-->
+
+<style>
+.bear-chalk{--bc-road:#5c5b49;--bc-wall:#c6c5b8;--bc-curb:#aaa999;--bc-bear:#ce9e68;--bc-chalk:#faf8ef;--bc-ink:#292b25;--bc-blue:#3a8eaa;--bc-red:#d95443;--bc-yellow:#e7bd4c;--bc-green:#568e68;--bc-code:#30332d;--bc-bar:#41453b;color:var(--bc-chalk);background:var(--bc-road);padding:24px;border-radius:16px 20px 15px 22px;font-family:'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;line-height:1.85;overflow-wrap:anywhere;}
+.bear-chalk *{box-sizing:border-box;}
+#article-container .bear-chalk h2,#article-container .bear-chalk h3,.bear-chalk h2,.bear-chalk h3{color:inherit;margin:0 0 12px;line-height:1.45;}
+.bear-chalk p{margin:10px 0;}
+.bear-chalk a{color:inherit;text-decoration:underline;text-underline-offset:4px;}
+.bear-chalk a:focus-visible,.bear-chalk [tabindex]:focus-visible{outline:3px solid var(--bc-yellow);outline-offset:4px;}
+.bear-chalk code{background:rgba(250,248,239,.12);color:inherit;padding:2px 5px;border-radius:4px;font-family:Consolas,monospace;}
+.bear-chalk .bc-hero{position:relative;isolation:isolate;overflow:hidden;min-height:240px;padding:28px 24px 100px;margin-bottom:28px;background:var(--bc-wall);color:var(--bc-ink);border-radius:10px 16px 12px 18px;}
+.bear-chalk .bc-hero::before{content:'';position:absolute;z-index:-1;inset:auto 0 0;height:82px;background:var(--bc-curb);clip-path:polygon(0 0,100% 55%,100% 100%,0 100%);}
+.bear-chalk .bc-hero::after{content:'';position:absolute;z-index:-1;inset:auto 0 0;height:74px;background:var(--bc-road);clip-path:polygon(0 0,100% 55%,100% 100%,0 100%);}
+.bear-chalk .bc-kicker{font-size:.8rem;letter-spacing:.1em;margin-bottom:12px;}
+.bear-chalk .bc-hero h2{font-size:clamp(1.4rem,3vw,2rem);}
+.bear-chalk .bc-hero p{max-width:42em;}
+.bear-chalk .bc-bears{position:absolute;right:28px;bottom:12px;display:flex;align-items:flex-end;gap:18px;}
+.bear-chalk .bc-bear{position:relative;width:47px;height:39px;border-radius:45% 46% 40% 42%;background:var(--bc-bear);border-bottom:3px solid var(--bc-ink);}
+.bear-chalk .bc-bear::before,.bear-chalk .bc-bear::after{content:'';position:absolute;top:-7px;width:17px;height:18px;border-radius:50%;background:inherit;}
+.bear-chalk .bc-bear::before{left:2px;}.bear-chalk .bc-bear::after{right:2px;}
+.bear-chalk .bc-bear.small{width:34px;height:29px;background:var(--bc-chalk);}
+.bear-chalk .bc-face{position:absolute;top:12px;left:15px;width:4px;height:4px;border-radius:50%;background:var(--bc-ink);box-shadow:12px 0 var(--bc-ink),6px 8px var(--bc-ink);}
+.bear-chalk .small .bc-face{left:9px;top:9px;box-shadow:10px 0 var(--bc-ink),5px 7px var(--bc-ink);}
+.bear-chalk .bc-board{border:2px solid var(--bc-chalk);border-radius:13px 20px 15px 23px;padding:22px;margin:24px 0;background:transparent;}
+.bear-chalk .bc-board h3{font-size:1.15rem;}
+.bear-chalk .bc-note{color:var(--bc-ink);background:var(--bc-chalk);border-radius:15px 12px 19px 13px;padding:18px 22px;margin:22px 0;border-left:5px solid var(--bc-bear);}
+.bear-chalk .bc-note.brown{background:var(--bc-bear);border-left-color:var(--bc-ink);}
+.bear-chalk .bc-note code,.bear-chalk .bc-hero code{background:rgba(41,43,37,.09);}
+.bear-chalk .bc-table-scroll{max-width:100%;overflow-x:auto;margin:20px 0;}
+#article-container .bear-chalk table.bc-table,.bear-chalk table.bc-table{width:auto;max-width:100%;border-collapse:collapse;margin:0;color:var(--bc-chalk);background:var(--bc-road);}
+.bear-chalk .bc-table th,.bear-chalk .bc-table td{padding:12px 16px;border:1px solid var(--bc-curb);text-align:left;vertical-align:top;background:transparent;color:inherit;}
+.bear-chalk .bc-table th{background:var(--bc-wall);color:var(--bc-ink);}
+.bear-chalk .bc-table .bc-label{white-space:nowrap;}
+.bear-chalk .bc-code{background:var(--bc-code);color:var(--bc-chalk);border:1px solid var(--bc-curb);border-radius:10px;overflow:hidden;margin:24px 0;}
+.bear-chalk .bc-code-bar{background:var(--bc-bar);color:var(--bc-chalk);padding:9px 16px;font-size:.8rem;border-bottom:1px dashed var(--bc-curb);}
+#article-container .bear-chalk pre.bc-pre,.bear-chalk pre.bc-pre{margin:0!important;padding:18px!important;border:0!important;border-radius:0!important;background:var(--bc-code)!important;color:var(--bc-chalk)!important;box-shadow:none!important;text-shadow:none!important;font:14px/1.8 Consolas,'SFMono-Regular',monospace!important;white-space:pre!important;overflow-x:auto!important;}
+.bear-chalk .bc-divider{display:flex;justify-content:center;gap:12px;margin:30px 0;}
+.bear-chalk .bc-divider span{display:block;width:20px;height:0;border-top:3px solid var(--bc-chalk);transform:rotate(-12deg);}
+.bear-chalk .bc-divider span:nth-child(2){border-color:var(--bc-blue);transform:rotate(15deg);}
+.bear-chalk .bc-divider span:nth-child(3){border-color:var(--bc-yellow);}
+.bear-chalk .bc-divider span:nth-child(4){border-color:var(--bc-red);transform:rotate(10deg);}
+.bear-chalk .bc-divider span:nth-child(5){border-color:var(--bc-green);}
+[data-theme='dark'] .bear-chalk{--bc-road:#414338;--bc-wall:#b8b8aa;--bc-curb:#989c8d;--bc-code:#252923;--bc-bar:#343a30;}
+@media(max-width:600px){.bear-chalk{padding:16px;border-radius:12px;}.bear-chalk .bc-hero{padding:22px 18px 100px;}.bear-chalk .bc-board,.bear-chalk .bc-note{padding:16px;}.bear-chalk .bc-table th,.bear-chalk .bc-table td{padding:10px 12px;}}
+</style>
+
+<div class="bear-chalk">
+<div class="bc-hero">
+<div class="bc-kicker">小熊粉筆塗鴉 · 風格素材</div>
+<h2>把想法留在一小塊路面上</h2>
+<p>灰米牆面與橄欖色路面留出安靜的空間，少量彩色筆跡標記閱讀重點。</p>
+<div class="bc-bears" aria-hidden="true"><div class="bc-bear"><span class="bc-face"></span></div><div class="bc-bear small"><span class="bc-face"></span></div></div>
+</div>
+<div class="bc-board">
+<h3>粉筆框說明區</h3>
+<p>一次說明一個概念。推導、公式與已確認的圖表可放在這裡，正文保持水平，保留足夠留白。</p>
+</div>
+<div class="bc-note brown">
+<h3>焦糖色重點</h3>
+<p>標示值得停下來讀的補充資訊。這個色塊是內容分類，不代表警告。</p>
+</div>
+<div class="bc-note">
+<h3>奶白色註記</h3>
+<p>放置定義或補充說明，術語以 <code>code</code> 標記。</p>
+</div>
+<div class="bc-table-scroll" tabindex="0" role="region" aria-label="風格要素比較表">
+<table class="bc-table">
+<thead><tr><th class="bc-label">要素</th><th>呈現原則</th></tr></thead>
+<tbody>
+<tr><td class="bc-label">背景</td><td>霧面灰橄欖與灰米色，保留大面積留白。</td></tr>
+<tr><td class="bc-label">裝飾</td><td>少量彩色短線與小熊剪影，不承擔資料關係。</td></tr>
+<tr><td class="bc-label">圖表</td><td>先討論圖型，保留清楚的節點、箭頭與條件標籤。</td></tr>
+</tbody>
+</table>
+</div>
+<div class="bc-code">
+<div class="bc-code-bar">程式碼區塊 · C#</div>
+<pre class="bc-pre">int digit = '7' - '0';
+Console.WriteLine(digit);</pre>
+</div>
+<div class="bc-divider" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+</div>
