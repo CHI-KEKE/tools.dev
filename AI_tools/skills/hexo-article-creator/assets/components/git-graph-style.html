@@ -1,0 +1,94 @@
+<!-- Git Graph 品牌風。設計分析與限制見 references/git-graph-style.md。
+以下元件依文章方案選用，不是固定版型。橘紅色表示 Git 品牌，不表示錯誤或警告。 -->
+<style>
+:root{--gg-orange:#f05133;--gg-coral:#f25d3b;--gg-light:#f46640;--gg-paper:#fff8f4;--gg-white:#fff;--gg-ink:#2d2928;--gg-muted:#746761;--gg-line:#e8d8d1;--gg-code:#2d2928;--gg-code-ink:#fff8f4;}
+.gg-hero,.gg-three-zone,.gg-decision,.gg-steps,.gg-before-after,.gg-table-scroll,.gg-note,.gg-code{box-sizing:border-box;font-family:'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;}
+.gg-hero *,.gg-three-zone *,.gg-decision *,.gg-steps *,.gg-before-after *,.gg-table-scroll *,.gg-note *,.gg-code *{box-sizing:border-box;}
+.gg-hero{position:relative;overflow:hidden;padding:42px 38px;margin:0 0 28px;background:var(--gg-orange);color:var(--gg-white);border-radius:12px;isolation:isolate;}
+.gg-hero::before,.gg-hero::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.08);z-index:-1;}
+.gg-hero::before{width:360px;height:360px;left:-170px;bottom:-240px;}
+.gg-hero::after{width:310px;height:310px;right:-150px;top:-200px;}
+.gg-hero h2{margin:0 0 12px!important;color:var(--gg-white)!important;font-size:clamp(1.8rem,5vw,3.2rem);font-weight:850;letter-spacing:-.03em;line-height:1.15;}
+.gg-hero p{max-width:46em;margin:0;color:var(--gg-white);font-size:1.02rem;line-height:1.8;}
+.gg-hero code{background:rgba(255,255,255,.14)!important;color:var(--gg-white)!important;border:1px solid rgba(255,255,255,.22);}
+.gg-graph-mark{position:absolute;right:30px;bottom:24px;width:150px;height:84px;opacity:.72;}
+.gg-graph-mark line{stroke:var(--gg-white);stroke-width:2;}
+.gg-graph-mark circle{fill:var(--gg-white);}
+.gg-section{margin:30px 0 14px;padding-left:14px;border-left:5px solid var(--gg-orange);color:var(--gg-ink);font-weight:800;line-height:1.4;}
+.gg-three-zone{display:grid;grid-template-columns:minmax(0,1fr) 58px minmax(0,1fr) 58px minmax(0,1fr);align-items:stretch;gap:10px;margin:22px 0;}
+.gg-zone{padding:20px;background:var(--gg-white);border:1px solid var(--gg-line);border-top:5px solid var(--gg-orange);border-radius:8px;color:var(--gg-ink);box-shadow:0 8px 22px rgba(79,45,34,.07);}
+.gg-zone strong{display:block;margin-bottom:7px;font-size:1.08rem;}
+.gg-zone p{margin:0;color:var(--gg-muted);line-height:1.7;}
+.gg-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gg-orange);font-weight:800;text-align:center;line-height:1.35;}
+.gg-arrow span:first-child{font-size:1.65rem;line-height:1;}
+.gg-arrow small{margin-top:7px;color:var(--gg-muted);font-weight:650;}
+.gg-decision{margin:22px 0;padding:24px;background:var(--gg-paper);border:1px solid var(--gg-line);border-radius:10px;color:var(--gg-ink);}
+.gg-node{padding:13px 16px;background:var(--gg-white);border:2px solid var(--gg-orange);border-radius:8px;text-align:center;font-weight:750;line-height:1.5;}
+.gg-node.question{max-width:360px;margin:0 auto;background:var(--gg-orange);color:var(--gg-white);}
+.gg-branches{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:32px;}
+.gg-branches::before{content:'';position:absolute;top:-18px;left:25%;right:25%;border-top:2px solid var(--gg-orange);}
+.gg-branch{position:relative;min-width:0;}
+.gg-branch::before{content:'';position:absolute;top:-18px;left:50%;height:18px;border-left:2px solid var(--gg-orange);}
+.gg-branch-label{display:block;width:max-content;margin:-31px auto 10px;padding:2px 9px;background:var(--gg-paper);color:var(--gg-orange);font-weight:800;}
+.gg-branch p{margin:10px 0 0;color:var(--gg-muted);line-height:1.7;}
+.gg-mini-branches{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.gg-result{padding:12px;background:var(--gg-white);border:1px solid var(--gg-line);border-radius:7px;text-align:center;}
+.gg-result strong{display:block;color:var(--gg-orange);}
+.gg-steps{position:relative;margin:24px 0;padding-left:30px;}
+.gg-steps::before{content:'';position:absolute;left:10px;top:12px;bottom:12px;border-left:2px solid var(--gg-orange);}
+.gg-step{position:relative;margin:0 0 18px;padding:17px 18px;background:var(--gg-white);border:1px solid var(--gg-line);border-radius:8px;color:var(--gg-ink);}
+.gg-step::before{content:'';position:absolute;left:-26px;top:20px;width:12px;height:12px;background:var(--gg-orange);border:3px solid var(--gg-paper);border-radius:50%;}
+.gg-step strong{display:block;margin-bottom:5px;}
+.gg-step p{margin:0;color:var(--gg-muted);line-height:1.7;}
+.gg-before-after{display:grid;grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr);align-items:center;gap:16px;margin:24px 0;}
+.gg-snapshot{padding:20px;background:var(--gg-white);border:1px solid var(--gg-line);border-radius:8px;}
+.gg-snapshot h4{margin:0 0 12px!important;color:var(--gg-ink)!important;}
+.gg-snapshot ul{margin:0;padding-left:20px;}
+.gg-command{text-align:center;color:var(--gg-orange);font:700 .9rem/1.5 Consolas,monospace;overflow-wrap:anywhere;}
+.gg-note{margin:22px 0;padding:17px 20px;background:var(--gg-paper);border-left:5px solid var(--gg-orange);border-radius:4px;color:var(--gg-ink);line-height:1.75;}
+.gg-note strong{display:block;margin-bottom:4px;}
+.gg-note p{margin:0;}
+.gg-table-scroll{max-width:100%;margin:22px 0;overflow-x:auto;}
+#article-container table.gg-table,.gg-table{width:auto;max-width:100%;margin:0;border-collapse:collapse;background:var(--gg-white);color:var(--gg-ink);}
+.gg-table th,.gg-table td{padding:12px 15px;border:1px solid var(--gg-line);text-align:left;vertical-align:top;background:var(--gg-white);}
+.gg-table th{background:var(--gg-paper);font-weight:750;}
+.gg-code{margin:22px 0;background:var(--gg-code);color:var(--gg-code-ink);border-radius:8px;overflow:hidden;}
+.gg-code-label{padding:9px 16px;background:var(--gg-orange);color:var(--gg-white);font-size:.86rem;font-weight:750;}
+#article-container pre.gg-pre,.gg-code pre.gg-pre{margin:0!important;padding:18px!important;background:var(--gg-code)!important;color:var(--gg-code-ink)!important;border:0!important;border-radius:0!important;box-shadow:none!important;text-shadow:none!important;white-space:pre!important;overflow-x:auto!important;font:14px/1.75 Consolas,monospace!important;}
+#article-container .highlight,#article-container .highlight .code{background:var(--gg-code)!important;}
+#article-container .highlight table,#article-container .highlight pre{background:transparent!important;}
+#article-container .highlight .gutter{background:#3b3533!important;}
+[data-theme='dark']{--gg-paper:#211d1b;--gg-white:#2b2624;--gg-ink:#fff7f2;--gg-muted:#d4c3bb;--gg-line:#594740;--gg-orange:#ff6b4a;--gg-coral:#d94b30;--gg-light:#ed6040;--gg-code:#171412;--gg-code-ink:#fff8f4;}
+@media(max-width:720px){.gg-hero{padding:30px 22px 86px;}.gg-graph-mark{left:22px;right:auto;bottom:12px;width:120px;}.gg-three-zone,.gg-before-after{grid-template-columns:1fr;}.gg-arrow{padding:2px 0;}.gg-arrow span:first-child{transform:rotate(90deg);}.gg-branches{grid-template-columns:1fr;}.gg-branches::before,.gg-branch::before{display:none;}.gg-branch-label{margin:0 auto 8px;}.gg-mini-branches{grid-template-columns:1fr;}.gg-table th,.gg-table td{min-width:9em;}}
+</style>
+<div class="gg-hero">
+<h2>Git 狀態筆記</h2>
+<p>把工作目錄、Index 與 HEAD 分開看，就能理解 Git 為什麼把檔案標成未追蹤、已修改或已暫存。</p>
+<svg class="gg-graph-mark" viewBox="0 0 150 84" role="img" aria-label="Git 分支節點裝飾"><line x1="12" y1="70" x2="62" y2="42"></line><line x1="62" y1="42" x2="108" y2="12"></line><line x1="62" y1="42" x2="126" y2="70"></line><circle cx="12" cy="70" r="5"></circle><circle cx="62" cy="42" r="6"></circle><circle cx="108" cy="12" r="5"></circle><circle cx="126" cy="70" r="5"></circle></svg>
+</div>
+<h3 class="gg-section">三個位置</h3>
+<div class="gg-three-zone">
+<div class="gg-zone"><strong>HEAD</strong><p>上一個提交保存的快照。</p></div>
+<div class="gg-arrow"><span>↔</span><small>比較</small></div>
+<div class="gg-zone"><strong>Index</strong><p>下一次提交準備使用的快照。</p></div>
+<div class="gg-arrow"><span>↔</span><small>比較</small></div>
+<div class="gg-zone"><strong>Working Tree</strong><p>硬碟上目前看得到的檔案。</p></div>
+</div>
+<h3 class="gg-section">條件分支</h3>
+<div class="gg-decision">
+<div class="gg-node question">路徑已被 Git 追蹤？</div>
+<div class="gg-branches">
+<div class="gg-branch"><span class="gg-branch-label">是</span><div class="gg-node">Tracked</div><p>再比較 HEAD、Index 與 Working Tree，判斷是否已暫存或仍有未暫存修改。</p></div>
+<div class="gg-branch"><span class="gg-branch-label">否</span><div class="gg-node">符合 ignore 規則？</div><div class="gg-mini-branches"><div class="gg-result"><strong>是</strong>Ignored</div><div class="gg-result"><strong>否</strong>Untracked</div></div></div>
+</div>
+</div>
+<div class="gg-before-after">
+<div class="gg-snapshot"><h4>執行前</h4><ul><li>Index 有檔案</li><li>Working Tree 有檔案</li></ul></div>
+<div class="gg-command">git rm<br>--cached</div>
+<div class="gg-snapshot"><h4>執行後</h4><ul><li>Index 移除檔案</li><li>Working Tree 保留檔案</li></ul></div>
+</div>
+<div class="gg-note"><strong>品牌色說明</strong><p>橘紅色表示 Git 主題與閱讀重點，不代表錯誤或警告。</p></div>
+<div class="gg-table-scroll" role="region" aria-label="Git 指令影響比較" tabindex="0">
+<table class="gg-table"><thead><tr><th scope="col">指令</th><th scope="col">Index</th><th scope="col">Working Tree</th></tr></thead><tbody><tr><th scope="row"><code>git rm --cached</code></th><td>移除</td><td>保留</td></tr><tr><th scope="row"><code>git rm</code></th><td>移除</td><td>刪除</td></tr></tbody></table>
+</div>
+<div class="gg-code"><div class="gg-code-label">終端機</div><pre class="gg-pre">git status&#10;git ls-files</pre></div>

@@ -36,6 +36,22 @@ description: Guides writing and refining Hexo blog posts (source/_posts) with pl
 
 Frontmatter 格式、`{% tabs %}` 分頁語法、渲染引擎對原始 HTML 的透傳行為、以及何時該用內建 tag plugin vs 自訂 HTML，見 `references/hexo-conventions.md`。
 
+#### 使用 Mermaid 前：確認啟用設定（必做）
+
+只要文章新增或保留 Mermaid 圖表（包含 `{% mermaid %}` 與 Mermaid fenced code block），就必須檢查實際建置使用的網站設定、主題設定與覆寫值，確認對應渲染方式已啟用；不能只因套件已安裝、語法正確或 `hexo generate` 成功就略過。
+
+- Butterfly 的 `{% mermaid %}` 必須確認主題最終生效的 `mermaid.enable` 為 `true`。優先在網站 `_config.yml` 的既有 `theme_config` 中合併以下設定，保留其他設定，不新增重複的 `theme_config` 區塊：
+
+  ```yaml
+  theme_config:
+    mermaid:
+      enable: true
+  ```
+
+- 同時檢查 `_config.butterfly.yml`（若存在）、`themes/butterfly/_config.yml` 與建置命令指定的設定檔，依專案實際合併規則確認有效值。網站根層的 `mermaid.enable` 或其他 Mermaid 外掛的啟用值，不代表 Butterfly 主題的開關已開啟；其他主題則依其實際渲染機制檢查。
+- 開關關閉時，在本次文章工作範圍內補上必要設定，再重新建置。Butterfly 會把圖表原始碼放在隱藏的 `.mermaid-src` 中；未啟用繪圖程式時，可能只看到空白外框。
+- 建置後檢查文章輸出的 HTML 同時包含圖表資料與 Mermaid 載入／渲染程式，再用瀏覽器確認圖形實際顯示，包含切換到其他含圖表的 tabs。若本次已獲授權部署，部署後也要檢查正式網址；瀏覽器無法使用時，明確回報僅完成設定／HTML 檢查，尚未目視驗證，不宣稱圖表已正常顯示。
+
 **⚠ 不要套用 `html-markdown-creator` 那套「左側章節導覽、右側單章節顯示」的側欄式版面**（`doc-shell` / `doc-sidebar` / `doc-nav-item` / 自訂 `<script>` 切換 active section）。那是給獨立 `.html` 分析文件用的版面，不是 Hexo 文章的慣例。Hexo 文章若有多個段落需要分頁瀏覽，一律用 Hexo 內建的 `{% tabs %}` 分頁語法（見上方 Frontmatter 慣例），不要在 `.md` 裡另外寫一份自訂側欄 JS。如果是把既有的側欄式 HTML 分析文件（`html-markdown-creator` 產出的成果）搬進 Hexo 文章，動筆前要先把左側導覽拆掉，改成一般章節標題（`<h2>`／`wp-section-head` 之類的區塊標題）依序往下排列，或視段落數量拆進 `{% tabs %}` 的多個 tab，而不是原封不動保留 `doc-shell` 那套 JS 切換機制。
 
 判斷依據：
@@ -59,6 +75,9 @@ Frontmatter 格式、`{% tabs %}` 分頁語法、渲染引擎對原始 HTML 的�
 | `organic-glass-style.html` | 品牌／自然／生態／永續／科普主題的裝飾性排版：深綠漸層 Hero 開場橫幅、毛玻璃感特色列、大地色塊卡片網格（並列/分類用）、大地色塊步驟流程（視覺較重，有先後順序的流程用）、極簡編號時間軸 `earth-line-steps`（視覺較輕，左側直線＋圓圈編號＋螢光筆標題＋虛線接右側說明，適合步驟較多時避免頁面太重）。配色是「自然分類」裝飾語意（非危險/警示語意）。**注意這是視覺風格不是固定排版公式**：內容彼此獨立用 `earth-card-grid`，有時間先後順序的流程要用 `earth-step-flow`／`earth-line-steps`，不要不分內容形態一律套卡片網格 |
 | `warm-paper-style.html` | 技術邏輯/計算規則拆解、系統行為說明、FAQ 式問答整理等知識型文章，想要「明亮乾淨、專業但不冷硬」的觀感時使用。米白紙感底色（`#fbf9f4`）+ 純白卡片＋柔和大範圍陰影＋珊瑚橙到杏黃漸層強調色（`--brand`），搭配 teal／violet／blue 三種分類輔助色（非危險分級語意，是同一套暖色系底下的分類色）。程式碼區塊 `pre.wp-pre` 刻意切換成深色終端機感，與紙感底色形成對比、讓程式碼更顯眼。包含 hero、章節標題徽章、卡片、callout 提示框、三欄摘要卡片網格、橫向流程步驟、直向時間軸步驟卡、checklist、案例佐證框、深色程式碼區塊共 10 種區塊。不適合事件回顧/故障排查等需要紅/琥珀/綠風險分級語意的文章（改用 `vertical-timeline`/`medical-chart`），也不適合品牌/自然主題（改用 `organic-glass-style`） |
 | `cozy-meadow-style.html` | 取材自療癒系插畫截圖（草地上曬太陽的棕熊與白色小熊，扁平色塊＋手繪筆刷質感）。適合生活隨筆、放鬆/休息主題、寵物或角色類內容、想走可愛療癒感而非冷硬技術感的文章。草地綠漸層 Hero 開場橫幅（`cozy-hero`，帶散落小花與一隻小熊點綴）、奶白底橫向特色列（`cozy-feature-row`，圖示預設熊掌 🐾，適合並列比較 2-3 個概念）、棕熊色/奶白/苔綠三色圓潤卡片網格（`cozy-card-grid`，徽章可用數字或直接換成 🐻／🐾／🌿 圖示，適合條列彼此獨立的心得/重點/分類）、極簡編號時間軸（`cozy-line-steps`，適合條列有先後順序的步驟且想保持輕盈感）、小熊分隔線（`cozy-bear-divider`，一隻小熊 emoji 置中＋左右漸層細線，用於長文章分隔大段落）。配色是「溫暖分類」裝飾語意（非危險/警示語意）：`bear`(棕熊色)=核心重點、`cream`(奶白)=中性補充、`moss`(苔綠)=延伸資訊。不適合事件回顧/故障排查等需要紅/琥珀/綠風險分級語意的文章，也不適合品牌/永續主題（該主題改用視覺質感更沉穩的 `organic-glass-style`，兩者不建議混用在同一篇文章） |
+| `kubernetes-helm-style.html` | Kubernetes 藍白極簡風，取材自 Allen 的 `k8s.png`：白底、實色藍七邊形徽章、白色舵輪與粗黑無襯線字標。適合 Kubernetes／容器編排／叢集部署文章，以留白、細框及少量藍色強調呈現，不使用漸層、光暈或厚重陰影。提供開場橫幅、章節標題、補充框、比較表與程式碼區塊共 5 類可選元件。藍色是品牌重點而非成功狀態；圖表維持標準關係語意。提案或套用前讀取 [風格分析與套用規則](references/kubernetes-helm-style.md)，再依 Step 1 確認文章方案。 |
+| `grafana-dusk-style.html` | Grafana 暮紫控制台風，取材自 Allen 的 `grafana.png` 登入畫面。暮紫漸層、深色不透明面板、灰白正文、少量橘黃品牌重點與藍色操作，適合監控、Metrics／Logs 與控制台技術筆記。提供開場、章節標題、內容面板、補充框、比較表、程式碼六類可選元件；小圓角、細框，無毛玻璃或霓虹光暈。品牌色不代表告警等級。提案或套用前讀取 [風格分析與套用規則](references/grafana-dusk-style.md)，再依 Step 1 確認文章方案。 |
+| `git-graph-style.html` | Git Graph 品牌風，取材自 Allen 的 `git.png`：Git 橘紅底、白色粗體字標、細白 commit 連線與圓形節點、大型半透明圓弧。適合 Git 狀態、Index、分支、提交與版本控制教學。正文改用暖白底維持長文可讀性，指令區使用深炭色終端機。提供開場、三區比較、決策樹、實驗步驟、Before／After、比較表、提示框與終端機元件；橘紅色是品牌重點而非警告狀態。提案或套用前讀取 [風格分析與套用規則](references/git-graph-style.md)，再依 Step 1 確認文章方案。 |
 | `mysql-dolphin-style.html` | 取材自 MySQL 官方 Logo 截圖（深海藍海豚剪影 + 橘色 SQL 字樣 + 白底）。適合 MySQL / 資料庫底層機制主題的知識型技術文章（事務隔離、鎖機制、索引原理等），想直接呼應 MySQL 官方品牌識別色時使用。淡藍白底（`#f4f9fc`）+ 海豚藍漸層 Hero 開場橫幅（`msq-hero`，帶海豚 emoji 點陣點綴）+ 白色卡片（頂部色條可切換 navy/orange/teal 三種分類）+ 橘色 eyebrow 標籤與強調色，callout 提示框仍維持中性 info/warn/danger/ok 四色語意（不與品牌色混用）。包含 hero、章節標題徽章、卡片、callout、三欄摘要卡片網格、橫向流程步驟、直向時間軸步驟卡、checklist、案例佐證框、深色終端機風程式碼區塊、海豚點列分隔線 `msq-dot-divider` 共 11 種區塊。配色是 MySQL 品牌裝飾語意（非危險分級語意），不適合非 MySQL/非資料庫品牌主題，避免濫用官方識別色 |
 | `postgres-elephant-style.html` | 取材自 PostgreSQL 官方 Logo 截圖（深藍大象頭剪影 + 一圈粗黑描邊 + 白底，"PostgreSQL" 字樣一半黑一半官方藍）。適合 PostgreSQL 歷史沿革、設計哲學、擴充機制（extension/type/index method）、pgvector/Vector Database 等知識型技術文章，想直接呼應 PostgreSQL 官方品牌識別色與描邊質感時使用。近乎純白底（`#fdfdfd`）+ 大象藍漸層 Hero 開場橫幅（`pg-hero`，帶大象 emoji 點陣點綴）+ 白色卡片與表格一律搭配 2.5px 粗黑描邊（呼應 Logo 剪影輪廓線，是本元件與 mysql-dolphin-style 最大差異）+ 頂部色條可切換 pg/teal/violet 三種分類，callout 提示框仍維持中性 info/warn/danger/ok 四色語意（不與品牌色混用）。包含 hero、章節標題徽章、卡片、callout、三欄摘要卡片網格、橫向流程步驟、直向時間軸步驟卡、checklist、案例佐證框、深藍終端機風程式碼區塊、大象點列分隔線 `pg-trunk-divider` 共 11 種區塊。配色是 PostgreSQL 品牌裝飾語意（非危險分級語意），不適合非 PostgreSQL/非資料庫品牌主題，避免濫用官方識別色 |
 | `blue-ghost-style.html` | 取材自一張「小幽靈排隊過斑馬線」插畫截圖（仿 Abbey Road 專輯封面構圖，四隻白色幽靈依序踏過斑馬線，最小的一隻幽靈牽著一隻橘色玩具老鼠）。適合輕鬆詼諧的技術小品、生活隨筆、團隊文化分享、新手導覽/入門說明，想要「可愛放鬆」而非「嚴肅專業」觀感的文章。天空藍漸層 Hero 開場橫幅（`gho-hero`，帶幽靈 emoji 點陣點綴）+ 白色卡片（頂部色條可切換 sky/coral/teal 三種分類）+ 珊瑚橙 eyebrow 標籤與強調色，callout 提示框仍維持中性 info/warn/danger/ok 四色語意。包含 hero、章節標題徽章、卡片、callout、三欄摘要卡片網格、橫向流程步驟、直向時間軸步驟卡、checklist、案例佐證框、深藍夜色終端機風程式碼區塊、斑馬線分隔線 `gho-crossing`（本主題最具辨識度的專屬裝飾元件，白色條紋橫貫藍底、中央置中一隻小幽靈）共 11 種區塊。配色是「可愛分類」裝飾語意（非危險分級語意），不適合事件回顧/故障排查等需要風險分級語意的文章（改用 `vertical-timeline`/`medical-chart`） |

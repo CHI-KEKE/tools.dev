@@ -1,0 +1,51 @@
+<!-- Kubernetes 藍白極簡風。設計分析與限制見 references/kubernetes-helm-style.md。
+以下五類元件依文章方案選用，不是固定版型。七邊形是抽象裝飾，非官方 Logo。
+白底、實色藍、粗黑標題、細框與留白；不使用漸層、光暈或陰影。 -->
+<style>
+.kubernetes-helm{--kh-blue:#326de6;--kh-link:#2455b5;--kh-bg:#fff;--kh-ink:#333;--kh-soft:#eef4ff;--kh-line:#d5deed;--kh-code:#182235;--kh-code-ink:#f3f6fc;background:var(--kh-bg);color:var(--kh-ink);padding:24px;font-family:'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;line-height:1.85;overflow-wrap:anywhere;}
+.kubernetes-helm *{box-sizing:border-box;}
+#article-container .kubernetes-helm h2,#article-container .kubernetes-helm h3,.kubernetes-helm h2,.kubernetes-helm h3{color:var(--kh-ink);line-height:1.4;font-weight:800;margin:0 0 16px;}
+.kubernetes-helm p{margin:12px 0;}
+.kubernetes-helm a{color:var(--kh-link);text-decoration:underline;text-underline-offset:3px;}
+.kubernetes-helm :focus-visible{outline:3px solid var(--kh-link);outline-offset:4px;}
+.kubernetes-helm code{font-family:Consolas,monospace;background:var(--kh-soft);color:inherit;padding:2px 5px;border-radius:3px;}
+.kubernetes-helm .kh-hero{padding:28px 0 32px;margin-bottom:28px;border-bottom:3px solid var(--kh-blue);}
+.kubernetes-helm .kh-emblem{display:block;width:58px;height:58px;margin-bottom:20px;background:var(--kh-blue);clip-path:polygon(50% 0,89% 19%,99% 61%,72% 96%,28% 96%,1% 61%,11% 19%);}
+.kubernetes-helm .kh-hero h2{font-size:clamp(1.6rem,4vw,2.6rem);letter-spacing:-.02em;}
+.kubernetes-helm .kh-hero p{max-width:42em;}
+.kubernetes-helm .kh-section{padding-left:14px;border-left:5px solid var(--kh-blue);margin-top:30px;}
+.kubernetes-helm .kh-note{padding:16px 20px;margin:22px 0;background:var(--kh-soft);border-left:4px solid var(--kh-blue);border-radius:4px;}
+.kubernetes-helm .kh-table-scroll{max-width:100%;overflow-x:auto;margin:22px 0;}
+#article-container .kubernetes-helm table.kh-table,.kubernetes-helm table.kh-table{width:100%;margin:0;border-collapse:collapse;table-layout:auto;background:var(--kh-bg);color:var(--kh-ink);}
+.kubernetes-helm .kh-table th,.kubernetes-helm .kh-table td{padding:12px 16px;border:1px solid var(--kh-line);text-align:left;vertical-align:top;background:var(--kh-bg);color:var(--kh-ink);}
+.kubernetes-helm .kh-table th{background:var(--kh-soft);font-weight:700;}
+.kubernetes-helm .kh-code{margin:24px 0;background:var(--kh-code);color:var(--kh-code-ink);border-radius:4px;overflow:hidden;}
+.kubernetes-helm .kh-code-label{padding:8px 16px;border-bottom:1px solid #43516a;font-size:.85rem;}
+#article-container .kubernetes-helm pre.kh-pre,.kubernetes-helm pre.kh-pre{margin:0!important;padding:18px!important;background:var(--kh-code)!important;color:var(--kh-code-ink)!important;border:0!important;border-radius:0!important;box-shadow:none!important;text-shadow:none!important;white-space:pre!important;overflow-x:auto!important;font:14px/1.8 Consolas,monospace!important;}
+.kubernetes-helm pre.kh-pre code{background:transparent;color:inherit;padding:0;}
+[data-theme='dark'] .kubernetes-helm{--kh-blue:#7fa9ff;--kh-link:#a4c2ff;--kh-bg:#17202e;--kh-ink:#eef2f8;--kh-soft:#23334e;--kh-line:#52647f;}
+@media(max-width:600px){.kubernetes-helm{padding:16px;}.kubernetes-helm .kh-hero{padding:16px 0 24px;}.kubernetes-helm .kh-note{padding:14px;}.kubernetes-helm .kh-table th,.kubernetes-helm .kh-table td{padding:10px;min-width:8em;}}
+</style>
+<div class="kubernetes-helm">
+<div class="kh-hero">
+<span class="kh-emblem" aria-hidden="true"></span>
+<h2>Kubernetes 技術筆記</h2>
+<p>將應用程式的部署設定、執行狀態與觀察結果分開說明，讓每個章節回答一個具體問題。</p>
+</div>
+<h3 class="kh-section">宣告與觀察</h3>
+<p>先說明期望狀態，再呈現實際觀察到的結果。</p>
+<div class="kh-note">
+<strong>補充說明</strong>
+<p>範例中的藍色表示主題重點。資源是否正常，需要搭配實際狀態與事件判斷。</p>
+</div>
+<div class="kh-table-scroll" role="region" aria-label="資訊用途比較" tabindex="0">
+<table class="kh-table">
+<thead><tr><th scope="col">資訊</th><th scope="col">回答的問題</th></tr></thead>
+<tbody><tr><th scope="row">部署設定</th><td>期望系統如何執行？</td></tr><tr><th scope="row">觀察結果</th><td>目前實際執行情況如何？</td></tr></tbody>
+</table>
+</div>
+<div class="kh-code">
+<div class="kh-code-label">指令示例</div>
+<pre class="kh-pre"><code>kubectl get pods</code></pre>
+</div>
+</div>

@@ -1,0 +1,51 @@
+<!-- Grafana 暮紫控制台風。規則見 references/grafana-dusk-style.md。
+六類可選元件；橘黃短線是裝飾，非官方 Logo。樣式保持局部範圍。 -->
+<style>
+.grafana-dusk{--gd-bg:#1b1925;--gd-panel:#252030;--gd-code:#111217;--gd-ink:#cbc8d5;--gd-title:#eeeaf4;--gd-muted:#aaa5b8;--gd-line:#554a62;--gd-link:#91b7ff;background:var(--gd-bg);color:var(--gd-ink);padding:28px;font:16px/1.8 'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;overflow-wrap:anywhere;color-scheme:dark;}
+.grafana-dusk *{box-sizing:border-box;}
+#article-container .grafana-dusk h2,#article-container .grafana-dusk h3,.grafana-dusk h2,.grafana-dusk h3{color:var(--gd-title);font-weight:500;line-height:1.4;margin:0 0 16px;}
+.grafana-dusk p{margin:12px 0;}
+.grafana-dusk a{color:var(--gd-link);text-decoration:underline;text-underline-offset:3px;}
+.grafana-dusk :focus-visible{outline:3px solid var(--gd-link);outline-offset:4px;}
+#article-container .grafana-dusk code,.grafana-dusk code{background:#342c42;color:#eeeaf4;padding:2px 5px;border-radius:3px;font-family:Consolas,monospace;}
+.grafana-dusk .gd-hero{padding:40px 28px;margin-bottom:30px;text-align:center;border-radius:4px;background:linear-gradient(155deg,#713d70 0%,#39234d 48%,#110d23 100%);}
+.grafana-dusk .gd-brand-line{display:block;width:64px;height:5px;margin:0 auto 24px;border-radius:2px;background:linear-gradient(90deg,#f45125,#ff8c16,#ffc619);}
+.grafana-dusk .gd-hero h2{font-size:clamp(1.8rem,4vw,2.25rem);}
+.grafana-dusk .gd-hero p{max-width:38em;margin:16px auto 0;color:var(--gd-title);}
+.grafana-dusk .gd-section{padding-left:14px;border-left:3px solid #ff8c16;margin-top:30px;}
+.grafana-dusk .gd-panel{background:linear-gradient(180deg,var(--gd-panel),var(--gd-bg));border:1px solid var(--gd-line);border-radius:4px;padding:22px;margin:22px 0;}
+.grafana-dusk .gd-note{background:var(--gd-panel);border-left:3px solid var(--gd-link);padding:16px 20px;margin:22px 0;border-radius:3px;}
+.grafana-dusk .gd-table-scroll{max-width:100%;overflow-x:auto;margin:22px 0;}
+#article-container .grafana-dusk table.gd-table,.grafana-dusk table.gd-table{width:100%;margin:0;border-collapse:collapse;table-layout:auto;background:var(--gd-bg);color:var(--gd-ink);}
+.grafana-dusk .gd-table th,.grafana-dusk .gd-table td{padding:12px 16px;border:1px solid var(--gd-line);text-align:left;vertical-align:top;background:var(--gd-bg);color:var(--gd-ink);}
+.grafana-dusk .gd-table th{background:var(--gd-panel);color:var(--gd-title);font-weight:600;}
+.grafana-dusk .gd-code{background:var(--gd-code);color:var(--gd-ink);border:1px solid var(--gd-line);border-radius:3px;overflow:hidden;margin:22px 0;}
+.grafana-dusk .gd-code-label{padding:8px 16px;color:var(--gd-muted);border-bottom:1px solid var(--gd-line);font-size:13px;}
+#article-container .grafana-dusk pre.gd-pre,.grafana-dusk pre.gd-pre{background:var(--gd-code)!important;color:var(--gd-ink)!important;margin:0!important;padding:18px!important;border:0!important;border-radius:0!important;box-shadow:none!important;text-shadow:none!important;white-space:pre!important;overflow-x:auto!important;font:14px/1.8 Consolas,monospace!important;}
+@media(max-width:600px){.grafana-dusk{padding:16px;}.grafana-dusk .gd-hero{padding:28px 16px;}.grafana-dusk .gd-panel,.grafana-dusk .gd-note{padding:16px;}.grafana-dusk .gd-table th,.grafana-dusk .gd-table td{padding:10px;min-width:8em;}}
+</style>
+<div class="grafana-dusk">
+<div class="gd-hero">
+<span class="gd-brand-line" aria-hidden="true"></span>
+<h2>監控基礎架構</h2>
+<p>服務出現異常時，先觀察數字的變化，再從紀錄尋找事件細節。</p>
+</div>
+<h3 class="gd-section">數值與事件紀錄</h3>
+<div class="gd-panel">
+<p>指標描述系統狀態的變化，Log 保留事件訊息。依問題選擇資料來源，再將查詢結果放在同一個觀察介面。</p>
+</div>
+<div class="gd-note">
+<strong>資料來源與介面</strong>
+<p>在 Grafana 中選擇 Loki 資料來源後，可以透過 <code>LogQL</code> 查詢紀錄。畫面呈現與資料儲存是不同責任。</p>
+</div>
+<div class="gd-table-scroll" role="region" aria-label="監控資料比較" tabindex="0">
+<table class="gd-table">
+<thead><tr><th scope="col">資料</th><th scope="col">回答的問題</th></tr></thead>
+<tbody><tr><th scope="row">Metrics</th><td>錯誤數量何時開始增加？</td></tr><tr><th scope="row">Logs</th><td>當時記錄了哪些錯誤訊息？</td></tr></tbody>
+</table>
+</div>
+<div class="gd-code">
+<div class="gd-code-label">LogQL 查詢範例</div>
+<pre class="gd-pre">{service="promotion-worker"} |= "ERROR"</pre>
+</div>
+</div>
