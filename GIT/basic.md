@@ -44,34 +44,9 @@ git push -u upstream HEAD
 - revert: 恢復某個提交
 - build: 改變打包流程
 
-## 撤回到特定 commit
-
-```bash
-##先看git log 紀錄
-
-$ git log --oneline
-e12d8ef (HEAD -> master) add database.yml in config folder
-85e7e30 add hello
-657fce7 add container
-abb4f43 update index page
-cef6e40 create index page
-cc797cd init commit
-
-##「相對」的做法
-
-$ git reset e12d8ef^ (到上一個commit)
 
 
-##因為剛好 HEAD 跟 master 目前都是指向 e12d8ef 這個 Commit，而且 e12d8ef 這個數字也不好記，所以上面這行，通常也會改寫成
 
-git reset master^
-git reset HEAD^
-
-
-## 你很清楚想要把目前的狀態退回到哪個 Commit，可以直接指明
-
-git reset 85e7e30
-```
 
 ## Track 本地還沒有的branch
 

@@ -1,25 +1,4 @@
-# Docker 實務場景
 
-## 目錄
-
-- [依據既有的 Image 跑 Container 後再產生新的 Image](#依據既有的-image-跑-container-後再產生新的-image)
-  - [先啟動 Container](#先啟動-container)
-  - [產一個檔案](#產一個檔案)
-  - [開另外一個 CLI 後 Commit](#開另外一個-cli-後-commit)
-  - [接著在本機環境就可以看到新的 Image](#接著在本機環境就可以看到新的-image)
-- [使用 History 查看 Image 堆疊歷史](#使用-history-查看-image-堆疊歷史)
-- [觀察生命週期](#觀察生命週期)
-  - [啟動 Container](#啟動-container)
-  - [進入 Container](#進入-container)
-  - [離開後觀察啟動狀態](#離開後觀察啟動狀態)
-- [移除 Image & Container](#移除-image--container)
-  - [移除 Image 指令](#移除-image-指令)
-  - [若 Container 還啟用需要先停止 Container 並移除](#若-container-還啟用需要先停止-container-並移除)
-- [停止並移除多個 containers](#停止並移除多個-containers)
-
-<br><br>
-
----
 
 https://azole.medium.com/webconf2023-docker-%E5%85%A5%E9%96%80-101-fae89170553a
 
