@@ -18,15 +18,12 @@ http:
       type: query
   body:
     type: json
-    data: "{\r
-
-      \    \"shopId\": 83,\r
-
-      \    \"SourceType\": \"SalesOrderGroup\",\r
-
-      \    \"SourceCode\": \"MG260126T00001\"\r
-
-      } "
+    data: |-
+      {
+          "shopId": "{{shopId}}",
+          "SourceType": "SalesOrderGroup",
+          "SourceCode": "{{TG}}"
+      } 
   auth: inherit
 
 settings:

@@ -1,0 +1,40 @@
+info:
+  name: EstimatedQtyNotify
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/scm/v2/RegularOrder/EstimatedQtyNotify?t={{token}}&ts={{timestamp}}&s={{signature}}"
+  params:
+    - name: t
+      value: "{{token}}"
+      type: query
+    - name: ts
+      value: "{{timestamp}}"
+      type: query
+    - name: s
+      value: "{{signature}}"
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "ShopId": 13032,
+        "EstimatedQtyList": [],
+        "EstimatedGiftQtyList": [
+          { "Cycle": 1, "GiftId": 1907278, "Qty": 3 },
+          { "Cycle": 1, "GiftId": 1907280, "Qty": 3 },
+          { "Cycle": 2, "GiftId": 1907278, "Qty": 6 },
+          { "Cycle": 2, "GiftId": 1907280, "Qty": 6 },
+          { "Cycle": 3, "GiftId": 1907278, "Qty": 3 },
+          { "Cycle": 3, "GiftId": 1907280, "Qty": 3 }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,1 @@
+selectionRevision 是這個 Migration Unit「專案選擇資料修改過幾版」的版號。 因為基準變了所以version會變

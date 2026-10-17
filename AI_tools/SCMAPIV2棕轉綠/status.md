@@ -1,0 +1,4 @@
+- resume：身分、版本和本機綁定都吻合，可以繼續。
+- local-rebind：專案正確，但這台電腦需要建立本機路徑綁定。
+- review-evidence：專案相同，但 commit 不同，要先檢查哪些證據受影響。
+- fork-unit：Repository 或 Project 身分不同，不能沿用這本 Migration。
